@@ -40,8 +40,8 @@ const int LED_BLUE = 15;
 //const int SPD_RELAY1_PIN = 27; // K4
 //const int SPD_RELAY2_PIN = 26; // K3
 
-const int SPD_RELAY1_PIN = 33; // K1
-const int SPD_RELAY2_PIN = 25; // K2
+const int SPD_RELAY2_PIN = 33; // K1
+const int SPD_RELAY1_PIN = 25; // K2
 const int DIR_RELAY1_PIN = 26; // K3
 const int DIR_RELAY2_PIN = 27; // K4
 

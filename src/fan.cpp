@@ -73,11 +73,6 @@ String Fan::getStatus()
   return String(result);
 }
 
-/*
-    Converts speed value to positions of the speed switch.
-    The important thing is that pos 0 (off) results in maximum speed, the other two
-    are interchangeable (but must be consistent!)
-*/
 int Fan::speedToPos(const int s)
 {
   switch (abs(s)) {
