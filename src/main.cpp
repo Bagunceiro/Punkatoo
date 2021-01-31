@@ -1,27 +1,15 @@
 #include <Arduino.h>
 
-#ifdef ESP32
-
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <Wire.h>
-// #include <ESP32httpUpdate.h>
-
-#else
-
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
-#include <ESP8266httpUpdate.h>
-
-#endif
-
 #include <PubSubClient.h>
 #include <WiFiSerial.h>
 #include <time.h>
 
 const char *appVersion = "Punkatoo 0.1";
-const char *compDate = __DATE__;
-const char *compTime = __TIME__;
+const char *compDate   = __DATE__;
+const char *compTime   = __TIME__;
 
 #include "config.h"
 #include "spdt.h"
@@ -44,7 +32,7 @@ WiFiClient updWifiClient;
 
 PubSubClient mqttClient(mqttWifiClient);
 
-RGBLed indicator(2, 15, 12);
+RGBLed indicator(LED_RED, LED_BLUE, LED_GREEN);
 Lamp lamp("light");
 Fan fan("fan");
 Updater updater("updater");
@@ -79,19 +67,19 @@ void initWiFi()
 void updateStarted()
 {
   serr.println("HTTP update process started");
+  indicator.setColour(RGBLed::BLUE);
   fan.setSpeed(0);
   lamp.sw(0);
-  // lamp.blip(3,500);
 }
 
 void updateCompleted()
 {
+  indicator.setColour(RGBLed::GREEN);
   time_t now = timeClient.getEpochTime();
   serr.printf("HTTP update process complete at %s\n", ctime(&now));
 
   persistant[persistant.updateTime_n] = String(now);
   persistant.writeFile();
-  // lamp.blip(5,500);
 }
 
 void loop2()
@@ -100,16 +88,7 @@ void loop2()
   pollIR();
 }
 
-#ifndef ESP32
-os_timer_t OSTimer;
-
-void timedLoop8266(void *)
-{
-  loop2();
-}
-#else
 TaskHandle_t loop2Task;
-#endif
 
 void loop2mgr(void *)
 {
@@ -122,7 +101,7 @@ void loop2mgr(void *)
     if (hwmnow < hwm)
     {
       hwm = hwmnow;
-      serr.printf("HWM = %d\n", hwm);
+      serr.printf("loop2Task HWM = %d\n", hwm);
     }
   }
 }
@@ -193,8 +172,6 @@ void setup()
   updater.onStart(updateStarted);
   updater.onEnd(updateCompleted);
 
-#ifdef ESP32
-  // TaskHandle_t loop2Task;
   xTaskCreate(
       loop2mgr,    /* Function to implement the task */
       "loop2Task", /* Name of the task */
@@ -202,26 +179,6 @@ void setup()
       NULL,        /* Task input parameter */
       0,           /* Priority of the task */
       &loop2Task); /* Task handle. */
-#else
-  os_timer_setfn(&OSTimer, timedLoop8266, NULL);
-  os_timer_arm(&OSTimer, 10, true);
-#endif
-
-#ifdef ESP32
-  //pinMode(LED_RED, OUTPUT);
-  //pinMode(LED_GREEN, OUTPUT);
-  //pinMode(LED_BLUE, OUTPUT);
-
-  //digitalWrite(LED_RED, 1);
-  //digitalWrite(LED_GREEN, 1);
-  //digitalWrite(LED_BLUE, 1);
-
-  //ESPhttpUpdate.onStart(update_started);
-  //ESPhttpUpdate.onEnd(update_completed);
-#else
-  // ESPhttpUpdate.onStart(update_started);
-  // ESPhttpUpdate.onEnd(update_completed);
-#endif
 
   webServer.init();
   indicator.setColour({0, 0, 256});
@@ -268,10 +225,6 @@ void loop()
       // if (!timeClient.update()) serr.println("NTP failure");
       timeClient.update();
     }
-
-#ifndef ESP32
-    MDNS.update();
-#endif
 
     webServer.handleClient();
     WSerial.loop();

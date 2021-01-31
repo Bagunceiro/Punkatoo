@@ -94,12 +94,6 @@ void sendPage(const String &s1,
   webServer.sendContent(tail);
 }
 
-/*
-<TR><TD>Temperature</TD><TD>)!" + (tempSensor.readTemperature() *10)/10 + R"!(°C</TD></TR>
-<TR><TD>Humidity</TD><TD>)!"    + (tempSensor.readHumidity() *10)/10 + R"!(%</TD></TR>
-<TR><TD>Pressure</TD><TD>)!"    + (tempSensor.readPressure() *10)/10 + R"!( mBar</TD></TR>
-*/
-
 void handleRoot()
 {
   const String title("Controller");
@@ -209,10 +203,6 @@ void handleGenConfig()
 <td><input type=text name=")!" + persistant.mqttroot_n + "\" value=\"" + persistant[persistant.mqttroot_n] + R"!("></td></tr>
 <tr><td><label for=mqtttopic>MQTT Topic:</label></td>
 <td><input type=text name=")!" + persistant.mqtttopic_n + "\" value=\"" + persistant[persistant.mqtttopic_n] + R"!("></td></tr>
-<tr><td><label for=mqtttopic>Update URL:</label></td>
-<td><input type=text name=")!" + persistant.updateServer_n + "\" value=\"" + persistant[persistant.updateServer_n] + R"!("></td></tr>
-<tr><td><label for=mqtttopic>Update Check Interval:</label></td>
-<td><input type=text name=")!" + persistant.updateInterval_n + "\" value=\"" + persistant[persistant.updateInterval_n] + R"!("></td></tr>
 </table>
 </FORM>
 </div>
@@ -443,7 +433,6 @@ void handleDoUpdate()
   for (int i = 0; i < webServer.args(); i++)
   {
     const String argName = webServer.argName(i);
-    // Serial.printf("Arg %s, val %s\n", argName.c_str(), webServer.arg(i).c_str());
     if (argName == "server") server = webServer.arg(i);
     else if (argName == "port") port = webServer.arg(i);
     else if (argName == "image") image = webServer.arg(i);

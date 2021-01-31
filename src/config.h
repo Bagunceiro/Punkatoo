@@ -3,11 +3,7 @@
 
 #include <Arduino.h>
 #include <ConfBlk.h>
-#ifdef ESP32
 #include <WiFi.h>
-#else
-#include <ESP8266WiFi.h>
-#endif
 
 #include "NTPClient.h"
 
@@ -24,10 +20,11 @@ extern const char* appVersion;
 extern const char* compDate;
 extern const char* compTime;
 
-// extern const int LED_ONBOARD;
-//extern const int LED_RED;
-//extern const int LED_GREEN;
-//extern const int LED_BLUE;
+// GPIO pin definitions
+
+extern const int LED_RED;
+extern const int LED_GREEN;
+extern const int LED_BLUE;
 
 extern const int DIR_RELAY1_PIN;
 extern const int DIR_RELAY2_PIN;
@@ -63,8 +60,8 @@ struct ConfigBlock : public ConfBlk
 
 extern ConfigBlock persistant;
 
-void startup();
+void   startup();
 String upTime();
-void report();
+void   report();
 
 #endif
