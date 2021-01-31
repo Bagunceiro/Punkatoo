@@ -35,10 +35,15 @@ const int LED_RED = 2;
 const int LED_GREEN = 12;
 const int LED_BLUE = 15;
 
-const int DIR_RELAY1_PIN = 25; // K2
-const int DIR_RELAY2_PIN = 33; // K1
-const int SPD_RELAY1_PIN = 27; // K4
-const int SPD_RELAY2_PIN = 26; // K3
+//const int DIR_RELAY1_PIN = 25; // K2
+//const int DIR_RELAY2_PIN = 33; // K1
+//const int SPD_RELAY1_PIN = 27; // K4
+//const int SPD_RELAY2_PIN = 26; // K3
+
+const int SPD_RELAY1_PIN = 33; // K1
+const int SPD_RELAY2_PIN = 25; // K2
+const int DIR_RELAY1_PIN = 26; // K3
+const int DIR_RELAY2_PIN = 27; // K4
 
 const int LIGHT_RELAY_PIN = 13; // K5
 // const int LIGHT_RELAY_PIN = LED_ONBOARD;

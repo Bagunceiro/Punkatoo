@@ -4,6 +4,7 @@
 
 #include <WiFi.h>
 #include <ESPmDNS.h>
+#include <Wire.h>
 // #include <ESP32httpUpdate.h>
 
 #else
@@ -34,6 +35,7 @@ const char *compTime = __TIME__;
 #include "ldr.h"
 #include "updater.h"
 #include "rgbled.h"
+#include "tempSensor.h"
 
 Stream &serr = Serial;
 
@@ -42,11 +44,12 @@ WiFiClient updWifiClient;
 
 PubSubClient mqttClient(mqttWifiClient);
 
-RGBLed indicator(2,15,12);
+RGBLed indicator(2, 15, 12);
 Lamp lamp("light");
 Fan fan("fan");
 Updater updater("updater");
 LDR ldr("LDR", LDR_PIN);
+TempSensor tempSensor;
 
 extern Configurator configurator;
 
@@ -124,13 +127,49 @@ void loop2mgr(void *)
   }
 }
 
+void i2cscan()
+{
+  for (byte address = 0; address <= 127; address++)
+  {
+    Wire.beginTransmission(address);
+    byte error = Wire.endTransmission();
+
+    if (address == 0)
+    {
+      serr.print("\n    0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F");
+    }
+    if (address % 16 == 0)
+    {
+      serr.println("");
+      serr.print(address, HEX);
+      serr.print(":");
+    }
+    serr.print(" ");
+    if (error == 2)
+      serr.print("  ");
+    else
+    {
+      if (error < 0x10)
+        serr.print("0");
+      serr.print(error, HEX);
+    }
+  }
+  serr.println();
+}
+
 void setup()
 {
   WiFi.mode(WIFI_STA);
   Serial.begin(9600);
   Serial.println("");
-  Serial.println("Fancon Starting");
+  Serial.println("Punkatoo Starting");
   indicator.setColour(RGBLed::RED);
+  Wire.begin();
+
+  if (!tempSensor.begin(0x76, &Wire))
+  {
+    Serial.println("Could not find a valid BME280 sensor");
+  }
 
   startup();
 
@@ -169,13 +208,13 @@ void setup()
 #endif
 
 #ifdef ESP32
-    //pinMode(LED_RED, OUTPUT);
-    //pinMode(LED_GREEN, OUTPUT);
-    //pinMode(LED_BLUE, OUTPUT);
+  //pinMode(LED_RED, OUTPUT);
+  //pinMode(LED_GREEN, OUTPUT);
+  //pinMode(LED_BLUE, OUTPUT);
 
-    //digitalWrite(LED_RED, 1);
-    //digitalWrite(LED_GREEN, 1);
-    //digitalWrite(LED_BLUE, 1);
+  //digitalWrite(LED_RED, 1);
+  //digitalWrite(LED_GREEN, 1);
+  //digitalWrite(LED_BLUE, 1);
 
   //ESPhttpUpdate.onStart(update_started);
   //ESPhttpUpdate.onEnd(update_completed);
@@ -185,7 +224,7 @@ void setup()
 #endif
 
   webServer.init();
-  indicator.setColour({0,0,256});
+  indicator.setColour({0, 0, 256});
 }
 
 void loop()
@@ -203,17 +242,16 @@ void loop()
       serr.println("WiFi connected");
       MDNS.begin(persistant[persistant.controllername_n].c_str());
       MDNS.addService("http", "tcp", 80);
-      indicator.setColour({0,256,0});
+      indicator.setColour({0, 256, 0});
     }
     wifiattemptcount = 0;
 
     if (mqttClient.connected())
       mqttClient.loop();
-    else
-      if (initMQTT())
-      {
-        indicator.off();
-      }
+    else if (initMQTT())
+    {
+      indicator.off();
+    }
 
     if (!ntpstarted)
     {
@@ -249,4 +287,14 @@ void loop()
   }
 
   configurator.poll();
+
+  static time_t then = 0;
+ 
+  time_t now;
+  time(&now);
+  if ((now - then) > 60)
+  {
+    then = now;
+    tempSensor.sendStatus();
+  }
 }

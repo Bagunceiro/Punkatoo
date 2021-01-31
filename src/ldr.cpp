@@ -3,7 +3,6 @@
 LDR::LDR(String devName, uint8_t p) : MqttControlled(devName)
 {
     pin = p;
-    pinMode(pin, INPUT);
 }
 
 LDR::~LDR()

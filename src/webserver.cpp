@@ -4,6 +4,10 @@
 #include "networks.h"
 #include "WiFiSerial.h"
 #include "updater.h"
+#include "ldr.h"
+#include "tempSensor.h"
+
+extern TempSensor tempSensor;
 
 FanConWebServer webServer(80);
 
@@ -90,12 +94,19 @@ void sendPage(const String &s1,
   webServer.sendContent(tail);
 }
 
+/*
+<TR><TD>Temperature</TD><TD>)!" + (tempSensor.readTemperature() *10)/10 + R"!(°C</TD></TR>
+<TR><TD>Humidity</TD><TD>)!"    + (tempSensor.readHumidity() *10)/10 + R"!(%</TD></TR>
+<TR><TD>Pressure</TD><TD>)!"    + (tempSensor.readPressure() *10)/10 + R"!( mBar</TD></TR>
+*/
+
 void handleRoot()
 {
   const String title("Controller");
   const String head3("");
   time_t now = timeClient.getEpochTime();
   time_t lastUpdate = persistant[persistant.updateTime_n].toInt();
+  extern LDR ldr;
 
   String body2(R"!(
 <button onclick=goreset()>Reset</button>
@@ -105,6 +116,10 @@ void handleRoot()
 <BR><B>Controller: )!" + persistant[persistant.controllername_n] + R"!(</B>
 <TABLE>
 <TR><TD>Time now</TD><TD>)!"    + ctime(&now) + R"!(</TD></TR>
+<TR><TD>Temperature</TD><TD>)!" + (tempSensor.readTemperature() *10)/10 + R"!(°C</TD></TR>
+<TR><TD>Humidity</TD><TD>)!"    + (tempSensor.readHumidity() *10)/10 + R"!(%</TD></TR>
+<TR><TD>Pressure</TD><TD>)!"    + (tempSensor.readPressure() *10)/10 + R"!( mBar</TD></TR>
+<TR><TD>Ambient Light</TD><TD>)!"    + ldr.getStatus() + R"!(</TD></TR>
 <TR><TD>Version</TD><TD>)!"     + appVersion + " (" + compTime + " " + compDate + R"!()</TD></TR>
 <TR><TD>MAC Address</TD><TD>)!" + WiFi.macAddress() + R"!(</TD></TR>
 <TR><TD>Last update</TD><TD>)!" + (lastUpdate != 0 ? ctime(&lastUpdate) : "N/A") + R"!(</TD></TR>

@@ -75,6 +75,8 @@ t_httpUpdate_return Updater::systemUpdate(const String &server, const uint16_t p
     startCallback();
   }
 
+Serial.println("In systemUpdate");
+
   httpUpdate.rebootOnUpdate(false);
 
   t_httpUpdate_return ret = httpUpdate.update(client, server, port, image);
