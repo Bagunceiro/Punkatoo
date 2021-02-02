@@ -3,7 +3,7 @@
 
 TempSensor::TempSensor() : MqttControlled("bme")
 {
-//    setPrefix("bme");
+  ok = false;
 }
 
 TempSensor::~TempSensor()
@@ -25,24 +25,31 @@ void TempSensor::doSubscriptions(PubSubClient &mqttClient)
 double setPrecision(double value, const unsigned int precision)
 {
   int factor = pow(10, precision);
-  return(round(value * factor)/factor);
+  return (round(value * factor) / factor);
 }
 
 String TempSensor::getStatus()
 {
-  // Serial.printf("Sending %s\n", temp.c_str());
-  //   mqttClient.publish("/home/temp", temp.c_str(), true);
-
   time_t now = timeClient.getEpochTime();
+  char tbuf[sizeof "YYYY-MM-DDTHH:MM:SS+ZZZZ"];
+  strftime(tbuf, sizeof tbuf, "%FT%T", localtime(&now));
+
   StaticJsonDocument<512> doc;
-  doc["timestamp"]   = ctime(&now);
-  doc["temperature"] = setPrecision(readTemperature(), 2);
-  doc["pressure"]    = setPrecision(readPressure()/100, 2);
-  doc["humidity"]    = setPrecision(readHumidity(), 2);
-  Serial.println("");
+  doc["timestamp"] = tbuf;
+  if (ok)
+  {
+    doc["temperature"] = setPrecision(readTemperature(), 2);
+    doc["pressure"]    = setPrecision(readPressure() / 100, 2);
+    doc["humidity"]    = setPrecision(readHumidity(), 2);
+  }
   String message;
   serializeJson(doc, message);
   return message;
-  // Serial.println(message);
-  // mqttClient.publish("home/weather", message.c_str(), message.length());
+}
+
+bool TempSensor::start(uint8_t addr, TwoWire *theWire)
+{
+  bool started = begin(addr, theWire);
+  ok = started;
+  return ok;
 }

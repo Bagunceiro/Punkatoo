@@ -1,17 +1,15 @@
-#ifdef ESP32
 #include <WiFi.h>
 #include <LITTLEFS.h>
-#else
-#include <ESP8266WiFi.h>
-#include <LittleFS.h>
-#endif
 #include "config.h"
 #include "configurator.h"
 #include "lamp.h"
 #include "fan.h"
+#include "rgbled.h"
 
 extern Fan fan;
 extern Lamp lamp;
+extern RGBLed indicator;
+
 Configurator configurator;
 
 Configurator::Configurator()
@@ -42,7 +40,10 @@ void Configurator::irmsgRecd(uint32_t code)
     if (running)
     {
         if (code == IRREMOTE_CONFIGURATOR_STOP)
+        {
+
             stop();
+        }
     }
     else if ((stateChangedAt == 0) || ((now - stateChangedAt) < keyPressDelay))
     {
@@ -54,10 +55,11 @@ void Configurator::irmsgRecd(uint32_t code)
             {
                 startCodeState++;
                 Serial.printf("Configurator state = %d\n", startCodeState);
+                indicator.setColour(startCodeState % 2 ? RGBLed::GREEN : RGBLed::RED);
                 if (startCodeState >= numberOfPresses)
                 {
-                    // state = 0;
-                    running = true; // Here as well to avoid interupt bypassing it
+                    //indicator.setColour(RGBLed::BLUE);
+                    // running = true; // Here as well to avoid interupt bypassing it
                     stateChangedAt = 0;
                     startRequest = true; // done like this to avoid too much happening in the interrupt
                 }
@@ -75,6 +77,8 @@ void Configurator::start()
 {
     if (!running)
     {
+        indicator.setColour(RGBLed::CYAN);
+
         String m = WiFi.macAddress();
         String ssid = persistant[persistant.controllername_n] + "_" + m.substring(9, 11) + m.substring(12, 14) + m.substring(15);
         const char *password = "configure";
@@ -84,7 +88,7 @@ void Configurator::start()
 
         Serial.printf("IP address: %s\n", WiFi.softAPIP().toString().c_str());
 
-        lamp.blip(10,250);
+        // lamp.blip(10,250);
         startedAt = millis();
         running = true;
     }
@@ -96,6 +100,7 @@ void Configurator::stop()
     running = false;
     startCodeState = 0;
     stateChangedAt = 0;
+    indicator.off();
     Serial.println("SoftAP stopped");
 }
 

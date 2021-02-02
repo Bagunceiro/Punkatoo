@@ -1,5 +1,4 @@
-#ifndef FC_CONFIGURATOR_H
-#define FC_CONFIGURATOR_H
+#pragma once
 
 #include "infrared.h"
 
@@ -21,7 +20,3 @@ private:
     unsigned int startCodeState;
     unsigned long stateChangedAt;
 };
-
-
-
-#endif // FC_CONFIGURATOR_H

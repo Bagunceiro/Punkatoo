@@ -1,5 +1,4 @@
-#ifndef FC_SPDT_H
-#define FC_SPDT_H
+#pragma once
 
 class SPDT
 {
@@ -19,5 +18,3 @@ class SPDT
     int throw1;
     int throw2;
 };
-
-#endif

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "mqtt.h"
 #include "infrared.h"
 #include "spdt.h"
@@ -16,8 +18,6 @@ class Fan: public MqttControlled, IRControlled
     virtual String getStatus();
     /*
         Converts speed value to positions of the speed switch.
-        The important thing is that pos 0 (off) results in maximum speed, the other two
-        are interchangeable (but must be consistent!)
     */
     int speedToPos(const int s);
     int posToSpeed(const int p);

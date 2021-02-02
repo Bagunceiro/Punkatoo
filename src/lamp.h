@@ -22,7 +22,6 @@ class Lamp: public MqttControlled, IRControlled
   public:
     Lamp(String devName);
 
-    //void init(const int inp, int out);
     void init(const SwitchList inpList, int out);
     void sw(int toState);
     void toggle();
@@ -37,10 +36,7 @@ class Lamp: public MqttControlled, IRControlled
     virtual void irmsgRecd(uint32_t code);
 
   private:
-    //int spin; // Switch is connected here
     int lpin; // goes to the control relay (active low)
-    //int switchState;
-    //int debounce;
 
     SwBlkList swList;
 };

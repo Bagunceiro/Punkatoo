@@ -1,5 +1,5 @@
-#ifndef MQTTCONTROLLED
-#define MQTTCONTROLLED
+#pragma once
+
 #include <Arduino.h>
 #include <PubSubClient.h>
 
@@ -29,6 +29,3 @@ class MqttControlled
 };
 
 bool initMQTT();
-
-
-#endif

@@ -85,7 +85,7 @@ void updateCompleted()
 void loop2()
 {
   lamp.pollSwitch();
-  pollIR();
+  irctlr.poll();
 }
 
 TaskHandle_t loop2Task;
@@ -145,7 +145,7 @@ void setup()
   indicator.setColour(RGBLed::RED);
   Wire.begin();
 
-  if (!tempSensor.begin(0x76, &Wire))
+  if (!tempSensor.start(0x76, &Wire))
   {
     Serial.println("Could not find a valid BME280 sensor");
   }
@@ -166,8 +166,8 @@ void setup()
 
   fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
 
-  pinMode(IR_DETECTOR_PIN, INPUT_PULLUP);
-  irrecv.enableIRIn();
+  // pinMode(IR_DETECTOR_PIN, INPUT_PULLUP);
+  // irctlr.enableIRIn();
 
   updater.onStart(updateStarted);
   updater.onEnd(updateCompleted);
@@ -181,7 +181,7 @@ void setup()
       &loop2Task); /* Task handle. */
 
   webServer.init();
-  indicator.setColour({0, 0, 256});
+  indicator.setColour(RGBLed::YELLOW);
 }
 
 void loop()
@@ -199,7 +199,7 @@ void loop()
       serr.println("WiFi connected");
       MDNS.begin(persistant[persistant.controllername_n].c_str());
       MDNS.addService("http", "tcp", 80);
-      indicator.setColour({0, 256, 0});
+      indicator.setColour(RGBLed::GREEN);
     }
     wifiattemptcount = 0;
 

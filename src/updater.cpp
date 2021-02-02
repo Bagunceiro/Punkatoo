@@ -54,7 +54,6 @@ void Updater::mqttaction(const String &topic, const String &msg)
 
 void Updater::doSubscriptions(PubSubClient &mqttClient)
 {
-  // Serial.printf("Subscribing to %s\n", (getPrefix() + MQTT_TPC_UPDATE).c_str());
   mqttClient.subscribe((getPrefix() + MQTT_TPC_UPDATE).c_str());
   sendStatus();
 }

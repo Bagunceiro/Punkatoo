@@ -36,52 +36,61 @@ const uint16_t kCaptureBufferSize = 1024;
 /*
    Fan controller remote
 */
-const uint32_t IRREMOTE_FAN_ONOFF   = 0xff20df;
-const uint32_t IRREMOTE_FAN_FASTER  = 0xffe01f;
-const uint32_t IRREMOTE_FAN_SLOWER  = 0xff58a7;
+const uint32_t IRREMOTE_FAN_ONOFF = 0xff20df;
+const uint32_t IRREMOTE_FAN_FASTER = 0xffe01f;
+const uint32_t IRREMOTE_FAN_SLOWER = 0xff58a7;
 const uint32_t IRREMOTE_FAN_REVERSE = 0xff10ef;
-const uint32_t IRREMOTE_FAN_TIMER   = 0xffd827;
+const uint32_t IRREMOTE_FAN_TIMER = 0xffd827;
 
 const uint32_t IRREMOTE_LIGHT_ONOFF = 0xff609f;
-const uint32_t IRREMOTE_LIGHT_UP    = 0xff906f;
-const uint32_t IRREMOTE_LIGHT_DOWN  = 0xff38c7;
+const uint32_t IRREMOTE_LIGHT_UP = 0xff906f;
+const uint32_t IRREMOTE_LIGHT_DOWN = 0xff38c7;
 const uint32_t IRREMOTE_LIGHT_TIMER = 0xffa05f;
 
 const uint32_t IRREMOTE_CONFIGURATOR_START = IRREMOTE_FAN_FASTER;
-const uint32_t IRREMOTE_CONFIGURATOR_STOP  = IRREMOTE_FAN_SLOWER;
+const uint32_t IRREMOTE_CONFIGURATOR_STOP = IRREMOTE_FAN_SLOWER;
 
 extern const int IRDEBOUNCE; // Number of milliseconds to leave fallow between IR messages
 
 /*
    LG TV remote
 */
-// const uint32_t IRREMOTE_LG_ONOFF   = 0x20df10ef;
 
 class IRControlled
 {
-    public:
-    IRControlled();
-    virtual ~IRControlled();
-    virtual void irmsgRecd(uint32_t code);
-    static void irmsgScanDevices(uint32_t code);
-    private:
-    IRControlled* next;
-    static IRControlled* list;
+public:
+  IRControlled();
+  virtual ~IRControlled();
+  virtual void irmsgRecd(uint32_t code);
+  static void irmsgScanDevices(uint32_t code);
+
+private:
+  IRControlled *next;
+  static IRControlled *list;
+};
+
+class IRController : public IRrecv
+{
+public:
+  IRController();
+  ~IRController();
+  void poll();
 };
 
 class IRLed
 {
-  public:
-    IRLed(uint8_t pin);
-    virtual ~IRLed();
-    void on();
-    void off();
-    private:
-    uint8_t lpin;
+public:
+  IRLed(uint8_t pin);
+  virtual ~IRLed();
+  void on();
+  void off();
+
+private:
+  uint8_t lpin;
 };
 
 extern unsigned long irDebounce(unsigned long then, unsigned long debounceTime = IRDEBOUNCE);
 extern void pollIR();
-extern IRrecv irrecv;
+extern IRController irctlr;
 
 #endif

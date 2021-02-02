@@ -1,9 +1,13 @@
 #include "rgbled.h"
 
-const RGBLed::Colour RGBLed::RED   = {256,0,0}; 
-const RGBLed::Colour RGBLed::GREEN = {0,256,0}; 
-const RGBLed::Colour RGBLed::BLUE  = {0,0,256};
-const RGBLed::Colour RGBLed::WHITE = {256,256,256};
+const RGBLed::Colour RGBLed::RED     = {256,0,0}; 
+const RGBLed::Colour RGBLed::YELLOW  = {256,256,0};
+const RGBLed::Colour RGBLed::GREEN   = {0,256,0};
+const RGBLed::Colour RGBLed::CYAN    = {0,256,256};
+const RGBLed::Colour RGBLed::BLUE    = {0,0,256};
+const RGBLed::Colour RGBLed::MAGENTA = {256,0,256};
+
+const RGBLed::Colour RGBLed::WHITE   = {256,256,256};
 
 RGBLed::RGBLed(const uint8_t r, const uint8_t g, const uint8_t b)
 {

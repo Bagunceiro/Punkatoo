@@ -33,7 +33,6 @@ void Lamp::sw(int toState)
 
 void Lamp::toggle()
 {
-  // Serial.println("Switch toggle");
   int isOn = getStatus().toInt();
   sw(isOn == 0 ? 1 : 0);
 }
@@ -82,18 +81,12 @@ void Lamp::blip(const int number, const int length)
 
 void Lamp::init(const SwitchList inpList, int out)
 {
-  // Serial.println("Switches");
   for (int inp : inpList)
   {
-    // Serial.printf("Switch on %d\n", inp);
     SwBlk si;
     si.spin = inp;
-    #ifdef ESP32
     pinMode(si.spin, INPUT_PULLUP);
-    #else
-    pinMode(si.spin, INPUT);
-    #endif
-    delay(500); // input pin appears to need settling time after mode setting
+    // delay(500); // input pin appears to need settling time after mode setting??
     si.switchState = digitalRead(si.spin);
     si.debounce = 0;
     swList.push_back(si);

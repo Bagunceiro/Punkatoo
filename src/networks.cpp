@@ -1,10 +1,5 @@
-#ifdef ESP32
 #include <WiFiMulti.h>
 #include <LITTLEFS.h>
-#else
-#include <ESP8266WiFiMulti.h>
-#include <LittleFS.h>
-#endif
 
 #include <ArduinoJson.h>
 #include "configurator.h"
@@ -14,12 +9,7 @@
 networkList configuredNets;
 networkList scannedNets;
 
-#ifdef ESP32
 #define LittleFS LITTLEFS
-#else
-#define WIFI_AUTH_OPEN ENC_TYPE_NONE
-#define WiFiMulti ESP8266WiFiMulti
-#endif
 
 WiFiMulti wifimulti;
 
@@ -27,12 +17,8 @@ extern Configurator configurator;
 
 networkList &scanNetworks()
 {
-    // WSerial.println("scan start");
     scannedNets.clear();
-
-    // WiFi.scanNetworks will return the number of networks found
     int n = WiFi.scanNetworks();
-    // WSerial.println("scan done");
     if (n == 0)
     {
         WSerial.println("no networks found");
@@ -57,7 +43,6 @@ networkList &scanNetworks()
             WSerial.print(WiFi.RSSI(i));
             WSerial.print(")");
             WSerial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
-            // delay(10);
         }
     }
     WSerial.println("");
@@ -66,8 +51,6 @@ networkList &scanNetworks()
 
 networkList &networkConfRead()
 {
-    // Serial.println("read Network File");
-
     LittleFS.begin();
 
     File netsFile = LittleFS.open("/networks.json", "r");
@@ -112,8 +95,6 @@ bool networkConfWrite(networkList &networks)
     StaticJsonDocument<1024> doc;
     JsonArray array = doc.to<JsonArray>();
 
-    // Serial.println("write Network File");
-
     LittleFS.begin();
 
     File netsFile = LittleFS.open("/networks.json", "w");
@@ -124,14 +105,12 @@ bool networkConfWrite(networkList &networks)
     }
     else
     {
-        // Serial.println("Building doc");
         for (unsigned int i = 0; i < networks.size(); i++)
         {
             JsonObject object = array.createNestedObject();
             object["ssid"] = networks[i].ssid;
             object["psk"] = networks[i].psk;
         }
-        // Serial.println("writing file");
         serializeJson(doc, netsFile);
         netsFile.close();
     }

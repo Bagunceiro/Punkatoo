@@ -1,10 +1,11 @@
-#include "Arduino.h"
+#include <Arduino.h>
 #include "config.h"
 #include "infrared.h"
 
 const int IRDEBOUNCE = 200; // Number of milliseconds to leave fallow between IR messages
 
 IRControlled* IRControlled::list = NULL;
+IRController irctlr;
 
 IRControlled::IRControlled()
 {
@@ -54,12 +55,44 @@ unsigned long irDebounce(unsigned long then, unsigned long debounceTime)
   else return 0;
 }
 
-IRrecv irrecv(IR_DETECTOR_PIN, kCaptureBufferSize, kTimeout, true);
+// IRrecv irrecv(IR_DETECTOR_PIN, kCaptureBufferSize, kTimeout, true);
 
+IRController::IRController() : IRrecv(IR_DETECTOR_PIN, kCaptureBufferSize, kTimeout, true)
+{
+  pinMode(IR_DETECTOR_PIN, INPUT_PULLUP);
+  enableIRIn();
+}
+
+IRController::~IRController()
+{
+
+}
+
+
+void IRController::poll()
+{
+  decode_results IRDecodeResults;
+  if (decode(&IRDecodeResults)) {
+    static unsigned long then = 0;
+    unsigned long  when;
+    uint64_t val = IRDecodeResults.value;
+    serialPrintUint64(val, HEX);
+    Serial.println("");
+
+    if ((when = irDebounce(then)))
+    {
+      IRControlled::irmsgScanDevices(val);
+      then = when;
+    }
+    resume();
+  }
+}
+
+/*
 void pollIR()
 {
   decode_results IRDecodeResults;
-  if (irrecv.decode(&IRDecodeResults)) {
+  if (irctlr.decode(&IRDecodeResults)) {
     static unsigned long then = 0;
     unsigned long  when;
     uint64_t val = IRDecodeResults.value;
@@ -72,9 +105,10 @@ void pollIR()
       then = when;
 
     }
-    irrecv.resume();
+    irctlr.resume();
   }
 }
+*/
 
 IRLed::IRLed(uint8_t pin)
 {

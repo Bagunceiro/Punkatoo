@@ -94,6 +94,20 @@ void sendPage(const String &s1,
   webServer.sendContent(tail);
 }
 
+String tempSensorData()
+{
+  String data;
+  if (tempSensor.running())
+  {
+    data = 
+R"!(<TR><TD>Temperature</TD><TD>)!"   + String((tempSensor.readTemperature() *10)/10) + R"!(°C</TD></TR>
+<TR><TD>Humidity</TD><TD>)!"          + String((tempSensor.readHumidity() *10)/10) + R"!(%</TD></TR>
+<TR><TD>Pressure</TD><TD>)!"          + String((tempSensor.readPressure() *10)/1000) + R"!( mBar</TD></TR>
+)!";
+  }
+  return data;
+}
+
 void handleRoot()
 {
   const String title("Controller");
@@ -109,16 +123,14 @@ void handleRoot()
 <div class=content>
 <BR><B>Controller: )!" + persistant[persistant.controllername_n] + R"!(</B>
 <TABLE>
-<TR><TD>Time now</TD><TD>)!"    + ctime(&now) + R"!(</TD></TR>
-<TR><TD>Temperature</TD><TD>)!" + (tempSensor.readTemperature() *10)/10 + R"!(°C</TD></TR>
-<TR><TD>Humidity</TD><TD>)!"    + (tempSensor.readHumidity() *10)/10 + R"!(%</TD></TR>
-<TR><TD>Pressure</TD><TD>)!"    + (tempSensor.readPressure() *10)/10 + R"!( mBar</TD></TR>
-<TR><TD>Ambient Light</TD><TD>)!"    + ldr.getStatus() + R"!(</TD></TR>
-<TR><TD>Version</TD><TD>)!"     + appVersion + " (" + compTime + " " + compDate + R"!()</TD></TR>
-<TR><TD>MAC Address</TD><TD>)!" + WiFi.macAddress() + R"!(</TD></TR>
-<TR><TD>Last update</TD><TD>)!" + (lastUpdate != 0 ? ctime(&lastUpdate) : "N/A") + R"!(</TD></TR>
-<TR><TD>Uptime</TD><TD>)!"      + upTime() + R"!(</TD></TR>
-<TR><TD>WiFi SSID</TD><TD>)!"   + WiFi.SSID() + R"!(</TD></TR>
+<TR><TD>Time now</TD><TD>)!"      + ctime(&now) + R"!(</TD></TR>
+)!" + tempSensorData() + R"!(
+<TR><TD>Ambient Light</TD><TD>)!" + ldr.getStatus() + R"!(</TD></TR>
+<TR><TD>Version</TD><TD>)!"       + appVersion + " (" + compTime + " " + compDate + R"!()</TD></TR>
+<TR><TD>MAC Address</TD><TD>)!"   + WiFi.macAddress() + R"!(</TD></TR>
+<TR><TD>Last update</TD><TD>)!"   + (lastUpdate != 0 ? ctime(&lastUpdate) : "N/A") + R"!(</TD></TR>
+<TR><TD>Uptime</TD><TD>)!"        + upTime() + R"!(</TD></TR>
+<TR><TD>WiFi SSID</TD><TD>)!"     + WiFi.SSID() + R"!(</TD></TR>
 </TABLE><BR>
 </DIV>
 </BODY>

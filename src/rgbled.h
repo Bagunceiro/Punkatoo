@@ -18,9 +18,13 @@ class RGBLed
     void setColour(const struct Colour& c);
     void off();
 
-    static const Colour RED; 
-    static const Colour GREEN; 
+    static const Colour RED;
+    static const Colour YELLOW; 
+    static const Colour GREEN;
+    static const Colour CYAN;
     static const Colour BLUE;
+    static const Colour MAGENTA;
+
     static const Colour WHITE;
 
     private:

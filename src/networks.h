@@ -1,18 +1,9 @@
-#ifndef NETWORKS_H
-#define NETWORKS_H
+#pragma once
 
 #include <Arduino.h>
-#ifdef ESP32
 
 #include <WiFi.h>
 #include <WiFiMulti.h>
-
-#else
-
-#include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
-
-#endif
 
 struct WiFiNetworkDef
 {
@@ -34,7 +25,3 @@ extern networkList& scanNetworks();
 extern void addNetwork(networkList& netlist, const String& ssid);
 extern void updateWiFiDef(WiFiNetworkDef&);
 extern void connectToWiFi();
-
-// extern networkList& configuredNetworks();
-
-#endif // NETWORKS_H

@@ -11,7 +11,6 @@ void SPDT::setPins(int t1, int t2)  // GPIO pins driving the two throws
   throw2 = t2;
   pinMode(throw1, OUTPUT);
   pinMode(throw2, OUTPUT);
-  // pos(0);
 }
 
 void SPDT::pos(const int p) {
