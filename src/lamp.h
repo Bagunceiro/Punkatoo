@@ -17,7 +17,7 @@ struct SwBlk
 
 typedef std::vector<SwBlk> SwBlkList;
 
-class Lamp: public MqttControlled, public IRControlled
+class Lamp: public MqttControlled, public IRControlled, public PTask
 {
   public:
     Lamp(String devName);
@@ -25,7 +25,7 @@ class Lamp: public MqttControlled, public IRControlled
     void init(const SwitchList inpList, int out);
     void sw(int toState);
     void toggle();
-    void pollSwitch();
+    virtual bool operator()();
     const int blip(const int t = 500);
     void blip(const int number, const int length);
 

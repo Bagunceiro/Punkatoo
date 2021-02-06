@@ -97,22 +97,16 @@ class IRControlled
 public:
   IRControlled();
   virtual ~IRControlled();
-  // virtual void irmsgRecd(const IRCode code);
   virtual void irmsgRecd(const IRMessage msg);
-  // static void irmsgScanDevices(IRCode code);
   void registerIR(IRController &c);
   virtual void subscribeToIR() {}
 
-
 protected:
-bool subscribe(IRMessage m);
+  bool subscribe(IRMessage m);
 
 private:
-// IRControlled *next;
-IRController *ctlr;
-// static IRControlled *list;
-}
-;
+  IRController *ctlr;
+};
 
 class IRLed
 {

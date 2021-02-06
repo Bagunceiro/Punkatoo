@@ -37,7 +37,7 @@ void Lamp::toggle()
   sw(isOn == 0 ? 1 : 0);
 }
 
-void Lamp::pollSwitch()
+bool Lamp::operator()()
 {
   for (SwBlk& si : swList)
   {
@@ -54,6 +54,7 @@ void Lamp::pollSwitch()
       }
     }
   }
+  return true;
 }
 
 String Lamp::getStatus()

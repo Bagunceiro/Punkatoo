@@ -30,33 +30,10 @@ const int IRDEBOUNCE = 200; // Number of milliseconds to leave fallow between IR
 
 IRControlled::IRControlled()
 {
-  /*
-  next = NULL;
-
-  ctlr = NULL;
-  IRControlled **ptr = &list;
-  while (*ptr != NULL)
-  {
-    ptr = &((*ptr)->next);
-  }
-  *ptr = this;
-  */
 }
 
 IRControlled::~IRControlled()
 {
-  /*
-  IRControlled **ptr = &list;
-  while (*ptr != NULL)
-  {
-    if (*ptr == this)
-    {
-      (*ptr = next);
-      break;
-    }
-    ptr = &((*ptr)->next);
-  }
-  */
 }
 
 /*
@@ -68,18 +45,6 @@ void IRControlled::irmsgRecd(const IRCode code)
 void IRControlled::irmsgRecd(const IRMessage msg)
 {
 }
-
-/*
-void IRControlled::irmsgScanDevices(uint32_t code)
-{
-  IRControlled *ptr = list;
-  while (ptr != NULL)
-  {
-    ptr->irmsgRecd(code);
-    ptr = ptr->next;
-  }
-}
-*/
 
 void IRControlled::registerIR(IRController &c)
 {
@@ -156,28 +121,6 @@ bool IRController::operator()()
   }
   return true;
 }
-
-/*
-void IRController::poll()
-{
-  decode_results IRDecodeResults;
-  if (decode(&IRDecodeResults))
-  {
-    static unsigned long then = 0;
-    unsigned long when;
-    uint64_t val = IRDecodeResults.value;
-    serialPrintUint64(val, HEX);
-    Serial.println("");
-
-    if ((when = irDebounce(then)))
-    {
-      IRControlled::irmsgScanDevices(val);
-      then = when;
-    }
-    resume();
-  }
-}
-*/
 
 bool IRController::subscribe(IRControlled *c, IRMessage m)
 {

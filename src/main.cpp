@@ -8,8 +8,8 @@
 #include <time.h>
 
 const char *appVersion = "Punkatoo 0.1";
-const char *compDate   = __DATE__;
-const char *compTime   = __TIME__;
+const char *compDate = __DATE__;
+const char *compTime = __TIME__;
 
 #include "config.h"
 #include "spdt.h"
@@ -93,44 +93,6 @@ void updateFail()
   indicator.off();
 }
 
-TaskHandle_t lampSwTask;
-
-void lampSwLoop(void *)
-{
-  int hwm = uxTaskGetStackHighWaterMark(lampSwTask);
-  while (true)
-  {
-    lamp.pollSwitch();
-    delay(10);
-    int hwmnow = uxTaskGetStackHighWaterMark(lampSwTask);
-    if (hwmnow < hwm)
-    {
-      hwm = hwmnow;
-      serr.printf("lampSwTask HWM = %d\n", hwm);
-    }
-  }
-}
-
-// TaskHandle_t irTask;
-
-/*
-void irLoop(void *)
-{
-  int hwm = uxTaskGetStackHighWaterMark(irTask);
-  while (true)
-  {
-    irctlr.newpoll();
-    delay(10);
-    int hwmnow = uxTaskGetStackHighWaterMark(irTask);
-    if (hwmnow < hwm)
-    {
-      hwm = hwmnow;
-      serr.printf("irTask HWM = %d\n", hwm);
-    }
-  }
-}
-*/
-
 void i2cscan()
 {
   for (byte address = 0; address <= 127; address++)
@@ -163,60 +125,60 @@ void i2cscan()
 
 void setup()
 {
-  WiFi.mode(WIFI_STA);
-  Serial.begin(9600);
-  Serial.println("");
-  Serial.println("Punkatoo Starting");
-  indicator.setColour(RGBLed::RED);
-  Wire.begin();
+  startup(); // set start time
 
+  Serial.begin(9600);
+  indicator.setColour(RGBLed::RED);
+
+  serr.println("");
+  serr.println(appVersion);
+  if (persistant.readFile() == false) persistant.writeFile();
+  persistant.dump(serr);
+
+  /*
+   * Start up the lamp
+   */
+  SwitchList sl;
+  sl.push_back(LIGHT_SWITCH_PIN);
+  lamp.init(sl, LIGHT_RELAY_PIN);
+  lamp.registerIR(irctlr);
+  lamp.start(5);
+
+  /*
+   * Start up the Infra red controller
+   */
+  irctlr.start(4);
+
+  /*
+   * Start up the fan
+   */
+  fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
+  fan.registerIR(irctlr);
+
+  WiFi.mode(WIFI_STA);
+
+  Wire.begin();
   if (!tempSensor.start(0x76, &Wire))
   {
     Serial.println("Could not find a valid BME280 sensor");
   }
 
-  startup();
-
-  if (persistant.readFile() == false)
-  {
-    persistant.writeFile();
-  }
-  persistant.dump(serr);
-
-  Serial.println(appVersion);
-
-  SwitchList sl;
-  sl.push_back(LIGHT_SWITCH_PIN);
-  lamp.init(sl, LIGHT_RELAY_PIN);
-
-  fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
-
-  lamp.registerIR(irctlr);
-  fan.registerIR(irctlr);
+ /*
+  * Enable the network configurator and OTA updater
+  */
   configurator.registerIR(irctlr);
-
   updater.onStart(updateStarted);
   updater.onEnd(updateCompleted);
 
-  xTaskCreate(
-      lampSwLoop,   /* Function to implement the task */
-      "lampSwTask", /* Name of the task */
-      4000,         /* Stack size in words */
-      NULL,         /* Task input parameter */
-      5,            /* Priority of the task */
-      &lampSwTask); /* Task handle. */
-
-
-//  xTaskCreate(
-//      irLoop,       /* Function to implement the task */
-//      "irTask",     /* Name of the task */
-//      4000,         /* Stack size in words */
-//      NULL,         /* Task input parameter */
-//      4,            /* Priority of the task */
-//      &irTask);     /* Task handle. */
-
-  irctlr.start(4);
+  /*
+   * Set up the Web server
+   */
   webServer.init();
+  
+  /*
+   * Ready to go. (But network has not been initialised yet)
+   */
+
   indicator.setColour(RGBLed::YELLOW);
 }
 
@@ -278,7 +240,7 @@ void loop()
   configurator.poll();
 
   static time_t then = 0;
- 
+
   time_t now;
   time(&now);
   if ((now - then) > 60)
