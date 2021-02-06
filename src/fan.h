@@ -4,7 +4,7 @@
 #include "infrared.h"
 #include "spdt.h"
 
-class Fan: public MqttControlled, IRControlled
+class Fan: public MqttControlled, public IRControlled
 {
     /*
        Speed is a number between -3 and +3 where 0 is off and sign = direction
@@ -27,9 +27,11 @@ class Fan: public MqttControlled, IRControlled
     bool reverse();
     virtual void mqttaction(const String& topic, const String& msg);
     virtual void doSubscriptions(PubSubClient& mqttClient);
-    virtual void irmsgRecd(uint32_t code);
+    virtual void irmsgRecd(const IRCode code);
+    virtual void irmsgRecd(const IRMessage code);
 
   private:
+    virtual void subscribeToIR();
     SPDT dir; // Switch to set direction of motor (or off)
     SPDT spd; // Switch to set speed of motor
 };

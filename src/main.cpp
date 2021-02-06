@@ -33,6 +33,7 @@ WiFiClient updWifiClient;
 PubSubClient mqttClient(mqttWifiClient);
 
 RGBLed indicator(LED_RED, LED_BLUE, LED_GREEN);
+IRController irctlr;
 Lamp lamp("light");
 Fan fan("fan");
 Updater updater("updater");
@@ -74,7 +75,7 @@ void updateStarted()
 
 void updateCompleted()
 {
-  indicator.setColour(RGBLed::GREEN);
+  indicator.off();
   time_t now = timeClient.getEpochTime();
   serr.printf("HTTP update process complete at %s\n", ctime(&now));
 
@@ -82,20 +83,25 @@ void updateCompleted()
   persistant.writeFile();
 }
 
-void loop2()
+void updateNone()
 {
-  lamp.pollSwitch();
-  irctlr.poll();
+  indicator.off();
+}
+
+void updateFail()
+{
+  indicator.off();
 }
 
 TaskHandle_t loop2Task;
 
-void loop2mgr(void *)
+void loop2(void *)
 {
   int hwm = uxTaskGetStackHighWaterMark(loop2Task);
   while (true)
   {
-    loop2();
+    lamp.pollSwitch();
+    irctlr.newpoll();
     delay(10);
     int hwmnow = uxTaskGetStackHighWaterMark(loop2Task);
     if (hwmnow < hwm)
@@ -166,14 +172,15 @@ void setup()
 
   fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
 
-  // pinMode(IR_DETECTOR_PIN, INPUT_PULLUP);
-  // irctlr.enableIRIn();
+  lamp.registerIR(irctlr);
+  fan.registerIR(irctlr);
+  configurator.registerIR(irctlr);
 
   updater.onStart(updateStarted);
   updater.onEnd(updateCompleted);
 
   xTaskCreate(
-      loop2mgr,    /* Function to implement the task */
+      loop2,       /* Function to implement the task */
       "loop2Task", /* Name of the task */
       4000,        /* Stack size in words */
       NULL,        /* Task input parameter */

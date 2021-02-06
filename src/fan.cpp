@@ -156,8 +156,7 @@ void Fan::doSubscriptions(PubSubClient& mqttClient)
   sendStatus();
 }
 
-
-void Fan::irmsgRecd(uint32_t code)
+void Fan::irmsgRecd(const IRCode code)
 {
 
   if (code == IRREMOTE_FAN_ONOFF) onoff();
@@ -165,4 +164,20 @@ void Fan::irmsgRecd(uint32_t code)
   else if (code == IRREMOTE_FAN_FASTER) faster();
   else if (code == IRREMOTE_FAN_SLOWER) slower();
 
+}
+
+void Fan::irmsgRecd(const IRMessage msg)
+{
+  if (strcmp(msg, IR_FAN_TOGGLE) == 0) onoff();
+  else if (strcmp(msg, IR_FAN_REVERSE) == 0) reverse();
+  else if (strcmp(msg, IR_FAN_FASTER) == 0) faster();
+  else if (strcmp(msg, IR_FAN_SLOWER) == 0) slower();
+}
+
+void Fan::subscribeToIR()
+{
+  subscribe(IR_FAN_TOGGLE);
+  subscribe(IR_FAN_REVERSE);
+  subscribe(IR_FAN_FASTER);
+  subscribe(IR_FAN_SLOWER);
 }

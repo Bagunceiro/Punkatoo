@@ -17,7 +17,7 @@ struct SwBlk
 
 typedef std::vector<SwBlk> SwBlkList;
 
-class Lamp: public MqttControlled, IRControlled
+class Lamp: public MqttControlled, public IRControlled
 {
   public:
     Lamp(String devName);
@@ -33,10 +33,12 @@ class Lamp: public MqttControlled, IRControlled
     virtual String getStatus();
     virtual void mqttaction(const String& topic, const String& msg);
     virtual void doSubscriptions(PubSubClient& mqttclient);
-    virtual void irmsgRecd(uint32_t code);
+    virtual void irmsgRecd(IRCode code);
+    virtual void irmsgRecd(IRMessage msg);
 
   private:
     int lpin; // goes to the control relay (active low)
+    virtual void subscribeToIR();
 
     SwBlkList swList;
 };

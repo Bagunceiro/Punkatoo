@@ -5,11 +5,21 @@
 #include <IRsend.h>
 #include <IRremoteESP8266.h>
 #include <IRutils.h>
+#include <map>
+#include <vector>
 
 const uint8_t kTimeout = 15;
 const uint16_t kMinUnknownSize = 12;
 const uint16_t kCaptureBufferSize = 1024;
 
+class IRControlled;
+
+typedef uint32_t IRCode;
+typedef char* IRMessage;
+typedef std::vector<IRControlled*> DevList;
+typedef std::vector<IRMessage> MsgList;
+typedef std::map<IRMessage, DevList> SubscriptionList;
+typedef std::map<IRCode, MsgList> DecodeList;
 /*
   Miniature test remote
 */
@@ -52,22 +62,16 @@ const uint32_t IRREMOTE_CONFIGURATOR_STOP = IRREMOTE_FAN_SLOWER;
 
 extern const int IRDEBOUNCE; // Number of milliseconds to leave fallow between IR messages
 
-/*
-   LG TV remote
-*/
+// Internal (decoded) messages
 
-class IRControlled
-{
-public:
-  IRControlled();
-  virtual ~IRControlled();
-  virtual void irmsgRecd(uint32_t code);
-  static void irmsgScanDevices(uint32_t code);
+extern const IRMessage IR_LAMP_OFF;
+extern const IRMessage IR_LAMP_ON;
+extern const IRMessage IR_LAMP_TOGGLE;
 
-private:
-  IRControlled *next;
-  static IRControlled *list;
-};
+extern const IRMessage IR_FAN_TOGGLE;
+extern const IRMessage IR_FAN_REVERSE;
+extern const IRMessage IR_FAN_FASTER;
+extern const IRMessage IR_FAN_SLOWER;
 
 class IRController : public IRrecv
 {
@@ -75,6 +79,31 @@ public:
   IRController();
   ~IRController();
   void poll();
+  void newpoll();
+  bool subscribe(IRControlled*, IRMessage);
+  private:
+  const String dec(const IRCode c);
+
+  SubscriptionList subList;
+  static DecodeList decList;
+};
+
+class IRControlled
+{
+public:
+  IRControlled();
+  virtual ~IRControlled();
+  virtual void irmsgRecd(const IRCode code);
+  virtual void irmsgRecd(const IRMessage msg);
+  static void irmsgScanDevices(IRCode code);
+  void registerIR(IRController& c);
+  virtual void subscribeToIR() {}
+protected:
+  bool subscribe(IRMessage m);
+private:
+  IRControlled *next;
+  IRController *ctlr;
+  static IRControlled *list;
 };
 
 class IRLed
@@ -90,7 +119,6 @@ private:
 };
 
 extern unsigned long irDebounce(unsigned long then, unsigned long debounceTime = IRDEBOUNCE);
-extern void pollIR();
 extern IRController irctlr;
 
 #endif

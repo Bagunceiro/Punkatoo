@@ -7,7 +7,9 @@
 Updater::Updater(const String &devName) : MqttControlled(devName)
 {
   startCallback = NULL;
-  endCallback = NULL;
+  endCallback   = NULL;
+  nullCallback  = NULL;
+  failCallback  = NULL;
 }
 
 Updater::~Updater()
@@ -74,8 +76,6 @@ t_httpUpdate_return Updater::systemUpdate(const String &server, const uint16_t p
     startCallback();
   }
 
-Serial.println("In systemUpdate");
-
   httpUpdate.rebootOnUpdate(false);
 
   t_httpUpdate_return ret = httpUpdate.update(client, server, port, image);
@@ -84,10 +84,12 @@ Serial.println("In systemUpdate");
   {
   case HTTP_UPDATE_FAILED:
     Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+    if (failCallback != NULL) failCallback();
     break;
 
   case HTTP_UPDATE_NO_UPDATES:
     Serial.println("HTTP_UPDATE_NO_UPDATES");
+    if (nullCallback != NULL) nullCallback();
     break;
 
   case HTTP_UPDATE_OK:
@@ -106,4 +108,14 @@ void Updater::onStart(void(*callback)())
 void Updater::onEnd(void(*callback)())
 {
   endCallback = callback;
+}
+
+void Updater::onNone(void(*callback)())
+{
+  nullCallback = callback;
+}
+
+void Updater::onFail(void(*callback)())
+{
+  failCallback = callback;
 }
