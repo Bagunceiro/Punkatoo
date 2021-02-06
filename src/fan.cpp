@@ -156,6 +156,7 @@ void Fan::doSubscriptions(PubSubClient& mqttClient)
   sendStatus();
 }
 
+/*
 void Fan::irmsgRecd(const IRCode code)
 {
 
@@ -165,6 +166,7 @@ void Fan::irmsgRecd(const IRCode code)
   else if (code == IRREMOTE_FAN_SLOWER) slower();
 
 }
+*/
 
 void Fan::irmsgRecd(const IRMessage msg)
 {

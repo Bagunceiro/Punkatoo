@@ -27,7 +27,7 @@ class Fan: public MqttControlled, public IRControlled
     bool reverse();
     virtual void mqttaction(const String& topic, const String& msg);
     virtual void doSubscriptions(PubSubClient& mqttClient);
-    virtual void irmsgRecd(const IRCode code);
+    // virtual void irmsgRecd(const IRCode code);
     virtual void irmsgRecd(const IRMessage code);
 
   private:

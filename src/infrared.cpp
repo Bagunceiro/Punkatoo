@@ -28,10 +28,11 @@ DecodeList IRController::decList =
 
 const int IRDEBOUNCE = 200; // Number of milliseconds to leave fallow between IR messages
 
-IRControlled *IRControlled::list = NULL;
+// IRControlled *IRControlled::list = NULL;
 
 IRControlled::IRControlled()
 {
+  /*
   next = NULL;
 
   ctlr = NULL;
@@ -41,11 +42,12 @@ IRControlled::IRControlled()
     ptr = &((*ptr)->next);
   }
   *ptr = this;
+  */
 }
 
 IRControlled::~IRControlled()
 {
-
+/*
   IRControlled **ptr = &list;
   while (*ptr != NULL)
   {
@@ -56,17 +58,20 @@ IRControlled::~IRControlled()
     }
     ptr = &((*ptr)->next);
   }
+  */
 }
 
+/*
 void IRControlled::irmsgRecd(const IRCode code)
 {
 }
+*/
 
 void IRControlled::irmsgRecd(const IRMessage msg)
 {
 }
 
-
+/*
 void IRControlled::irmsgScanDevices(uint32_t code)
 {
   IRControlled *ptr = list;
@@ -76,6 +81,7 @@ void IRControlled::irmsgScanDevices(uint32_t code)
     ptr = ptr->next;
   }
 }
+*/
 
 void IRControlled::registerIR(IRController &c)
 {
@@ -152,6 +158,7 @@ void IRController::newpoll()
   }
 }
 
+/*
 void IRController::poll()
 {
   decode_results IRDecodeResults;
@@ -171,6 +178,7 @@ void IRController::poll()
     resume();
   }
 }
+*/
 
 bool IRController::subscribe(IRControlled* c, IRMessage m)
 {

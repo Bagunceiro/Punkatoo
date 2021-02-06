@@ -33,7 +33,7 @@ class Lamp: public MqttControlled, public IRControlled
     virtual String getStatus();
     virtual void mqttaction(const String& topic, const String& msg);
     virtual void doSubscriptions(PubSubClient& mqttclient);
-    virtual void irmsgRecd(IRCode code);
+    // virtual void irmsgRecd(IRCode code);
     virtual void irmsgRecd(IRMessage msg);
 
   private:

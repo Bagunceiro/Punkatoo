@@ -110,10 +110,12 @@ void Lamp::doSubscriptions(PubSubClient& mqttClient)
   sendStatus();
 }
 
+/*
 void Lamp::irmsgRecd(IRCode code)
 {
   if (code == IRREMOTE_LIGHT_ONOFF) toggle();
 }
+*/
 
 void Lamp::irmsgRecd(IRMessage msg)
 {
