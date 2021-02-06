@@ -8,6 +8,8 @@
 #include <map>
 #include <vector>
 
+#include "ptask.h"
+
 const uint8_t kTimeout = 15;
 const uint16_t kMinUnknownSize = 12;
 const uint16_t kCaptureBufferSize = 1024;
@@ -15,8 +17,8 @@ const uint16_t kCaptureBufferSize = 1024;
 class IRControlled;
 
 typedef uint32_t IRCode;
-typedef char* IRMessage;
-typedef std::vector<IRControlled*> DevList;
+typedef char *IRMessage;
+typedef std::vector<IRControlled *> DevList;
 typedef std::vector<IRMessage> MsgList;
 typedef std::map<IRMessage, DevList> SubscriptionList;
 typedef std::map<IRCode, MsgList> DecodeList;
@@ -73,15 +75,17 @@ extern const IRMessage IR_FAN_REVERSE;
 extern const IRMessage IR_FAN_FASTER;
 extern const IRMessage IR_FAN_SLOWER;
 
-class IRController : public IRrecv
+class IRController : public IRrecv, public PTask
 {
 public:
   IRController();
   ~IRController();
   void poll();
   void newpoll();
-  bool subscribe(IRControlled*, IRMessage);
-  private:
+  bool subscribe(IRControlled *, IRMessage);
+  virtual bool operator()();
+
+private:
   const String dec(const IRCode c);
 
   SubscriptionList subList;
@@ -96,15 +100,19 @@ public:
   // virtual void irmsgRecd(const IRCode code);
   virtual void irmsgRecd(const IRMessage msg);
   // static void irmsgScanDevices(IRCode code);
-  void registerIR(IRController& c);
+  void registerIR(IRController &c);
   virtual void subscribeToIR() {}
+
+
 protected:
-  bool subscribe(IRMessage m);
+bool subscribe(IRMessage m);
+
 private:
-  // IRControlled *next;
-  IRController *ctlr;
-  // static IRControlled *list;
-};
+// IRControlled *next;
+IRController *ctlr;
+// static IRControlled *list;
+}
+;
 
 class IRLed
 {

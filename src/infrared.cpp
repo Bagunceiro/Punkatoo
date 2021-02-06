@@ -3,28 +3,26 @@
 #include "infrared.h"
 
 DecodeList test =
-{
-  {0x323323, {(const IRMessage)"v1"}},
-  {0x323323, {(const IRMessage)"v2", (const IRMessage)"v3"}}
-};
+    {
+        {0x323323, {(const IRMessage) "v1"}},
+        {0x323323, {(const IRMessage) "v2", (const IRMessage) "v3"}}};
 
-const IRMessage IR_LAMP_OFF    = (const IRMessage)"LAMP_OFF";
-const IRMessage IR_LAMP_ON     = (const IRMessage)"LAMP_ON";
-const IRMessage IR_LAMP_TOGGLE = (const IRMessage)"LAMP_TOGGLE";
+const IRMessage IR_LAMP_OFF = (const IRMessage) "LAMP_OFF";
+const IRMessage IR_LAMP_ON = (const IRMessage) "LAMP_ON";
+const IRMessage IR_LAMP_TOGGLE = (const IRMessage) "LAMP_TOGGLE";
 
-const IRMessage IR_FAN_TOGGLE  = (const IRMessage)"FAN_TOGGLE";
-const IRMessage IR_FAN_REVERSE = (const IRMessage)"FAN_REV";
-const IRMessage IR_FAN_FASTER  = (const IRMessage)"FAN_FASTER";
-const IRMessage IR_FAN_SLOWER  = (const IRMessage)"FAN_SLOWER";
+const IRMessage IR_FAN_TOGGLE = (const IRMessage) "FAN_TOGGLE";
+const IRMessage IR_FAN_REVERSE = (const IRMessage) "FAN_REV";
+const IRMessage IR_FAN_FASTER = (const IRMessage) "FAN_FASTER";
+const IRMessage IR_FAN_SLOWER = (const IRMessage) "FAN_SLOWER";
 
 DecodeList IRController::decList =
-{
-  {IRREMOTE_LIGHT_ONOFF, {IR_LAMP_TOGGLE}},
-  {IRREMOTE_FAN_ONOFF,   {IR_FAN_TOGGLE}},
-  {IRREMOTE_FAN_REVERSE, {IR_FAN_REVERSE}},
-  {IRREMOTE_FAN_FASTER,  {IR_FAN_FASTER}},
-  {IRREMOTE_FAN_FASTER,  {IR_FAN_SLOWER}}
-};
+    {
+        {IRREMOTE_LIGHT_ONOFF, {IR_LAMP_TOGGLE}},
+        {IRREMOTE_FAN_ONOFF, {IR_FAN_TOGGLE}},
+        {IRREMOTE_FAN_REVERSE, {IR_FAN_REVERSE}},
+        {IRREMOTE_FAN_FASTER, {IR_FAN_FASTER}},
+        {IRREMOTE_FAN_FASTER, {IR_FAN_SLOWER}}};
 
 const int IRDEBOUNCE = 200; // Number of milliseconds to leave fallow between IR messages
 
@@ -47,7 +45,7 @@ IRControlled::IRControlled()
 
 IRControlled::~IRControlled()
 {
-/*
+  /*
   IRControlled **ptr = &list;
   while (*ptr != NULL)
   {
@@ -119,7 +117,7 @@ IRController::~IRController()
 {
 }
 
-void IRController::newpoll()
+bool IRController::operator()()
 {
   decode_results IRDecodeResults;
   if (decode(&IRDecodeResults))
@@ -144,7 +142,7 @@ void IRController::newpoll()
           if (search2 != subList.end())
           {
             // For each subscription for this message
-            for (IRControlled* dev : search2->second)
+            for (IRControlled *dev : search2->second)
             {
               // send it to the subscribing device
               dev->irmsgRecd(msg);
@@ -156,6 +154,7 @@ void IRController::newpoll()
     }
     resume();
   }
+  return true;
 }
 
 /*
@@ -180,7 +179,7 @@ void IRController::poll()
 }
 */
 
-bool IRController::subscribe(IRControlled* c, IRMessage m)
+bool IRController::subscribe(IRControlled *c, IRMessage m)
 {
   auto record = subList.find(m);
   if (record == subList.end())

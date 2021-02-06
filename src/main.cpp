@@ -111,8 +111,9 @@ void lampSwLoop(void *)
   }
 }
 
-TaskHandle_t irTask;
+// TaskHandle_t irTask;
 
+/*
 void irLoop(void *)
 {
   int hwm = uxTaskGetStackHighWaterMark(irTask);
@@ -128,6 +129,7 @@ void irLoop(void *)
     }
   }
 }
+*/
 
 void i2cscan()
 {
@@ -204,14 +206,16 @@ void setup()
       5,            /* Priority of the task */
       &lampSwTask); /* Task handle. */
 
-  xTaskCreate(
-      irLoop,       /* Function to implement the task */
-      "irTask",     /* Name of the task */
-      4000,         /* Stack size in words */
-      NULL,         /* Task input parameter */
-      4,            /* Priority of the task */
-      &irTask);     /* Task handle. */
 
+//  xTaskCreate(
+//      irLoop,       /* Function to implement the task */
+//      "irTask",     /* Name of the task */
+//      4000,         /* Stack size in words */
+//      NULL,         /* Task input parameter */
+//      4,            /* Priority of the task */
+//      &irTask);     /* Task handle. */
+
+  irctlr.start(4);
   webServer.init();
   indicator.setColour(RGBLed::YELLOW);
 }

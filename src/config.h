@@ -59,6 +59,7 @@ struct ConfigBlock : public ConfBlk
 };
 
 extern ConfigBlock persistant;
+extern Stream &serr;
 
 void   startup();
 String upTime();
