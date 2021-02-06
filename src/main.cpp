@@ -1,5 +1,5 @@
 #include <Arduino.h>
-
+#include <FreeRTOS.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <Wire.h>
@@ -93,21 +93,38 @@ void updateFail()
   indicator.off();
 }
 
-TaskHandle_t loop2Task;
+TaskHandle_t lampSwTask;
 
-void loop2(void *)
+void lampSwLoop(void *)
 {
-  int hwm = uxTaskGetStackHighWaterMark(loop2Task);
+  int hwm = uxTaskGetStackHighWaterMark(lampSwTask);
   while (true)
   {
     lamp.pollSwitch();
-    irctlr.newpoll();
     delay(10);
-    int hwmnow = uxTaskGetStackHighWaterMark(loop2Task);
+    int hwmnow = uxTaskGetStackHighWaterMark(lampSwTask);
     if (hwmnow < hwm)
     {
       hwm = hwmnow;
-      serr.printf("loop2Task HWM = %d\n", hwm);
+      serr.printf("lampSwTask HWM = %d\n", hwm);
+    }
+  }
+}
+
+TaskHandle_t irTask;
+
+void irLoop(void *)
+{
+  int hwm = uxTaskGetStackHighWaterMark(irTask);
+  while (true)
+  {
+    irctlr.newpoll();
+    delay(10);
+    int hwmnow = uxTaskGetStackHighWaterMark(irTask);
+    if (hwmnow < hwm)
+    {
+      hwm = hwmnow;
+      serr.printf("irTask HWM = %d\n", hwm);
     }
   }
 }
@@ -180,12 +197,20 @@ void setup()
   updater.onEnd(updateCompleted);
 
   xTaskCreate(
-      loop2,       /* Function to implement the task */
-      "loop2Task", /* Name of the task */
-      4000,        /* Stack size in words */
-      NULL,        /* Task input parameter */
-      0,           /* Priority of the task */
-      &loop2Task); /* Task handle. */
+      lampSwLoop,   /* Function to implement the task */
+      "lampSwTask", /* Name of the task */
+      4000,         /* Stack size in words */
+      NULL,         /* Task input parameter */
+      5,            /* Priority of the task */
+      &lampSwTask); /* Task handle. */
+
+  xTaskCreate(
+      irLoop,       /* Function to implement the task */
+      "irTask",     /* Name of the task */
+      4000,         /* Stack size in words */
+      NULL,         /* Task input parameter */
+      4,            /* Priority of the task */
+      &irTask);     /* Task handle. */
 
   webServer.init();
   indicator.setColour(RGBLed::YELLOW);
