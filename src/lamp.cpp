@@ -7,7 +7,7 @@ extern RGBLed indicator;
 
 const int MAXDEBOUNCE = 5; // Number of loops to allow light switch to settle
 
-Lamp::Lamp(String devName) : MqttControlled(devName) {}
+Lamp::Lamp(String devName) : MqttControlled(devName), PTask(devName, 2500) {}
 
 Lamp::~Lamp() {}
 

@@ -72,7 +72,7 @@ unsigned long irDebounce(unsigned long then, unsigned long debounceTime)
 
 // IRrecv irrecv(IR_DETECTOR_PIN, kCaptureBufferSize, kTimeout, true);
 
-IRController::IRController() : IRrecv(IR_DETECTOR_PIN, kCaptureBufferSize, kTimeout, true)
+IRController::IRController() : IRrecv(IR_DETECTOR_PIN, kCaptureBufferSize, kTimeout, true), PTask("IRCtlr", 2500)
 {
   pinMode(IR_DETECTOR_PIN, INPUT_PULLUP);
   enableIRIn();

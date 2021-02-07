@@ -1,8 +1,10 @@
 #include "ptask.h"
 #include "config.h"
 
-PTask::PTask()
+PTask::PTask(const String& n, const int stack)
 {
+    name = n;
+    stackSize = stack;
 }
 
 PTask::~PTask()
@@ -21,7 +23,7 @@ void PTask::loop(void *ctlr)
         if (hwmnow < hwm)
         {
             hwm = hwmnow;
-            serr.printf("task HWM = %d\n", hwm);
+            serr.printf("task stack %s unused = %d\n", (pThis->name).c_str(), hwm);
         }
     }
 }
@@ -29,12 +31,12 @@ void PTask::loop(void *ctlr)
 bool PTask::start(uint8_t priority)
 {
     xTaskCreate(
-        loop,       // Function to implement the task
-        "irTask",   // Name of the task
-        4000,       // Stack size in words
-        this,       // Task input parameter
-        priority,   // Priority of the task
-        &taskHandle // Task handle.
+        loop,          // Function to implement the task
+        name.c_str(),  // Name of the task
+        stackSize,     // Stack size in words
+        this,          // Task input parameter
+        priority,      // Priority of the task
+        &taskHandle    // Task handle.
     );
 
     return true;
