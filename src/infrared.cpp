@@ -22,7 +22,7 @@ DecodeList IRController::decList =
         {IRREMOTE_FAN_ONOFF, {IR_FAN_TOGGLE}},
         {IRREMOTE_FAN_REVERSE, {IR_FAN_REVERSE}},
         {IRREMOTE_FAN_FASTER, {IR_FAN_FASTER}},
-        {IRREMOTE_FAN_FASTER, {IR_FAN_SLOWER}}};
+        {IRREMOTE_FAN_SLOWER, {IR_FAN_SLOWER}}};
 
 const int IRDEBOUNCE = 200; // Number of milliseconds to leave fallow between IR messages
 

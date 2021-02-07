@@ -156,18 +156,6 @@ void Fan::doSubscriptions(PubSubClient& mqttClient)
   sendStatus();
 }
 
-/*
-void Fan::irmsgRecd(const IRCode code)
-{
-
-  if (code == IRREMOTE_FAN_ONOFF) onoff();
-  else if (code == IRREMOTE_FAN_REVERSE) reverse();
-  else if (code == IRREMOTE_FAN_FASTER) faster();
-  else if (code == IRREMOTE_FAN_SLOWER) slower();
-
-}
-*/
-
 void Fan::irmsgRecd(const IRMessage msg)
 {
   if (strcmp(msg, IR_FAN_TOGGLE) == 0) onoff();
