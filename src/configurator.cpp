@@ -10,7 +10,7 @@ extern Fan fan;
 extern Lamp lamp;
 extern RGBLed indicator;
 
-Configurator configurator;
+extern Configurator configurator;
 
 Configurator::Configurator()
 {

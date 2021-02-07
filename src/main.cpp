@@ -6,6 +6,7 @@
 #include <PubSubClient.h>
 #include <WiFiSerial.h>
 #include <time.h>
+#include <esp_wps.h>
 
 const char *appVersion = "Punkatoo 0.1";
 const char *compDate = __DATE__;
@@ -39,36 +40,87 @@ Fan fan("fan");
 Updater updater("updater");
 LDR ldr("LDR", LDR_PIN);
 TempSensor tempSensor;
+Configurator configurator;
 
-extern Configurator configurator;
+/*
+ * Status LED colours
+ */
+RGBLed::Colour indicateStarting = RGBLed::RED;
+RGBLed::Colour indicateNoNet    = RGBLed::YELLOW;
+RGBLed::Colour indicateNet      = RGBLed::GREEN;
+RGBLed::Colour indicateUpdate   = RGBLed::BLUE;
+RGBLed::Colour indicateConfig   = RGBLed::CYAN;
 
-int wifiattemptcount = 0;
+// int wifiattemptcount = 0;
+
+#define ESP_WPS_MODE      WPS_TYPE_PBC
+#define ESP_MANUFACTURER  "ESPRESSIF"
+#define ESP_MODEL_NUMBER  "ESP32"
+#define ESP_MODEL_NAME    "ESPRESSIF IOT"
+#define ESP_DEVICE_NAME   "ESP STATION"
+
+static esp_wps_config_t wpsconfig;
+
+void wpsInitConfig(){
+  wpsconfig.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
+  wpsconfig.wps_type = ESP_WPS_MODE;
+  strcpy(wpsconfig.factory_info.manufacturer, ESP_MANUFACTURER);
+  strcpy(wpsconfig.factory_info.model_number, ESP_MODEL_NUMBER);
+  strcpy(wpsconfig.factory_info.model_name, ESP_MODEL_NAME);
+  strcpy(wpsconfig.factory_info.device_name, ESP_DEVICE_NAME);
+}
+
+void WiFiEvent(WiFiEvent_t event, system_event_info_t info){
+  switch(event){
+    case SYSTEM_EVENT_STA_START:
+      Serial.println("Station Mode Started");
+      break;
+    case SYSTEM_EVENT_STA_GOT_IP:
+      Serial.println("Connected to :" + String(WiFi.SSID()));
+      Serial.print("Got IP: ");
+      Serial.println(WiFi.localIP());
+      break;
+    case SYSTEM_EVENT_STA_DISCONNECTED:
+      Serial.println("Disconnected from station");
+      WiFi.reconnect();
+      break;
+    case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
+      Serial.println("WPS Successfull, stopping WPS and connecting to: " + String(WiFi.SSID()));
+      esp_wifi_wps_disable();
+      delay(10);
+      WiFi.begin();
+      break;
+    case SYSTEM_EVENT_STA_WPS_ER_FAILED:
+      Serial.println("WPS Failed, retrying");
+      esp_wifi_wps_disable();
+      esp_wifi_wps_enable(&wpsconfig);
+      esp_wifi_wps_start(0);
+      break;
+    case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
+      Serial.println("WPS Timedout, retrying");
+      esp_wifi_wps_disable();
+      esp_wifi_wps_enable(&wpsconfig);
+      esp_wifi_wps_start(0);
+      break;
+    case SYSTEM_EVENT_STA_WPS_ER_PIN:
+      break;
+    default:
+      break;
+  }
+}
 
 void initWiFi()
 {
-  static unsigned long lastAttempt = 0;
-  unsigned long now = millis();
-  unsigned long pause = WIFI_CONNECT_ATTEMPT_PAUSE;
-
-  if (wifiattemptcount < 20)
-    pause = 500;
-
-  if ((lastAttempt == 0) || ((now - lastAttempt) > pause))
-  {
-    wifiattemptcount++;
-
-    connectToWiFi();
-
-    lastAttempt = now;
-    //    MDNS.begin(persistant[persistant.controllername_n].c_str());
-    //    MDNS.addService("http", "tcp", 80);
-  }
+  WiFi.onEvent(WiFiEvent);
+  connectToWiFi();
+  MDNS.begin(persistant[persistant.controllername_n].c_str());
+  MDNS.addService("http", "tcp", 80);
 }
 
 void updateStarted()
 {
   serr.println("HTTP update process started");
-  indicator.setColour(RGBLed::BLUE);
+  indicator.setColour(indicateUpdate);
   fan.setSpeed(0);
   lamp.sw(0);
 }
@@ -125,10 +177,12 @@ void i2cscan()
 
 void setup()
 {
+  WiFi.mode(WIFI_STA);
+
   startup(); // set start time
 
   Serial.begin(9600);
-  indicator.setColour(RGBLed::RED);
+  indicator.setColour(indicateStarting);
 
   serr.println("");
   serr.println(appVersion);
@@ -155,7 +209,7 @@ void setup()
   fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
   fan.registerIR(irctlr);
 
-  WiFi.mode(WIFI_STA);
+  initWiFi();
 
   Wire.begin();
   if (!tempSensor.start(0x76, &Wire))
@@ -179,14 +233,15 @@ void setup()
    * Ready to go. (But network has not been initialised yet)
    */
 
-  indicator.setColour(RGBLed::YELLOW);
+  indicator.setColour(indicateNoNet);
+
+  pinMode(0, INPUT_PULLUP);
 }
 
 void loop()
 {
   static bool wifiWasConnected = false;
   static bool ntpstarted = false;
-
   if (WiFi.status() == WL_CONNECTED)
   {
     if (!wifiWasConnected)
@@ -195,11 +250,8 @@ void loop()
       WSerial.begin("FanCon");
       serr = WSerial;
       serr.println("WiFi connected");
-      MDNS.begin(persistant[persistant.controllername_n].c_str());
-      MDNS.addService("http", "tcp", 80);
-      indicator.setColour(RGBLed::GREEN);
+      indicator.setColour(indicateNet);
     }
-    wifiattemptcount = 0;
 
     if (mqttClient.connected())
       mqttClient.loop();
@@ -234,7 +286,6 @@ void loop()
       Serial.println("WiFi connection lost");
       wifiWasConnected = false;
     }
-    initWiFi();
   }
 
   configurator.poll();
@@ -247,5 +298,11 @@ void loop()
   {
     then = now;
     tempSensor.sendStatus();
+  }
+  int dowps = digitalRead(0);
+
+  if (dowps == 0)
+  {
+    Serial.println("DoWPS");
   }
 }
