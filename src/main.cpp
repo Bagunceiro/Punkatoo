@@ -46,66 +46,63 @@ Configurator configurator;
  * Status LED colours
  */
 RGBLed::Colour indicateStarting = RGBLed::RED;
-RGBLed::Colour indicateNoNet    = RGBLed::YELLOW;
-RGBLed::Colour indicateNet      = RGBLed::GREEN;
-RGBLed::Colour indicateUpdate   = RGBLed::BLUE;
-RGBLed::Colour indicateConfig   = RGBLed::CYAN;
+RGBLed::Colour indicateNoNet = RGBLed::YELLOW;
+RGBLed::Colour indicateNet = RGBLed::GREEN;
+RGBLed::Colour indicateUpdate = RGBLed::BLUE;
+RGBLed::Colour indicateConfig = RGBLed::CYAN;
+RGBLed::Colour indicateWPS = RGBLed::MAGENTA;
 
-// int wifiattemptcount = 0;
+extern esp_wps_config_t wpsconfig;
+extern void wpsInit();
+extern void updateWiFiDef(String &ssid, String &psk);
 
-#define ESP_WPS_MODE      WPS_TYPE_PBC
-#define ESP_MANUFACTURER  "ESPRESSIF"
-#define ESP_MODEL_NUMBER  "ESP32"
-#define ESP_MODEL_NAME    "ESPRESSIF IOT"
-#define ESP_DEVICE_NAME   "ESP STATION"
+void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
+{
+  String ssid;
+  String psk;
 
-static esp_wps_config_t wpsconfig;
-
-void wpsInitConfig(){
-  wpsconfig.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
-  wpsconfig.wps_type = ESP_WPS_MODE;
-  strcpy(wpsconfig.factory_info.manufacturer, ESP_MANUFACTURER);
-  strcpy(wpsconfig.factory_info.model_number, ESP_MODEL_NUMBER);
-  strcpy(wpsconfig.factory_info.model_name, ESP_MODEL_NAME);
-  strcpy(wpsconfig.factory_info.device_name, ESP_DEVICE_NAME);
-}
-
-void WiFiEvent(WiFiEvent_t event, system_event_info_t info){
-  switch(event){
-    case SYSTEM_EVENT_STA_START:
-      Serial.println("Station Mode Started");
-      break;
-    case SYSTEM_EVENT_STA_GOT_IP:
-      Serial.println("Connected to :" + String(WiFi.SSID()));
-      Serial.print("Got IP: ");
-      Serial.println(WiFi.localIP());
-      break;
-    case SYSTEM_EVENT_STA_DISCONNECTED:
-      Serial.println("Disconnected from station");
-      WiFi.reconnect();
-      break;
-    case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
-      Serial.println("WPS Successfull, stopping WPS and connecting to: " + String(WiFi.SSID()));
-      esp_wifi_wps_disable();
-      delay(10);
-      WiFi.begin();
-      break;
-    case SYSTEM_EVENT_STA_WPS_ER_FAILED:
-      Serial.println("WPS Failed, retrying");
-      esp_wifi_wps_disable();
-      esp_wifi_wps_enable(&wpsconfig);
-      esp_wifi_wps_start(0);
-      break;
-    case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
-      Serial.println("WPS Timedout, retrying");
-      esp_wifi_wps_disable();
-      esp_wifi_wps_enable(&wpsconfig);
-      esp_wifi_wps_start(0);
-      break;
-    case SYSTEM_EVENT_STA_WPS_ER_PIN:
-      break;
-    default:
-      break;
+  switch (event)
+  {
+  case SYSTEM_EVENT_STA_START:
+    Serial.println("Station Mode Started");
+    break;
+  case SYSTEM_EVENT_STA_GOT_IP:
+    Serial.println("Connected to : " + String(WiFi.SSID()));
+    Serial.print("Got IP: ");
+    Serial.println(WiFi.localIP());
+    break;
+  case SYSTEM_EVENT_STA_DISCONNECTED:
+    Serial.println("Disconnected from station");
+    WiFi.reconnect();
+    break;
+  case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
+    ssid = WiFi.SSID();
+    psk = WiFi.psk();
+    Serial.println("WPS Successful : " + ssid + "/" + psk);
+    indicator.off();
+    esp_wifi_wps_disable();
+    updateWiFiDef(ssid, psk);
+    delay(10);
+    WiFi.begin();
+    break;
+  case SYSTEM_EVENT_STA_WPS_ER_FAILED:
+    Serial.println("WPS Failed, retrying");
+    indicator.off();
+    esp_wifi_wps_disable();
+    esp_wifi_wps_enable(&wpsconfig);
+    esp_wifi_wps_start(0);
+    break;
+  case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
+    Serial.println("WPS Timedout");
+    indicator.off();
+    esp_wifi_wps_disable();
+    esp_wifi_wps_enable(&wpsconfig);
+    esp_wifi_wps_start(0);
+    break;
+  case SYSTEM_EVENT_STA_WPS_ER_PIN:
+    break;
+  default:
+    break;
   }
 }
 
@@ -175,6 +172,13 @@ void i2cscan()
   serr.println();
 }
 
+bool startWPS = false;
+
+void IRAM_ATTR startwps()
+{
+  startWPS = true;
+}
+
 void setup()
 {
   WiFi.mode(WIFI_STA);
@@ -186,7 +190,8 @@ void setup()
 
   serr.println("");
   serr.println(appVersion);
-  if (persistant.readFile() == false) persistant.writeFile();
+  if (persistant.readFile() == false)
+    persistant.writeFile();
   persistant.dump(serr);
 
   /*
@@ -209,6 +214,9 @@ void setup()
   fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
   fan.registerIR(irctlr);
 
+  pinMode(WPS_PIN, INPUT_PULLUP);
+  attachInterrupt(WPS_PIN, startwps, FALLING);
+
   initWiFi();
 
   Wire.begin();
@@ -217,7 +225,7 @@ void setup()
     Serial.println("Could not find a valid BME280 sensor");
   }
 
- /*
+  /*
   * Enable the network configurator and OTA updater
   */
   configurator.registerIR(irctlr);
@@ -228,14 +236,12 @@ void setup()
    * Set up the Web server
    */
   webServer.init();
-  
+
   /*
    * Ready to go. (But network has not been initialised yet)
    */
 
   indicator.setColour(indicateNoNet);
-
-  pinMode(0, INPUT_PULLUP);
 }
 
 void loop()
@@ -299,10 +305,12 @@ void loop()
     then = now;
     tempSensor.sendStatus();
   }
-  int dowps = digitalRead(0);
 
-  if (dowps == 0)
+  if (startWPS)
   {
     Serial.println("DoWPS");
+    wpsInit();
+    indicator.setColour(indicateWPS);
+    startWPS = false;
   }
 }

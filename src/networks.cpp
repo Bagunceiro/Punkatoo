@@ -163,6 +163,12 @@ void updateWiFiDef(WiFiNetworkDef &net)
     networkConfWrite(configuredNets);
 }
 
+void updateWiFiDef(String& ssid, String& psk)
+{
+    WiFiNetworkDef def(ssid, psk);
+    updateWiFiDef(def);
+}
+
 void connectToWiFi()
 {
     networkConfRead();

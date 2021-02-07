@@ -38,6 +38,8 @@ extern const int IR_DETECTOR_PIN;
 
 extern const int LDR_PIN;
 
+extern const int WPS_PIN;
+
 extern const unsigned int MQTT_CONNECT_ATTEMPT_PAUSE; // Delay between attempts to reconnect MQTT (ms)
 extern const unsigned int WIFI_CONNECT_ATTEMPT_PAUSE;
 
