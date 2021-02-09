@@ -8,7 +8,7 @@ extern PubSubClient mqttClient;
 MqttControlled* MqttControlled::list;
 
 MqttControlled::MqttControlled(const String& devName) : name(devName) {
-  Serial.println((String)"Add " + devName);
+  serr.println((String)"Add " + devName);
   next = NULL;
 
   MqttControlled** ptr = &list;
@@ -132,10 +132,10 @@ bool initMQTT()
 
   if ((lastAttempt == 0) || ((now - lastAttempt) > MQTT_CONNECT_ATTEMPT_PAUSE))
   {
-    Serial.print ("Connecting to MQTT ");
-    Serial.print(persistant[persistant.mqtthost_n]);
-    Serial.print(" port ");
-    Serial.println(persistant[persistant.mqttport_n]);
+    serr.print ("Connecting to MQTT ");
+    serr.print(persistant[persistant.mqtthost_n]);
+    serr.print(" port ");
+    serr.println(persistant[persistant.mqttport_n]);
 
     lastAttempt = now;
 
@@ -146,14 +146,14 @@ bool initMQTT()
 
     if (mqttClient.connect(clientID.c_str(), persistant[persistant.mqttuser_n].c_str(), persistant[persistant.mqttpwd_n].c_str())) {
 
-      Serial.println("MQTT connected");
+      serr.println("MQTT connected");
       MqttControlled::doAllSubscriptions(mqttClient);
       result = true;
     }
     else
     {
-      Serial.print("Failed: ");
-      Serial.println(mqttClient.state());
+      serr.print("Failed: ");
+      serr.println(mqttClient.state());
     }
   }
   }

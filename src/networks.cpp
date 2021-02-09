@@ -2,9 +2,9 @@
 #include <LITTLEFS.h>
 
 #include <ArduinoJson.h>
+#include "config.h"
 #include "configurator.h"
 #include "networks.h"
-#include "WiFiSerial.h"
 
 networkList configuredNets;
 networkList scannedNets;
@@ -21,12 +21,12 @@ networkList &scanNetworks()
     int n = WiFi.scanNetworks();
     if (n == 0)
     {
-        WSerial.println("no networks found");
+        serr.println("no networks found");
     }
     else
     {
-        WSerial.print(n);
-        WSerial.println(" networks found");
+        serr.print(n);
+        serr.println(" networks found");
         scannedNets.clear();
         for (int i = 0; i < n; ++i)
         {
@@ -36,16 +36,16 @@ networkList &scanNetworks()
             network.rssi = WiFi.RSSI(i);
             scannedNets.push_back(network);
 
-            WSerial.print(i + 1);
-            WSerial.print(": ");
-            WSerial.print(WiFi.SSID(i));
-            WSerial.print(" (");
-            WSerial.print(WiFi.RSSI(i));
-            WSerial.print(")");
-            WSerial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
+            serr.print(i + 1);
+            serr.print(": ");
+            serr.print(WiFi.SSID(i));
+            serr.print(" (");
+            serr.print(WiFi.RSSI(i));
+            serr.print(")");
+            serr.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
         }
     }
-    WSerial.println("");
+    serr.println("");
     return scannedNets;
 }
 
@@ -57,11 +57,11 @@ networkList &networkConfRead()
     if (!netsFile)
     {
         perror("");
-        Serial.println("Config file open for read failed");
+        serr.println("Config file open for read failed");
         // TEMPORARY !!!!
-            WiFiNetworkDef network("asgard_2g", "enaLkraP");
-            configuredNets.push_back(network);
-            networkConfWrite(configuredNets);
+        //   WiFiNetworkDef network("asgard_2g", "enaLkraP");
+        //    configuredNets.push_back(network);
+        //    networkConfWrite(configuredNets);
     }
     else
     {
@@ -70,7 +70,7 @@ networkList &networkConfRead()
         DeserializationError error = deserializeJson(doc, netsFile);
         if (error)
         {
-            Serial.println(F("Failed to read network file"));
+            serr.println(F("Failed to read network file"));
         }
         else
         {
@@ -80,7 +80,7 @@ networkList &networkConfRead()
         {
             const char *ssid = (const char *)net["ssid"];
             const char *psk = (const char *)net["psk"];
-            Serial.printf("Configured network: %s/%s\n", ssid, psk);
+            serr.printf("Configured network: %s/%s\n", ssid, psk);
 
             WiFiNetworkDef network(ssid, psk);
             configuredNets.push_back(network);
@@ -101,7 +101,7 @@ bool networkConfWrite(networkList &networks)
     if (!netsFile)
     {
         perror("");
-        Serial.println("Config file open for write failed");
+        serr.println("Config file open for write failed");
     }
     else
     {
@@ -125,7 +125,7 @@ void addNetwork(networkList &netlist, const String &ssid)
     {
         if (netlist[i].ssid == ssid)
         {
-            Serial.printf("Already added %s\n", ssid.c_str());
+            // serr.printf("Already added %s\n", ssid.c_str());
             return;
         }
     }
@@ -133,7 +133,7 @@ void addNetwork(networkList &netlist, const String &ssid)
     {
         if (configuredNets[i].ssid == ssid)
         {
-            Serial.printf("Adding existing %s\n", ssid.c_str());
+            // serr.printf("Adding existing %s\n", ssid.c_str());
             WiFiNetworkDef d = configuredNets[i];
             netlist.push_back(d);
             added = true;
@@ -142,7 +142,7 @@ void addNetwork(networkList &netlist, const String &ssid)
     }
     if (!added)
     {
-        Serial.printf("Adding new %s\n", ssid.c_str());
+        // serr.printf("Adding new %s\n", ssid.c_str());
 
         WiFiNetworkDef d(ssid);
         netlist.push_back(d);
@@ -177,7 +177,7 @@ void connectToWiFi()
     {
         for (unsigned int i = 0; i < numNets; i++)
         {
-            Serial.printf("Connect to %s/%s\n", configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
+            serr.printf("Connect to %s/%s\n", configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
             wifimulti.addAP(configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
         }
         // In case of emergency break glass:

@@ -54,7 +54,7 @@ void Configurator::irmsgRecd(uint32_t code)
             if (code == IRREMOTE_CONFIGURATOR_START)
             {
                 startCodeState++;
-                Serial.printf("Configurator state = %d\n", startCodeState);
+                serr.printf("Configurator state = %d\n", startCodeState);
                 indicator.setColour(startCodeState % 2 ? RGBLed::GREEN : RGBLed::RED);
                 if (startCodeState >= numberOfPresses)
                 {
@@ -84,9 +84,9 @@ void Configurator::start()
         const char *password = "configure";
 
         WiFi.softAP(ssid.c_str(), password); // Start the access point
-        Serial.printf("Access Point %s/%s started\n", ssid.c_str(), password);
+        serr.printf("Access Point %s/%s started\n", ssid.c_str(), password);
 
-        Serial.printf("IP address: %s\n", WiFi.softAPIP().toString().c_str());
+        serr.printf("IP address: %s\n", WiFi.softAPIP().toString().c_str());
 
         // lamp.blip(10,250);
         startedAt = millis();
@@ -101,7 +101,7 @@ void Configurator::stop()
     startCodeState = 0;
     stateChangedAt = 0;
     indicator.off();
-    Serial.println("SoftAP stopped");
+    serr.println("SoftAP stopped");
 }
 
 void Configurator::poll()
@@ -116,7 +116,7 @@ void Configurator::poll()
         unsigned long now = millis();
         if ((now - startedAt) > (15 * 60 * 1000))
         {
-            Serial.println("Configurator timeout");
+            serr.println("Configurator timeout");
             stop();
         }
     }

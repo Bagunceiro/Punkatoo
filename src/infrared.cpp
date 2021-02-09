@@ -90,8 +90,9 @@ bool IRController::operator()()
     static unsigned long then = 0;
     unsigned long when;
     uint64_t val = IRDecodeResults.value;
-    serialPrintUint64(val, HEX);
-    Serial.println("");
+    serr.println(uint64ToString(val, HEX));
+    // serialPrintUint64(val, HEX);
+    // Serial.println("");
 
     if ((when = irDebounce(then)))
     {

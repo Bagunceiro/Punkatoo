@@ -64,40 +64,46 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
   switch (event)
   {
   case SYSTEM_EVENT_STA_START:
-    Serial.println("Station Mode Started");
+    serr.println("Station Mode Started");
     break;
   case SYSTEM_EVENT_STA_GOT_IP:
-    Serial.println("Connected to : " + String(WiFi.SSID()));
-    Serial.print("Got IP: ");
-    Serial.println(WiFi.localIP());
+    serr.println("Connected to : " + String(WiFi.SSID()));
+    serr.print("Got IP: ");
+    serr.println(WiFi.localIP());
+    indicator.setColour(indicateNet, 60);
     break;
   case SYSTEM_EVENT_STA_DISCONNECTED:
-    Serial.println("Disconnected from station");
+    serr.println("Disconnected from station");
+    indicator.setColour(indicateNoNet, 60);
     WiFi.reconnect();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
     ssid = WiFi.SSID();
     psk = WiFi.psk();
-    Serial.println("WPS Successful : " + ssid + "/" + psk);
-    indicator.off();
+    serr.println("WPS Successful : " + ssid + "/" + psk);
+    indicator.setColour(indicateNet, 60);
     esp_wifi_wps_disable();
     updateWiFiDef(ssid, psk);
     delay(10);
     WiFi.begin();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_FAILED:
-    Serial.println("WPS Failed, retrying");
-    indicator.off();
+    serr.println("WPS Failed");
+    indicator.setColour(indicateNoNet, 60);
     esp_wifi_wps_disable();
+    /*
     esp_wifi_wps_enable(&wpsconfig);
     esp_wifi_wps_start(0);
+    */
     break;
   case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
-    Serial.println("WPS Timedout");
-    indicator.off();
+    serr.println("WPS Timedout");
+    indicator.setColour(indicateNoNet, 60);
     esp_wifi_wps_disable();
+    /*
     esp_wifi_wps_enable(&wpsconfig);
     esp_wifi_wps_start(0);
+    */
     break;
   case SYSTEM_EVENT_STA_WPS_ER_PIN:
     break;
@@ -214,6 +220,11 @@ void setup()
   fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
   fan.registerIR(irctlr);
 
+  /*
+   * Ready to go (switch and IR). But network has not been initialised yet
+   */
+  indicator.setColour(indicateNoNet, 60);
+
   pinMode(WPS_PIN, INPUT_PULLUP);
   attachInterrupt(WPS_PIN, startwps, FALLING);
 
@@ -222,7 +233,7 @@ void setup()
   Wire.begin();
   if (!tempSensor.start(0x76, &Wire))
   {
-    Serial.println("Could not find a valid BME280 sensor");
+    serr.println("Could not find a valid BME280 sensor");
   }
 
   /*
@@ -236,12 +247,6 @@ void setup()
    * Set up the Web server
    */
   webServer.init();
-
-  /*
-   * Ready to go. (But network has not been initialised yet)
-   */
-
-  indicator.setColour(indicateNoNet);
 }
 
 void loop()
@@ -253,7 +258,7 @@ void loop()
     if (!wifiWasConnected)
     {
       wifiWasConnected = true;
-      WSerial.begin("FanCon");
+      WSerial.begin("Punkatoo");
       serr = WSerial;
       serr.println("WiFi connected");
       indicator.setColour(indicateNet);
@@ -289,26 +294,25 @@ void loop()
   {
     if (wifiWasConnected)
     {
-      Serial.println("WiFi connection lost");
+      serr.println("WiFi connection lost");
       wifiWasConnected = false;
     }
   }
 
   configurator.poll();
 
-  static time_t then = 0;
+  static unsigned long then = 0;
 
-  time_t now;
-  time(&now);
-  if ((now - then) > 60)
+  unsigned long now = millis();
+  if ((now - then) > (1 * 60 * 1000))
   {
     then = now;
     tempSensor.sendStatus();
   }
+  indicator.poll();
 
   if (startWPS)
   {
-    Serial.println("DoWPS");
     wpsInit();
     indicator.setColour(indicateWPS);
     startWPS = false;

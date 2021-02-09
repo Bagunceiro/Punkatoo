@@ -1,5 +1,4 @@
 #include <ArduinoJson.h>
-#include <WiFiSerial.h>
 
 #include "config.h"
 #include "updater.h"
@@ -25,7 +24,7 @@ void Updater::mqttaction(const String &topic, const String &msg)
     DeserializationError error = deserializeJson(doc, msg);
     if (error)
     {
-      WSerial.printf("Config deserialization error (%d)\n", error.code());
+      serr.printf("Config deserialization error (%d)\n", error.code());
     }
     else
     {
@@ -45,7 +44,7 @@ void Updater::mqttaction(const String &topic, const String &msg)
         else if (kv.key() == "version")
           ver = (const char *)kv.value();
       }
-      Serial.printf("systemUpdate(%s, %d, %s, %s)\n", server.c_str(), port, image.c_str(), ver.c_str());
+      serr.printf("systemUpdate(%s, %d, %s, %s)\n", server.c_str(), port, image.c_str(), ver.c_str());
       if (systemUpdate(server, port, image, ver) == HTTP_UPDATE_OK)
       {
         ESP.restart();
@@ -83,17 +82,17 @@ t_httpUpdate_return Updater::systemUpdate(const String &server, const uint16_t p
   switch (ret)
   {
   case HTTP_UPDATE_FAILED:
-    Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+    serr.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
     if (failCallback != NULL) failCallback();
     break;
 
   case HTTP_UPDATE_NO_UPDATES:
-    Serial.println("HTTP_UPDATE_NO_UPDATES");
+    serr.println("HTTP_UPDATE_NO_UPDATES");
     if (nullCallback != NULL) nullCallback();
     break;
 
   case HTTP_UPDATE_OK:
-    Serial.println("HTTP_UPDATE_OK");
+    serr.println("HTTP_UPDATE_OK");
     if (endCallback != NULL) endCallback();
     break;
   }

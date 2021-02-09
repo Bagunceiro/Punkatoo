@@ -13,7 +13,7 @@ Lamp::~Lamp() {}
 
 void Lamp::sw(int toState)
 {
-  Serial.printf("Switch Lamp to %d\n", toState);
+  serr.printf("Switch Lamp to %d\n", toState);
   if (toState == 0)
   {
     digitalWrite(lpin, HIGH);
@@ -47,7 +47,7 @@ bool Lamp::operator()()
       si.debounce++;
       if (si.debounce > MAXDEBOUNCE)
       {
-        // Serial.println("Switch pressed");
+        // serr.println("Switch pressed");
         toggle();
         si.switchState = newState;
         si.debounce = 0;
@@ -55,6 +55,16 @@ bool Lamp::operator()()
     }
   }
   return true;
+}
+
+int Lamp::switchstate()
+{
+  int result = 42;
+  for (SwBlk& si : swList)
+  {
+    result = digitalRead(si.spin);
+  }
+  return result;
 }
 
 String Lamp::getStatus()
@@ -87,7 +97,7 @@ void Lamp::init(const SwitchList inpList, int out)
     SwBlk si;
     si.spin = inp;
     pinMode(si.spin, INPUT_PULLUP);
-    // delay(500); // input pin appears to need settling time after mode setting??
+    delay(500); // input pin appears to need settling time after mode setting??
     si.switchState = digitalRead(si.spin);
     si.debounce = 0;
     swList.push_back(si);

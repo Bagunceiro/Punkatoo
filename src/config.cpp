@@ -33,7 +33,8 @@ const int DIR_RELAY1_PIN   = 26; // K3
 const int DIR_RELAY2_PIN   = 27; // K4
 
 const int LIGHT_RELAY_PIN  = 13; // K5
-const int LIGHT_SWITCH_PIN = 23;
+const int LIGHT_SWITCH_PIN = 19;
+// const int LIGHT_SWITCH_PIN = 23;
 
 const int IR_DETECTOR_PIN  = 34;
 const int IR_TRANSMIT_PIN  = 4;

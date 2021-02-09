@@ -40,7 +40,7 @@ const RGBLed::Colour RGBLed::getColour() const
     return colour;
 }
 
-void RGBLed::setColour(const struct Colour& c)
+void RGBLed::setColour(const struct Colour& c, const unsigned int timeout)
 {
     colour = c;
     ledcWrite(redChan, 256 - colour.red);
@@ -53,4 +53,42 @@ void RGBLed::off()
   ledcWrite(redChan, 256);
   ledcWrite(greenChan, 256);
   ledcWrite(blueChan, 256);
+
+  setAt = 0;
+  timeToLive = 0;
+  fade = 0;
+}
+
+void RGBLed::poll()
+{
+    unsigned long now = millis();
+    
+    if (timeToLive)
+    {
+        unsigned long livedFor = now - setAt;
+        if (livedFor >= timeToLive)
+        {
+            fade = now;
+            timeToLive = 0;
+            setAt = 0;
+            fadeRed = redChan / 10;
+            fadeGreen = greenChan / 10;
+            fadeGreen = greenChan / 10;
+        }
+    }
+    if (fade != 0)
+    {
+        if ((now - fade) > 500)
+        {
+            fade = now;
+            int16_t newRed   = redChan - fadeRed;
+            int16_t newGreen = redChan - fadeRed;
+            int16_t newBlue  = redChan - fadeRed;
+            if ((newRed < 0) || (newGreen < 0) || (newBlue < 0)) off();
+            else
+            {
+                setColour({uint8_t(newRed), uint8_t(newGreen), uint8_t(newBlue)});
+            }
+        }
+    }
 }

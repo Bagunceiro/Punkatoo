@@ -2,7 +2,6 @@
 #include "config.h"
 #include "webserver.h"
 #include "networks.h"
-#include "WiFiSerial.h"
 #include "updater.h"
 #include "ldr.h"
 #include "tempSensor.h"
@@ -99,14 +98,29 @@ String tempSensorData()
   String data;
   if (tempSensor.running())
   {
+/*
     data = 
 R"!(<TR><TD>Temperature</TD><TD>)!"   + String((tempSensor.readTemperature() *10)/10) + R"!(°C</TD></TR>
 <TR><TD>Humidity</TD><TD>)!"          + String((tempSensor.readHumidity() *10)/10) + R"!(%</TD></TR>
 <TR><TD>Pressure</TD><TD>)!"          + String((tempSensor.readPressure() *10)/1000) + R"!( mBar</TD></TR>
 )!";
+*/
+    data = 
+R"!(<TR><TD>Ambient</TD><TD>)!" + String((tempSensor.readTemperature() *10)/10) + R"!(°C</TD>
+<TD>)!" + String((tempSensor.readHumidity() *10)/10) + R"!(%</TD>
+<TD>)!" + String((tempSensor.readPressure() *10)/1000) + R"!( mBar</TD></TR>
+)!";
+
   }
   return data;
 }
+
+
+#include "lamp.h"
+/*
+extern Lamp lamp;
+<TR><TD>Light Switch</TD><TD colspan=3>)!"  + (lamp.switchstate() ? "Open" : "Closed") + R"!(</TD></TR>
+*/
 
 void handleRoot()
 {
@@ -115,6 +129,7 @@ void handleRoot()
   time_t now = timeClient.getEpochTime();
   time_t lastUpdate = persistant[persistant.updateTime_n].toInt();
   extern LDR ldr;
+  extern Lamp lamp;
 
   String body2(R"!(
 <button onclick=goreset()>Reset</button>
@@ -123,14 +138,15 @@ void handleRoot()
 <div class=content>
 <BR><B>Controller: )!" + persistant[persistant.controllername_n] + R"!(</B>
 <TABLE>
-<TR><TD>Time now</TD><TD>)!"      + ctime(&now) + R"!(</TD></TR>
+<TR><TD>Time now</TD><TD colspan=3 >)!"      + ctime(&now) + R"!(</TD></TR>
 )!" + tempSensorData() + R"!(
-<TR><TD>Ambient Light</TD><TD>)!" + ldr.getStatus() + R"!(</TD></TR>
-<TR><TD>Version</TD><TD>)!"       + appVersion + " (" + compTime + " " + compDate + R"!()</TD></TR>
-<TR><TD>MAC Address</TD><TD>)!"   + WiFi.macAddress() + R"!(</TD></TR>
-<TR><TD>Last update</TD><TD>)!"   + (lastUpdate != 0 ? ctime(&lastUpdate) : "N/A") + R"!(</TD></TR>
-<TR><TD>Uptime</TD><TD>)!"        + upTime() + R"!(</TD></TR>
-<TR><TD>WiFi SSID</TD><TD>)!"     + WiFi.SSID() + R"!(</TD></TR>
+<TR><TD>Light level</TD><TD colspan=3>)!" + ldr.getStatus() + R"!(</TD></TR>
+<TR><TD>Version</TD><TD colspan=3 >)!"       + appVersion + " (" + compTime + " " + compDate + R"!()</TD></TR>
+<TR><TD>MAC Address</TD><TD colspan=3 >)!"   + WiFi.macAddress() + R"!(</TD></TR>
+<TR><TD>Last update</TD><TD colspan=3 >)!"   + (lastUpdate != 0 ? ctime(&lastUpdate) : "N/A") + R"!(</TD></TR>
+<TR><TD>Uptime</TD><TD colspan=3>)!"        + upTime() + R"!(</TD></TR>
+<TR><TD>WiFi SSID</TD><TD colspan=3>)!"     + WiFi.SSID() + R"!(</TD></TR>
+<TR><TD>Light Switch</TD><TD colspan=3>)!"  + (lamp.switchstate() ? "Open" : "Closed") + R"!(</TD></TR>
 </TABLE><BR>
 </DIV>
 </BODY>
@@ -181,9 +197,9 @@ void handleGenUpdate()
       const String argName = webServer.argName(i);
       persistant[argName] = webServer.arg(i);
     }
-    persistant.dump(Serial);
+    persistant.dump(serr);
     persistant.writeFile();
-    Serial.println("Resetting");
+    serr.println("Resetting");
 
     delay(3000);
     resetMessage("");
@@ -256,7 +272,7 @@ void handleNetConfig()
 {
   if (webServer.method() == HTTP_POST)
   {
-    Serial.println("Network Update");
+    serr.println("Network Update");
     networkList newlist;
 
     bool usenext = false;
@@ -267,10 +283,10 @@ void handleNetConfig()
 
       if (usenext && (argName == "ssid"))
       {
-        Serial.println(value);
+        serr.println(value);
         addNetwork(newlist, value);
       }
-      Serial.println(argName.c_str());
+      serr.println(argName.c_str());
       if (argName == "conf")
         usenext = true;
       else
@@ -278,7 +294,7 @@ void handleNetConfig()
         usenext = false;
         if (argName == "newnet")
         {
-          Serial.printf("newnet, value = %s\n", value.c_str());
+          serr.printf("newnet, value = %s\n", value.c_str());
           if (value.length() != 0)
           {
             addNetwork(newlist, value);
@@ -331,11 +347,9 @@ void handleNewNet()
     for (uint8_t i = 0; i < webServer.args(); i++)
     {
       const String argName = webServer.argName(i);
-      // Serial.printf("Arg %s, val %s\n", argName.c_str(), webServer.arg(i).c_str());
 
       if (argName == "ssid")
       {
-        // Serial.printf("SSID is %s\n", webServer.arg(i).c_str());
         net.ssid = webServer.arg(i);
       }
       else if (argName == "psk")
@@ -345,7 +359,7 @@ void handleNewNet()
       }
     }
   }
-  Serial.printf("Editted network %s\n", net.ssid.c_str());
+  serr.printf("Editted network %s\n", net.ssid.c_str());
   updateWiFiDef(net);
   String title("WiFi Network");
   String head3("");
@@ -480,6 +494,6 @@ void FanConWebServer::init()
   webServer.on(pageSystemUpdate, handleSystemUpdate);
   webServer.on(pageDoUpdate, handleDoUpdate);
 
-  Serial.println("Web Server");
+  serr.println("Web Server");
   webServer.begin();
 }

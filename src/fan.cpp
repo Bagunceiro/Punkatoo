@@ -15,7 +15,7 @@ void Fan::setSpeed(const int s)
 {
   if (s >= -3 && s <= 3)
   {
-    Serial.printf("Fan to %d\n", s);
+    serr.printf("Fan to %d\n", s);
     if (s == 0) // turn it off
     {
       dir.pos(0);

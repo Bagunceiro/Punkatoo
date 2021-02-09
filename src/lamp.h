@@ -35,6 +35,7 @@ class Lamp: public MqttControlled, public IRControlled, public PTask
     virtual void doSubscriptions(PubSubClient& mqttclient);
     // virtual void irmsgRecd(IRCode code);
     virtual void irmsgRecd(IRMessage msg);
+    int switchstate();
 
   private:
     int lpin; // goes to the control relay (active low)
