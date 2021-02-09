@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <ConfBlk.h>
 #include <WiFi.h>
+#include <WiFiSerial.h>
 
 #include "NTPClient.h"
 
@@ -61,7 +62,8 @@ struct ConfigBlock : public ConfBlk
 };
 
 extern ConfigBlock persistant;
-extern Stream &serr;
+// extern Stream &serr;
+extern WiFiSerialClient &serr;
 
 void   startup();
 String upTime();

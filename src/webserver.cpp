@@ -283,10 +283,10 @@ void handleNetConfig()
 
       if (usenext && (argName == "ssid"))
       {
-        serr.println(value);
+        // serr.println(value);
         addNetwork(newlist, value);
       }
-      serr.println(argName.c_str());
+      // serr.println(argName.c_str());
       if (argName == "conf")
         usenext = true;
       else
@@ -294,7 +294,7 @@ void handleNetConfig()
         usenext = false;
         if (argName == "newnet")
         {
-          serr.printf("newnet, value = %s\n", value.c_str());
+          // serr.printf("newnet, value = %s\n", value.c_str());
           if (value.length() != 0)
           {
             addNetwork(newlist, value);

@@ -26,7 +26,7 @@ const char *compTime = __TIME__;
 #include "rgbled.h"
 #include "tempSensor.h"
 
-Stream &serr = Serial;
+WiFiSerialClient &serr = WSerial;
 
 WiFiClient mqttWifiClient;
 WiFiClient updWifiClient;

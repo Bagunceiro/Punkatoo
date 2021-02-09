@@ -90,33 +90,35 @@ bool IRController::operator()()
     static unsigned long then = 0;
     unsigned long when;
     uint64_t val = IRDecodeResults.value;
-    serr.println(uint64ToString(val, HEX));
-    // serialPrintUint64(val, HEX);
-    // Serial.println("");
-
-    if ((when = irDebounce(then)))
+    if (val != ~0)
     {
-      // Decode data from remote
-      auto search = decList.find(val);
-      if (search != decList.end())
+      serr.println("IRMsg " + uint64ToString(val, HEX));
+
+      if ((when = irDebounce(then)))
       {
-        // for everything that code could mean
-        for (IRMessage msg : search->second)
+        // Decode data from remote
+        auto search = decList.find(val);
+        if (search != decList.end())
         {
-          // Find subscriptions for it
-          auto search2 = subList.find(msg);
-          if (search2 != subList.end())
+          // for everything that code could mean
+          for (IRMessage msg : search->second)
           {
-            // For each subscription for this message
-            for (IRControlled *dev : search2->second)
+            serr.println(String(" = ") + msg);
+            // Find subscriptions for it
+            auto search2 = subList.find(msg);
+            if (search2 != subList.end())
             {
-              // send it to the subscribing device
-              dev->irmsgRecd(msg);
+              // For each subscription for this message
+              for (IRControlled *dev : search2->second)
+              {
+                // send it to the subscribing device
+                dev->irmsgRecd(msg);
+              }
             }
           }
         }
+        then = when;
       }
-      then = when;
     }
     resume();
   }
