@@ -7,6 +7,7 @@
 #include <WiFiSerial.h>
 
 #include "NTPClient.h"
+#include "eventlog.h"
 
 extern const char* SSID;
 extern const char* PSK;
@@ -46,6 +47,7 @@ extern const unsigned int WIFI_CONNECT_ATTEMPT_PAUSE;
 
 const int TZ = -3;
 extern NTPClient timeClient;
+extern EventLog evLog;
 
 struct ConfigBlock : public ConfBlk
 {

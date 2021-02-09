@@ -25,6 +25,7 @@ const char *compTime = __TIME__;
 #include "updater.h"
 #include "rgbled.h"
 #include "tempSensor.h"
+#include "eventlog.h"
 
 WiFiSerialClient &serr = WSerial;
 
@@ -41,6 +42,7 @@ Updater updater("updater");
 LDR ldr("LDR", LDR_PIN);
 TempSensor tempSensor;
 Configurator configurator;
+EventLog evLog(20);
 
 /*
  * Status LED colours
@@ -67,12 +69,14 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     serr.println("Station Mode Started");
     break;
   case SYSTEM_EVENT_STA_GOT_IP:
+    // evLog.writeEvent("Connected to WiFi");
     serr.println("Connected to : " + String(WiFi.SSID()));
     serr.print("Got IP: ");
     serr.println(WiFi.localIP());
     indicator.setColour(indicateNet, 60);
     break;
   case SYSTEM_EVENT_STA_DISCONNECTED:
+    // evLog.writeEvent("Disconnected from WiFi");
     serr.println("Disconnected from station");
     indicator.setColour(indicateNoNet, 60);
     WiFi.reconnect();
@@ -188,14 +192,21 @@ void IRAM_ATTR startwps()
 void setup()
 {
   WiFi.mode(WIFI_STA);
+  Serial.begin(9600);
+  delay(500);
 
   startup(); // set start time
 
-  Serial.begin(9600);
+  evLog.start(1);
+
   indicator.setColour(indicateStarting);
+
+  evLog.writeEvent("Starting");
 
   serr.println("");
   serr.println(appVersion);
+
+
   if (persistant.readFile() == false)
     persistant.writeFile();
   persistant.dump(serr);
@@ -224,6 +235,7 @@ void setup()
    * Ready to go (switch and IR). But network has not been initialised yet
    */
   indicator.setColour(indicateNoNet, 60);
+  evLog.writeEvent("Startup compĺete");
 
   pinMode(WPS_PIN, INPUT_PULLUP);
   attachInterrupt(WPS_PIN, startwps, FALLING);
@@ -309,6 +321,16 @@ void loop()
     then = now;
     tempSensor.sendStatus();
   }
+
+  static unsigned long then2 = 0;
+
+  if ((now - then2) > 15*1000)
+  {
+    then2= now;
+
+    evLog.printLog();
+  }
+
   indicator.poll();
 
   if (startWPS)

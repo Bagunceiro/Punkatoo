@@ -124,7 +124,7 @@ extern Lamp lamp;
 
 void handleRoot()
 {
-  const String title("Controller");
+  const String title("Punkatoo");
   const String head3("");
   time_t now = timeClient.getEpochTime();
   time_t lastUpdate = persistant[persistant.updateTime_n].toInt();
@@ -157,12 +157,12 @@ void handleRoot()
 
 void messagePage(const String& message)
 {
-  const String title("Controller");
+  const String title("Punkatoo Message");
   const String head3 = "<meta http-equiv=\"refresh\" content=\"15;url=/\" />";
   String body2(R"!(
   <div class=content>
   <BODY>
-  <br><B>Controller )!" + persistant[persistant.controllername_n] + "</B><br><br>" + message + R"!(
+  <br><B>Controller: )!" + persistant[persistant.controllername_n] + "</B><br><br>" + message + R"!(
   </div>
   </BODY>
   )!");
@@ -208,7 +208,7 @@ void handleGenUpdate()
 
 void handleGenConfig()
 {
-  String title("<title>Controller Configuration</title>");
+  String title("Punkatoo Configuration");
   String head3("");
   String body2((String) R"!(
 <button type=submit form=theform>Save and Reset</button>
@@ -359,7 +359,7 @@ void handleNewNet()
       }
     }
   }
-  serr.printf("Editted network %s\n", net.ssid.c_str());
+  serr.printf("Edited network %s\n", net.ssid.c_str());
   updateWiFiDef(net);
   String title("WiFi Network");
   String head3("");
@@ -422,7 +422,7 @@ extern Updater updater;
 
 void handleSystemUpdate()
 {
-  String title("<title>System Update</title>");
+  String title("Punkatoo System Update");
   String head3("");
   String body2((String) R"=====(
 <button type=submit form=theform>Update</button>
@@ -451,7 +451,7 @@ void handleSystemUpdate()
 
 void handleDoUpdate()
 {
-  const String title("Controller");
+  const String title("Punkatoo");
   String server;
   String port;
   String image;

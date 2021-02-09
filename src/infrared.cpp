@@ -28,19 +28,14 @@ const int IRDEBOUNCE = 200; // Number of milliseconds to leave fallow between IR
 
 // IRControlled *IRControlled::list = NULL;
 
-IRControlled::IRControlled()
+IRControlled::IRControlled(const String& n)
 {
+  name = n;
 }
 
 IRControlled::~IRControlled()
 {
 }
-
-/*
-void IRControlled::irmsgRecd(const IRCode code)
-{
-}
-*/
 
 void IRControlled::irmsgRecd(const IRMessage msg)
 {
@@ -112,6 +107,10 @@ bool IRController::operator()()
               for (IRControlled *dev : search2->second)
               {
                 // send it to the subscribing device
+
+                char buffer[20];
+                sprintf(buffer, "IR(%s)->%s", msg, dev->getName().c_str());
+                evLog.writeEvent(buffer);
                 dev->irmsgRecd(msg);
               }
             }

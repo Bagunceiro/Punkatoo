@@ -7,13 +7,16 @@ extern RGBLed indicator;
 
 const int MAXDEBOUNCE = 5; // Number of loops to allow light switch to settle
 
-Lamp::Lamp(String devName) : MqttControlled(devName), PTask(devName, 2500) {}
+Lamp::Lamp(String devName) : MqttControlled(devName), IRControlled(devName), PTask(devName, 2500) {}
 
 Lamp::~Lamp() {}
 
 void Lamp::sw(int toState)
 {
+  char buffer[8];
+  sprintf(buffer, "Lamp %d", toState);
   serr.printf("Switch Lamp to %d\n", toState);
+  evLog.writeEvent(buffer);
   if (toState == 0)
   {
     digitalWrite(lpin, HIGH);
@@ -48,6 +51,9 @@ bool Lamp::operator()()
       if (si.debounce > MAXDEBOUNCE)
       {
         // serr.println("Switch pressed");
+        String msg("Lamp sw ");
+        msg += (newState == 1 ? "Open" : "Closed");
+        evLog.writeEvent(msg.c_str());
         toggle();
         si.switchState = newState;
         si.debounce = 0;

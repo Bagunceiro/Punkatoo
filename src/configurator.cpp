@@ -12,7 +12,7 @@ extern RGBLed indicator;
 
 extern Configurator configurator;
 
-Configurator::Configurator()
+Configurator::Configurator() : IRControlled("Configurator")
 {
     startedAt = 0;
     running = false;

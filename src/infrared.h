@@ -95,17 +95,19 @@ private:
 class IRControlled
 {
 public:
-  IRControlled();
+  IRControlled(const String& n);
   virtual ~IRControlled();
   virtual void irmsgRecd(const IRMessage msg);
   void registerIR(IRController &c);
   virtual void subscribeToIR() {}
+  String getName() { return name; }
 
 protected:
   bool subscribe(IRMessage m);
 
 private:
   IRController *ctlr;
+  String name;
 };
 
 class IRLed

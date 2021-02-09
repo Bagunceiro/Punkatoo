@@ -1,7 +1,7 @@
 #include "config.h"
 #include "fan.h"
 
-Fan::Fan(String devName) : MqttControlled(devName) {}
+Fan::Fan(String devName) : MqttControlled(devName), IRControlled(devName) {}
 Fan::~Fan() {}
 
 void Fan::init(const int d1, const int d2, const int s1, const int s2)

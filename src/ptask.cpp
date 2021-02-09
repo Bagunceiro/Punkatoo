@@ -30,6 +30,7 @@ void PTask::loop(void *ctlr)
 
 bool PTask::start(uint8_t priority)
 {
+    serr.println(String("Creating task for ") + name);
     xTaskCreate(
         loop,          // Function to implement the task
         name.c_str(),  // Name of the task
