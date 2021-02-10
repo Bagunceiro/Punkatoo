@@ -324,7 +324,7 @@ void loop()
 
   static unsigned long then2 = 0;
 
-  if ((now - then2) > 60 * 1000)
+  if ((now - then2) > 10 * 1000)
   {
     then2= now;
     evLog.printLog();

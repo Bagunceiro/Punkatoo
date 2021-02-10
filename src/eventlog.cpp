@@ -1,26 +1,51 @@
+#include <Arduino.h>
+
 #include "eventlog.h"
 #include "config.h"
 
+uint32_t Event::nextSerialNo = 1;
+SemaphoreHandle_t serialNoMutex = NULL;
+
 Event::Event(const char* txt)
 {
-    // timestamp = timeClient.getEpochMillis();
+
+
     timestamp = millis();
     strncpy(text, txt, 25);
+    serialNo = 0;
 }
 
 Event::~Event()
 {
 }
 
+uint32_t Event::setSerial()
+{
+    if(serialNoMutex == NULL )
+    {
+        serialNoMutex = xSemaphoreCreateMutex();
+    }
+
+    if (serialNoMutex != NULL)
+    {
+        xSemaphoreTake(serialNoMutex, portMAX_DELAY);
+        serialNo = nextSerialNo++;
+        xSemaphoreGive(serialNoMutex);
+    }
+
+    else serialNo = 0;
+    return serialNo;
+}
+
 void Event::dump()
 {
-    char buffer[16];
+    char buffer[24];
     /*
     tm timep;
     localtime_r(&timestamp, &timep);
     strftime(buffer,20,"%d/%m/%y %H:%M:%S", &timep);
     */
-    sprintf(buffer, "%011ld", timestamp);
+    sprintf(buffer, "%05d %011ld", serialNo, timestamp);
     serr.print(buffer);
     serr.print("\t");
     serr.println(text);
@@ -42,6 +67,7 @@ bool EventLog::writeEvent(const char* txt)
 {
 
     Event e(txt);
+    e.setSerial();
     return xQueueSend(queue, &e, 0);
     return true;
 }
