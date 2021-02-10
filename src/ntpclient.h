@@ -6,48 +6,9 @@
 
 #include <Udp.h>
 
-#define NTP_DBG_PORT      Serial
-
-// Change _NTP_LOGLEVEL_ to set tracing and logging verbosity
-// 0: DISABLED: no logging
-// 1: ERROR: errors
-// 2: WARN: errors and warnings
-// 3: INFO: errors, warnings and informational (default)
-// 4: DEBUG: errors, warnings, informational and debug
-
-#ifndef _NTP_LOGLEVEL_
-  #define _NTP_LOGLEVEL_       0
-#endif
-
-#define NTP_LOGERROR(x)         if(_NTP_LOGLEVEL_>0) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.println(x); }
-#define NTP_LOGERROR0(x)        if(_NTP_LOGLEVEL_>0) { NTP_DBG_PORT.print(x); }
-#define NTP_LOGERROR1(x,y)      if(_NTP_LOGLEVEL_>0) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(y); }
-#define NTP_LOGERROR2(x,y,z)    if(_NTP_LOGLEVEL_>0) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(y); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(z); }
-#define NTP_LOGERROR3(x,y,z,w)  if(_NTP_LOGLEVEL_>0) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(y); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(z); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(w); }
-
-#define NTP_LOGWARN(x)          if(_NTP_LOGLEVEL_>1) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.println(x); }
-#define NTP_LOGWARN0(x)         if(_NTP_LOGLEVEL_>1) { NTP_DBG_PORT.print(x); }
-#define NTP_LOGWARN1(x,y)       if(_NTP_LOGLEVEL_>1) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(y); }
-#define NTP_LOGWARN2(x,y,z)     if(_NTP_LOGLEVEL_>1) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(y); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(z); }
-#define NTP_LOGWARN3(x,y,z,w)   if(_NTP_LOGLEVEL_>1) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(y); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(z); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(w); }
-
-#define NTP_LOGINFO(x)          if(_NTP_LOGLEVEL_>2) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.println(x); }
-#define NTP_LOGINFO0(x)         if(_NTP_LOGLEVEL_>2) { NTP_DBG_PORT.print(x); }
-#define NTP_LOGINFO1(x,y)       if(_NTP_LOGLEVEL_>2) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(y); }
-#define NTP_LOGINFO2(x,y,z)     if(_NTP_LOGLEVEL_>2) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(y); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(z); }
-#define NTP_LOGINFO3(x,y,z,w)   if(_NTP_LOGLEVEL_>2) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(y); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(z); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(w); }
-
-#define NTP_LOGDEBUG(x)         if(_NTP_LOGLEVEL_>3) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.println(x); }
-#define NTP_LOGDEBUG0(x)        if(_NTP_LOGLEVEL_>3) { NTP_DBG_PORT.print(x); }
-#define NTP_LOGDEBUG1(x,y)      if(_NTP_LOGLEVEL_>3) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(y); }
-#define NTP_LOGDEBUG2(x,y,z)    if(_NTP_LOGLEVEL_>3) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(y); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(z); }
-#define NTP_LOGDEBUG3(x,y,z,w)  if(_NTP_LOGLEVEL_>3) { NTP_DBG_PORT.print("[NTP] "); NTP_DBG_PORT.print(x); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(y); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.print(z); NTP_DBG_PORT.print(" "); NTP_DBG_PORT.println(w); }
-
-
 #define SECS_IN_DAY               (86400L)
 #define SECS_IN_HR                (3600L)
 #define SECS_IN_MIN               (60L)
-
 
 #define SEVENTYYEARS              (2208988800UL)
 #define FRACTIONSPERMILLI         (4294967UL)

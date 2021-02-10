@@ -60,6 +60,7 @@ bool Lamp::operator()()
       }
     }
   }
+  delay(10);
   return true;
 }
 

@@ -121,6 +121,7 @@ bool IRController::operator()()
     }
     resume();
   }
+  delay(20);
   return true;
 }
 

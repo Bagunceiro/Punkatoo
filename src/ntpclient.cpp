@@ -24,7 +24,7 @@
   3.2.2   K Hoang      28/10/2020 Add examples to use STM32 Built-In RTC.
  *****************************************************************************************************************************/
 
-#include <NTPClient.h>
+#include <ntpclient.h>
 
 NTPClient::NTPClient(UDP& udp, long timeOffset)
 {
@@ -96,7 +96,7 @@ bool NTPClient::checkResponse()
 
 bool NTPClient::forceUpdate()
 {
-  NTP_LOGDEBUG("Update from NTP Server");
+  // NTP_LOGDEBUG("Update from NTP Server");
 
   // flush any existing packets
   while (this->_udp->parsePacket() != 0)

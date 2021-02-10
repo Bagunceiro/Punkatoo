@@ -4,7 +4,6 @@
 #include <ESPmDNS.h>
 #include <Wire.h>
 #include <PubSubClient.h>
-#include <WiFiSerial.h>
 #include <time.h>
 #include <esp_wps.h>
 
@@ -12,6 +11,7 @@ const char *appVersion = "Punkatoo 0.1";
 const char *compDate = __DATE__;
 const char *compTime = __TIME__;
 
+#include "wifiserial.h"
 #include "config.h"
 #include "spdt.h"
 #include "mqtt.h"
@@ -27,7 +27,8 @@ const char *compTime = __TIME__;
 #include "tempSensor.h"
 #include "eventlog.h"
 
-WiFiSerialClient &serr = WSerial;
+//WiFiSerialClient &serr = WSerial;
+WiFiSerialClient serr;
 
 WiFiClient mqttWifiClient;
 WiFiClient updWifiClient;
@@ -270,8 +271,7 @@ void loop()
     if (!wifiWasConnected)
     {
       wifiWasConnected = true;
-      WSerial.begin("Punkatoo");
-      serr = WSerial;
+      serr.begin("Punkatoo");
       serr.println("WiFi connected");
       indicator.setColour(indicateNet);
     }
@@ -300,7 +300,7 @@ void loop()
     }
 
     webServer.handleClient();
-    WSerial.loop();
+    serr.loop();
   }
   else
   {
@@ -324,10 +324,9 @@ void loop()
 
   static unsigned long then2 = 0;
 
-  if ((now - then2) > 15*1000)
+  if ((now - then2) > 60 * 1000)
   {
     then2= now;
-
     evLog.printLog();
   }
 

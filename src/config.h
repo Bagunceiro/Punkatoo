@@ -2,11 +2,11 @@
 #define CONFIG_H
 
 #include <Arduino.h>
-#include <ConfBlk.h>
 #include <WiFi.h>
-#include <WiFiSerial.h>
 
-#include "NTPClient.h"
+#include "wifiserial.h"
+#include "confblk.h"
+#include "ntpclient.h"
 #include "eventlog.h"
 
 extern const char* SSID;
@@ -65,7 +65,7 @@ struct ConfigBlock : public ConfBlk
 
 extern ConfigBlock persistant;
 // extern Stream &serr;
-extern WiFiSerialClient &serr;
+extern WiFiSerialClient serr;
 
 void   startup();
 String upTime();
