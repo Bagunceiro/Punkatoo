@@ -7,7 +7,7 @@
 #include <time.h>
 #include <esp_wps.h>
 
-const char *appVersion = "Punkatoo 0.1";
+const char *appVersion = "Punkatoo 0.2";
 const char *compDate = __DATE__;
 const char *compTime = __TIME__;
 
