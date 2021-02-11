@@ -37,18 +37,23 @@ uint32_t Event::setSerial()
     return serialNo;
 }
 
-void Event::dump()
+const String Event::asString()
 {
     char buffer[24];
+    sprintf(buffer, "%05d %011ld ", serialNo, timestamp);
+    return (String(buffer) + text);
+}
+
+void Event::dump()
+{
     /*
-    tm timep;
-    localtime_r(&timestamp, &timep);
-    strftime(buffer,20,"%d/%m/%y %H:%M:%S", &timep);
-    */
+    char buffer[24];
     sprintf(buffer, "%05d %011ld", serialNo, timestamp);
     serr.print(buffer);
     serr.print("\t");
     serr.println(text);
+    */
+    serr.println(asString());
 }
 
 EventLog::EventLog(int queueSize) : PTask("EventLog", 10000)
@@ -107,4 +112,17 @@ void EventLog::printLog()
         e++;
         if (e >= logSize) e = 0;
     }
+}
+
+const String EventLog::asString()
+{
+    int e = head;
+    String logstr;
+    while (e != next)
+    {
+        logstr += log[e].asString() + "\n";
+        e++;
+        if (e >= logSize) e = 0;
+    }
+    return logstr;
 }

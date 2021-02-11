@@ -12,6 +12,7 @@ public:
     virtual ~Event();
     void dump();
     uint32_t setSerial();
+    const String asString();
 private:
     uint32_t serialNo;
     time_t timestamp;
@@ -27,11 +28,8 @@ class EventLog : public PTask
     bool writeEvent(const char* t);
     Event readEvent();
     virtual bool operator()();
-    void sayHello()
-    {
-        Serial.println("Hello World");
-    }
     void printLog();
+    const String asString();
     private:
     QueueHandle_t queue;
     Event log[logSize];

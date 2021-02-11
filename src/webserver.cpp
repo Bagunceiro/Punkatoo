@@ -10,15 +10,16 @@ extern TempSensor tempSensor;
 
 FanConWebServer webServer(80);
 
-const String pageRoot = "/";
-const String pageGen = "/config.gen";
-const String pageGenUpdate = "/config.update";
-const String pageWiFi = "/config.net";
-const String pageWiFiNet = "/config.netedit";
-const String pageWiFiNetAdd = "/config.addnet";
-const String pageReset = "/reset";
+const String pageRoot         = "/";
+const String pageGen          = "/config.gen";
+const String pageGenUpdate    = "/config.update";
+const String pageWiFi         = "/config.net";
+const String pageWiFiNet      = "/config.netedit";
+const String pageWiFiNetAdd   = "/config.addnet";
+const String pageReset        = "/reset";
 const String pageSystemUpdate = "/system.update";
-const String pageDoUpdate = "/system.update.do";
+const String pageDoUpdate     = "/system.update.do";
+const String pageLog          = "/system.log";
 
 const String style = R"!(
 <script>
@@ -27,6 +28,7 @@ function gogenconf()   {location.assign(")!" + pageGen  + R"!(");}
 function gowificonf()  {location.assign(")!" + pageWiFi + R"!(");}
 function goreset()     {location.assign(")!" + pageReset + R"!(");}
 function gosysupdate() {location.assign(")!" + pageSystemUpdate + R"!(");}
+function golog()       {location.assign(")!" + pageLog + R"!(");}
 </script>
 <style>
 body {font-family:Arial, Sans-Serif; font-size: 4vw; background-color: lavender;}
@@ -66,6 +68,7 @@ const String body1(R"!(
 <button onclick="gohome()">Home</button>
 <button onclick=gogenconf()>General</button>
 <button onclick=gowificonf()>WiFi</button>
+<button onclick=golog()>Log</button>
 -)!");
 
 const String tail("");
@@ -482,17 +485,40 @@ void handleDoUpdate()
     }
 }
 
+void handleLog()
+{
+  const String title("Punkatoo Log");
+  const String head3("");
+  time_t now = timeClient.getEpochTime();
+ 
+  String body2(R"!(
+<button onclick=goreset()>Reset</button>
+<button onclick=gosysupdate()>System Update</button>
+</div>
+<div class=content>
+<BR><B>)!" + persistant[persistant.controllername_n] + " Log, " + ctime(&now) + R"!(</B>
+<PRE>
+)!" + evLog.asString() + R"!(
+</PRE>
+</DIV>
+</BODY>
+)!");
+
+  sendPage(head1, title, head2, style, head3, headEnd, body1, body2);
+}
+
 void FanConWebServer::init()
 {
-  webServer.on(pageRoot, handleRoot);
-  webServer.on(pageGen, handleGenConfig);
-  webServer.on(pageGenUpdate, handleGenUpdate);
-  webServer.on(pageWiFi, handleNetConfig);
-  webServer.on(pageWiFiNet, handleNetEdit);
-  webServer.on(pageWiFiNetAdd, handleNewNet);
-  webServer.on(pageReset, blankResetMessage);
+  webServer.on(pageRoot,         handleRoot);
+  webServer.on(pageGen,          handleGenConfig);
+  webServer.on(pageGenUpdate,    handleGenUpdate);
+  webServer.on(pageWiFi,         handleNetConfig);
+  webServer.on(pageWiFiNet,      handleNetEdit);
+  webServer.on(pageWiFiNetAdd,   handleNewNet);
+  webServer.on(pageReset,        blankResetMessage);
   webServer.on(pageSystemUpdate, handleSystemUpdate);
-  webServer.on(pageDoUpdate, handleDoUpdate);
+  webServer.on(pageDoUpdate,     handleDoUpdate);
+  webServer.on(pageLog,          handleLog);
 
   serr.println("Web Server");
   webServer.begin();

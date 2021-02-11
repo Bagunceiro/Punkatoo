@@ -236,7 +236,7 @@ void setup()
    * Ready to go (switch and IR). But network has not been initialised yet
    */
   indicator.setColour(indicateNoNet, 60);
-  evLog.writeEvent("Startup compĺete");
+  evLog.writeEvent("Startup complete");
 
   pinMode(WPS_PIN, INPUT_PULLUP);
   attachInterrupt(WPS_PIN, startwps, FALLING);
@@ -322,13 +322,16 @@ void loop()
     tempSensor.sendStatus();
   }
 
+
+/*
   static unsigned long then2 = 0;
 
-  if ((now - then2) > 10 * 1000)
+  if ((now - then2) > 60 * 1000)
   {
     then2= now;
     evLog.printLog();
   }
+*/
 
   indicator.poll();
 
