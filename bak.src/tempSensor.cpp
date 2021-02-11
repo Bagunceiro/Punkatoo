@@ -1,7 +1,7 @@
 #include <ArduinoJson.h>
 #include "tempSensor.h"
 
-TempSensor::TempSensor() : MQTTClientDev("bme")
+TempSensor::TempSensor() : MqttControlled("bme")
 {
   ok = false;
 }
@@ -14,7 +14,11 @@ void TempSensor::msgRecd(const String &topic, const String &msg)
 {
 }
 
-void TempSensor::mqttMsgRecd(const String &topic, const String &msg)
+void TempSensor::mqttaction(const String &topic, const String &msg)
+{
+}
+
+void TempSensor::doSubscriptions(PubSubClient &mqttClient)
 {
 }
 

@@ -60,7 +60,6 @@ void MqttControlled::doAllSubscriptions(PubSubClient& mqttClient)
     ptr->doSubscriptions(mqttClient);
     ptr = ptr->next;
   }
-
 }
 
 MqttControlled::~MqttControlled()

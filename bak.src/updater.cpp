@@ -3,7 +3,7 @@
 #include "config.h"
 #include "updater.h"
 
-Updater::Updater(const String &devName)
+Updater::Updater(const String &devName) : MqttControlled(devName)
 {
   startCallback = NULL;
   endCallback   = NULL;
@@ -13,6 +13,55 @@ Updater::Updater(const String &devName)
 
 Updater::~Updater()
 {
+}
+
+void Updater::mqttaction(const String &topic, const String &msg)
+{
+  if (topic == MQTT_TPC_UPDATE)
+  {
+    StaticJsonDocument<512> doc;
+
+    DeserializationError error = deserializeJson(doc, msg);
+    if (error)
+    {
+      serr.printf("Config deserialization error (%d)\n", error.code());
+    }
+    else
+    {
+      JsonObject root = doc.as<JsonObject>();
+      String server;
+      int port = 80;
+      String image;
+      String ver;
+      for (JsonPair kv : root)
+      {
+        if (kv.key() == "server")
+          server = (const char *)kv.value();
+        else if (kv.key() == "port")
+          port = kv.value();
+        else if (kv.key() == "image")
+          image = (const char *)kv.value();
+        else if (kv.key() == "version")
+          ver = (const char *)kv.value();
+      }
+      serr.printf("systemUpdate(%s, %d, %s, %s)\n", server.c_str(), port, image.c_str(), ver.c_str());
+      if (systemUpdate(server, port, image, ver) == HTTP_UPDATE_OK)
+      {
+        ESP.restart();
+      }
+    }
+  }
+}
+
+void Updater::doSubscriptions(PubSubClient &mqttClient)
+{
+  mqttClient.subscribe((getPrefix() + MQTT_TPC_UPDATE).c_str());
+  sendStatus();
+}
+
+String Updater::getStatus()
+{
+  return "";
 }
 
 t_httpUpdate_return Updater::systemUpdate(const String &server, const uint16_t port, const String &image, const String& ver)

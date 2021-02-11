@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "mqtt2.h"
+#include "mqtt.h"
 #include "infrared.h"
 
 typedef std::vector<int> SwitchList;
@@ -17,7 +17,7 @@ struct SwBlk
 
 typedef std::vector<SwBlk> SwBlkList;
 
-class Lamp: public MQTTClientDev, public IRControlled, public PTask
+class Lamp: public MqttControlled, public IRControlled, public PTask
 {
   public:
     Lamp(String devName);
@@ -31,15 +31,15 @@ class Lamp: public MQTTClientDev, public IRControlled, public PTask
 
     virtual ~Lamp();
     virtual String getStatus();
-    virtual void mqttMsgRecd(const String &topic, const String &msg);
-    
+    virtual void mqttaction(const String& topic, const String& msg);
+    virtual void doSubscriptions(PubSubClient& mqttclient);
+    // virtual void irmsgRecd(IRCode code);
     virtual void irmsgRecd(IRMessage msg);
     int switchstate();
 
   private:
     int lpin; // goes to the control relay (active low)
     virtual void subscribeToIR();
-    virtual void subscribeToMQTT();
 
     SwBlkList swList;
 };

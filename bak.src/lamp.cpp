@@ -7,7 +7,7 @@ extern RGBLed indicator;
 
 const int MAXDEBOUNCE = 5; // Number of loops to allow light switch to settle
 
-Lamp::Lamp(String devName) : MQTTClientDev(devName), IRControlled(devName), PTask(devName, 2500) {}
+Lamp::Lamp(String devName) : MqttControlled(devName), IRControlled(devName), PTask(devName, 2500) {}
 
 Lamp::~Lamp() {}
 
@@ -111,10 +111,10 @@ void Lamp::init(const SwitchList inpList, int out)
   }
   lpin = out;
   pinMode(lpin, OUTPUT);
-  // sw(0);
+  sw(0);
 }
 
-void Lamp::mqttMsgRecd(const String& topic, const String& msg)
+void Lamp::mqttaction(const String& topic, const String& msg)
 {
   if (topic == MQTT_TPC_SWITCH)
   {
@@ -122,9 +122,9 @@ void Lamp::mqttMsgRecd(const String& topic, const String& msg)
   }
 }
 
-void Lamp::subscribeToMQTT()
+void Lamp::doSubscriptions(PubSubClient& mqttClient)
 {
-  mqttctlr->subscribe(this,  MQTT_TPC_SWITCH);
+  mqttClient.subscribe((getPrefix() + MQTT_TPC_SWITCH).c_str());
   sendStatus();
 }
 

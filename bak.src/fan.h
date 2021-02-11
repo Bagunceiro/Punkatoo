@@ -1,10 +1,10 @@
 #pragma once
 
-#include "mqtt2.h"
+#include "mqtt.h"
 #include "infrared.h"
 #include "spdt.h"
 
-class Fan: public MQTTClientDev, public IRControlled
+class Fan: public MqttControlled, public IRControlled
 {
     /*
        Speed is a number between -3 and +3 where 0 is off and sign = direction
@@ -25,11 +25,12 @@ class Fan: public MQTTClientDev, public IRControlled
     void faster();
     void slower();
     bool reverse();
-    virtual void mqttMsgRecd(const String &topic, const String &msg);
+    virtual void mqttaction(const String& topic, const String& msg);
+    virtual void doSubscriptions(PubSubClient& mqttClient);
+    // virtual void irmsgRecd(const IRCode code);
     virtual void irmsgRecd(const IRMessage code);
 
   private:
-    virtual void subscribeToMQTT();
     virtual void subscribeToIR();
     SPDT dir; // Switch to set direction of motor (or off)
     SPDT spd; // Switch to set speed of motor

@@ -13,10 +13,10 @@ extern const char* SSID;
 extern const char* PSK;
 
 
-extern const String MQTT_TPC_STAT;   // "status"
-extern const String MQTT_TPC_SPEED;  // "speed"
-extern const String MQTT_TPC_SWITCH; // "switch"
-extern const String MQTT_TPC_UPDATE; // "update"
+#define MQTT_TPC_STAT   "status"
+#define MQTT_TPC_SPEED  "speed"
+#define MQTT_TPC_SWITCH "switch"
+#define MQTT_TPC_UPDATE "update"
 
 extern const char* appVersion;
 extern const char* compDate;

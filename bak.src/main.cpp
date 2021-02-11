@@ -14,7 +14,7 @@ const char *compTime = __TIME__;
 #include "wifiserial.h"
 #include "config.h"
 #include "spdt.h"
-#include "mqtt2.h"
+#include "mqtt.h"
 #include "infrared.h"
 #include "webserver.h"
 #include "configurator.h"
@@ -37,7 +37,6 @@ PubSubClient mqttClient(mqttWifiClient);
 
 RGBLed indicator(LED_RED, LED_BLUE, LED_GREEN);
 IRController irctlr;
-MQTTController mqttctlr(mqttClient);
 Lamp lamp("light");
 Fan fan("fan");
 Updater updater("updater");
@@ -218,22 +217,9 @@ void setup()
    */
   SwitchList sl;
   sl.push_back(LIGHT_SWITCH_PIN);
-  Serial.println("lamp.init"); delay(500);
-
   lamp.init(sl, LIGHT_RELAY_PIN);
-  Serial.println("lamp.registerIR"); delay(500);
-
   lamp.registerIR(irctlr);
-  Serial.println("lamp.registerMQTT"); delay(500);
-
-  lamp.registerMQTT(mqttctlr);
-  Serial.println("lamp.start"); delay(500);
-
   lamp.start(5);
-  lamp.sw(0);
-
-  Serial.println("lamp.started"); delay(500);
-
 
   /*
    * Start up the Infra red controller
@@ -245,10 +231,6 @@ void setup()
    */
   fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
   fan.registerIR(irctlr);
-  fan.registerMQTT(mqttctlr);
-  fan.setSpeed(0);
-
-  tempSensor.registerMQTT(mqttctlr);
 
   /*
    * Ready to go (switch and IR). But network has not been initialised yet
@@ -296,7 +278,7 @@ void loop()
 
     if (mqttClient.connected())
       mqttClient.loop();
-    else if (mqttctlr.init())
+    else if (initMQTT())
     {
       indicator.off();
     }

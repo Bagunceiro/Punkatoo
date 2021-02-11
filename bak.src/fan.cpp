@@ -1,14 +1,14 @@
 #include "config.h"
 #include "fan.h"
 
-Fan::Fan(String devName) : MQTTClientDev(devName), IRControlled(devName) {}
+Fan::Fan(String devName) : MqttControlled(devName), IRControlled(devName) {}
 Fan::~Fan() {}
 
 void Fan::init(const int d1, const int d2, const int s1, const int s2)
 {
   dir.setPins(d1, d2);
   spd.setPins(s1, s2);
-  // setSpeed(0);
+  setSpeed(0);
 }
 
 void Fan::setSpeed(const int s)
@@ -142,7 +142,7 @@ bool Fan::reverse()
   }
 }
 
-void Fan::mqttMsgRecd(const String& topic, const String& msg)
+void Fan::mqttaction(const String& topic, const String& msg)
 {
   if (topic == MQTT_TPC_SPEED)
   {
@@ -150,9 +150,9 @@ void Fan::mqttMsgRecd(const String& topic, const String& msg)
   }
 }
 
-void Fan::subscribeToMQTT()
+void Fan::doSubscriptions(PubSubClient& mqttClient)
 {
-  mqttctlr->subscribe(this, MQTT_TPC_SPEED);
+  mqttClient.subscribe((getPrefix() + MQTT_TPC_SPEED).c_str());
   sendStatus();
 }
 

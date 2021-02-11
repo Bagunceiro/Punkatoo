@@ -21,12 +21,6 @@ const char *ConfigBlock::updateInterval_n = "updateInterval";
 const char *ConfigBlock::updateServer_n   = "updateServer";
 const char *ConfigBlock::updateTime_n     = "updateTime";
 
-
-const String MQTT_TPC_STAT   = "status";
-const String MQTT_TPC_SPEED  = "fan/speed";
-const String MQTT_TPC_SWITCH = "light/switch";
-const String MQTT_TPC_UPDATE = "update";
-
 // GPIO pins
 
 const int LED_RED          = 2;
