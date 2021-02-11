@@ -1,20 +1,20 @@
 #include <ArduinoJson.h>
 #include "tempSensor.h"
 
-TempSensor::TempSensor() : MQTTClientDev("bme")
+BMESensor::BMESensor(const String& name) : MQTTClientDev(name)
 {
   ok = false;
 }
 
-TempSensor::~TempSensor()
+BMESensor::~BMESensor()
 {
 }
 
-void TempSensor::msgRecd(const String &topic, const String &msg)
+void BMESensor::msgRecd(const String &topic, const String &msg)
 {
 }
 
-void TempSensor::mqttMsgRecd(const String &topic, const String &msg)
+void BMESensor::mqttMsgRecd(const String &topic, const String &msg)
 {
 }
 
@@ -24,7 +24,7 @@ double setPrecision(double value, const unsigned int precision)
   return (round(value * factor) / factor);
 }
 
-String TempSensor::getStatus()
+String BMESensor::getStatus()
 {
   time_t now = timeClient.getEpochTime();
   char tbuf[sizeof "YYYY-MM-DDTHH:MM:SS+ZZZZ"];
@@ -43,7 +43,7 @@ String TempSensor::getStatus()
   return message;
 }
 
-bool TempSensor::start(uint8_t addr, TwoWire *theWire)
+bool BMESensor::start(uint8_t addr, TwoWire *theWire)
 {
   bool started = begin(addr, theWire);
   ok = started;

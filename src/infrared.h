@@ -17,7 +17,7 @@ const uint16_t kCaptureBufferSize = 1024;
 class IRControlled;
 
 typedef uint32_t IRCode;
-typedef char *IRMessage;
+typedef String IRMessage;
 typedef std::vector<IRControlled *> DevList;
 typedef std::vector<IRMessage> MsgList;
 typedef std::map<IRMessage, DevList> SubscriptionList;
@@ -78,7 +78,7 @@ extern const IRMessage IR_FAN_SLOWER;
 class IRController : public IRrecv, public PTask
 {
 public:
-  IRController();
+  IRController(const String& name);
   ~IRController();
   void poll();
   void newpoll();

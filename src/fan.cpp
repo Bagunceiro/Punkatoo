@@ -152,16 +152,16 @@ void Fan::mqttMsgRecd(const String& topic, const String& msg)
 
 void Fan::subscribeToMQTT()
 {
-  mqttctlr->subscribe(this, MQTT_TPC_SPEED);
+  pmqttctlr->subscribe(this, MQTT_TPC_SPEED);
   sendStatus();
 }
 
 void Fan::irmsgRecd(const IRMessage msg)
 {
-  if (strcmp(msg, IR_FAN_TOGGLE) == 0) onoff();
-  else if (strcmp(msg, IR_FAN_REVERSE) == 0) reverse();
-  else if (strcmp(msg, IR_FAN_FASTER) == 0) faster();
-  else if (strcmp(msg, IR_FAN_SLOWER) == 0) slower();
+  if (msg == IR_FAN_TOGGLE) onoff();
+  else if (msg == IR_FAN_REVERSE) reverse();
+  else if (msg == IR_FAN_FASTER) faster();
+  else if (msg == IR_FAN_SLOWER) slower();
 }
 
 void Fan::subscribeToIR()

@@ -1,11 +1,20 @@
 #include "mqtt2.h"
 #include "config.h"
 
+/*
 MQTTController::MQTTController(PubSubClient& c)
 {
     thectlr = this;
     client = &c;
 }
+*/
+
+MQTTController::MQTTController()
+{
+    thectlr = this;
+    client = new PubSubClient(wifiClient);
+}
+
 
 MQTTController::~MQTTController()
 {
@@ -146,14 +155,14 @@ void MQTTController::rcvCallback(char *fullTopic, byte *payload, unsigned int le
 MQTTClientDev::MQTTClientDev(const String& devname)
 {
     name = devname;
-    mqttctlr = NULL;
+    pmqttctlr = NULL;
 }
 
 MQTTClientDev::~MQTTClientDev()
 {
-    if (mqttctlr != NULL)
+    if (pmqttctlr != NULL)
     {
-        mqttctlr->rmClientDev(*this);
+        pmqttctlr->rmClientDev(*this);
     }
 }
 
@@ -161,12 +170,12 @@ void MQTTClientDev::sendStatus()
 {
     String topic = name + "/" + MQTT_TPC_STAT;
     String stat  = getStatus();
-    mqttctlr->publish(topic, stat);
+    pmqttctlr->publish(topic, stat);
 }
 
 void MQTTClientDev::registerMQTT(MQTTController &c)
 {
-    mqttctlr = &c;
+    pmqttctlr = &c;
     c.addClientDev(*this);
     subscribeToMQTT();
 }
@@ -179,4 +188,14 @@ void MQTTController::addClientDev(MQTTClientDev &dev)
 void MQTTController::rmClientDev(MQTTClientDev &dev)
 {
     std::remove(devList.begin(), devList.end(), &dev);
+}
+
+bool MQTTController::poll()
+{
+if (client->connected()) client->loop();
+    else if (init())
+    {
+      return true;
+    }
+    return false;
 }

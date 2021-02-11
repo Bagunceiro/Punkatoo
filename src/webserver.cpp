@@ -6,7 +6,7 @@
 #include "ldr.h"
 #include "tempSensor.h"
 
-extern TempSensor tempSensor;
+extern BMESensor bme;
 
 FanConWebServer webServer(80);
 
@@ -99,7 +99,7 @@ void sendPage(const String &s1,
 String tempSensorData()
 {
   String data;
-  if (tempSensor.running())
+  if (bme.running())
   {
 /*
     data = 
@@ -109,9 +109,9 @@ R"!(<TR><TD>Temperature</TD><TD>)!"   + String((tempSensor.readTemperature() *10
 )!";
 */
     data = 
-R"!(<TR><TD>Ambient</TD><TD>)!" + String((tempSensor.readTemperature() *10)/10) + R"!(°C</TD>
-<TD>)!" + String((tempSensor.readHumidity() *10)/10) + R"!(%</TD>
-<TD>)!" + String((tempSensor.readPressure() *10)/1000) + R"!( mBar</TD></TR>
+R"!(<TR><TD>Ambient</TD><TD>)!" + String((bme.readTemperature() *10)/10) + R"!(°C</TD>
+<TD>)!" + String((bme.readHumidity() *10)/10) + R"!(%</TD>
+<TD>)!" + String((bme.readPressure() *10)/1000) + R"!( mBar</TD></TR>
 )!";
 
   }
@@ -421,7 +421,7 @@ void handleNetEdit()
   sendPage(head1, title, head2, style, head3, headEnd, body1, body2);
 }
 
-extern Updater updater;
+
 
 void handleSystemUpdate()
 {
@@ -467,6 +467,8 @@ void handleDoUpdate()
     else if (argName == "image") image = webServer.arg(i);
     else if (argName == "image") ver = webServer.arg(i);
   }
+  
+  Updater updater("updater");
   
   t_httpUpdate_return ret = updater.systemUpdate(server, port.toInt(), image, ver);
 

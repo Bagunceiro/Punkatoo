@@ -9,11 +9,11 @@
 #include "config.h"
 #include "mqtt2.h"
 
-class TempSensor : public Adafruit_BME280, public MQTTClientDev
+class BMESensor : public Adafruit_BME280, public MQTTClientDev
 {
   public:
-  TempSensor();
-  ~TempSensor();
+  BMESensor(const String& name);
+  ~BMESensor();
   bool start(uint8_t addr, TwoWire *theWire);
   void msgRecd(const String& topic, const String& msg);
   virtual void mqttMsgRecd(const String& topic, const String& msg);

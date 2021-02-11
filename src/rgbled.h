@@ -12,7 +12,7 @@ class RGBLed
         uint16_t green;
     };
 
-    RGBLed(const uint8_t r, const uint8_t g, const uint8_t b);
+    RGBLed(const String& name, const uint8_t r, const uint8_t g, const uint8_t b);
     virtual ~RGBLed();
     const struct Colour getColour() const;
     void setColour(const struct Colour& c, const unsigned int timeout = 0);
@@ -20,6 +20,7 @@ class RGBLed
     void poll();
 
     static const Colour RED;
+    static const Colour ORANGE;
     static const Colour YELLOW; 
     static const Colour GREEN;
     static const Colour CYAN;

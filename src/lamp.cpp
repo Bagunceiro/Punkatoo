@@ -124,20 +124,14 @@ void Lamp::mqttMsgRecd(const String& topic, const String& msg)
 
 void Lamp::subscribeToMQTT()
 {
-  mqttctlr->subscribe(this,  MQTT_TPC_SWITCH);
+  pmqttctlr->subscribe(this,  MQTT_TPC_SWITCH);
   sendStatus();
 }
 
-/*
-void Lamp::irmsgRecd(IRCode code)
-{
-  if (code == IRREMOTE_LIGHT_ONOFF) toggle();
-}
-*/
 
 void Lamp::irmsgRecd(IRMessage msg)
 {
-  if (strcmp(msg,IR_LAMP_TOGGLE) == 0) toggle();
+  if (msg == IR_LAMP_TOGGLE) toggle();
 }
 
 void Lamp::subscribeToIR()

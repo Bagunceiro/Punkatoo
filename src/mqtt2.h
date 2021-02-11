@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <vector>
 #include <map>
+#include <WiFi.h>
 #include <PubSubClient.h>
 
 #pragma once
@@ -25,7 +26,7 @@ public:
     virtual void sendStatus();
 
 protected:
-    MQTTController *mqttctlr;
+    MQTTController *pmqttctlr;
 
 private:
     String topicPrefix;
@@ -35,9 +36,11 @@ private:
 class MQTTController
 {
 public:
-    MQTTController(PubSubClient& c);
+    // MQTTController(PubSubClient& c);
+    MQTTController();
     virtual ~MQTTController();
     bool init();
+    bool poll();
 
     void msgRecd(const String& fullTopic, const String& msg);
     static void rcvCallback(char* fullTopic, byte* payload, unsigned int length);
@@ -52,6 +55,7 @@ private:
     MQTTSubscriptionList subList;
     MQTTDevList devList;
     static MQTTController* thectlr;
+    WiFiClient wifiClient;
     PubSubClient* client;
     String stdPrefix();
 };

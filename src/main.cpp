@@ -7,7 +7,7 @@
 #include <time.h>
 #include <esp_wps.h>
 
-const char *appVersion = "Punkatoo 0.2";
+const char *appVersion = "Punkatoo 0.3";
 const char *compDate = __DATE__;
 const char *compTime = __TIME__;
 
@@ -22,39 +22,48 @@ const char *compTime = __TIME__;
 #include "lamp.h"
 #include "fan.h"
 #include "ldr.h"
-#include "updater.h"
+// #include "updater.h"
 #include "rgbled.h"
 #include "tempSensor.h"
 #include "eventlog.h"
 
-//WiFiSerialClient &serr = WSerial;
 WiFiSerialClient serr;
-
-WiFiClient mqttWifiClient;
-WiFiClient updWifiClient;
-
-PubSubClient mqttClient(mqttWifiClient);
-
-RGBLed indicator(LED_RED, LED_BLUE, LED_GREEN);
-IRController irctlr;
-MQTTController mqttctlr(mqttClient);
-Lamp lamp("light");
-Fan fan("fan");
-Updater updater("updater");
-LDR ldr("LDR", LDR_PIN);
-TempSensor tempSensor;
-Configurator configurator;
 EventLog evLog(20);
 
+
+// WiFiClient mqttWifiClient;
+// WiFiClient updWifiClient;
+// PubSubClient mqttClient(mqttWifiClient);
+// MQTTController mqttctlr(mqttClient);
+
+
+
 /*
- * Status LED colours
+ * Physical Devices
+ */
+RGBLed indicator("indicator", LED_RED, LED_BLUE, LED_GREEN);
+IRController irctlr("IRrcv");
+Lamp lamp("light");
+Fan fan("fan");
+LDR ldr("LDR", LDR_PIN);
+BMESensor bme("bme");
+
+/*
+ * Pseudo Devices
+ */
+MQTTController mqttctlr;
+Configurator configurator("configurator");
+// Updater updater("updater");
+
+/*
+ * Status colours
  */
 RGBLed::Colour indicateStarting = RGBLed::RED;
-RGBLed::Colour indicateNoNet = RGBLed::YELLOW;
-RGBLed::Colour indicateNet = RGBLed::GREEN;
-RGBLed::Colour indicateUpdate = RGBLed::BLUE;
-RGBLed::Colour indicateConfig = RGBLed::CYAN;
-RGBLed::Colour indicateWPS = RGBLed::MAGENTA;
+RGBLed::Colour indicateNoNet    = RGBLed::YELLOW;
+RGBLed::Colour indicateNet      = RGBLed::GREEN;
+RGBLed::Colour indicateUpdate   = RGBLed::BLUE;
+RGBLed::Colour indicateConfig   = RGBLed::CYAN;
+RGBLed::Colour indicateWPS      = RGBLed::MAGENTA;
 
 extern esp_wps_config_t wpsconfig;
 extern void wpsInit();
@@ -126,6 +135,7 @@ void initWiFi()
   MDNS.addService("http", "tcp", 80);
 }
 
+/*
 void updateStarted()
 {
   serr.println("HTTP update process started");
@@ -153,6 +163,7 @@ void updateFail()
 {
   indicator.off();
 }
+*/
 
 void i2cscan()
 {
@@ -248,7 +259,7 @@ void setup()
   fan.registerMQTT(mqttctlr);
   fan.setSpeed(0);
 
-  tempSensor.registerMQTT(mqttctlr);
+  bme.registerMQTT(mqttctlr);
 
   /*
    * Ready to go (switch and IR). But network has not been initialised yet
@@ -262,7 +273,7 @@ void setup()
   initWiFi();
 
   Wire.begin();
-  if (!tempSensor.start(0x76, &Wire))
+  if (!bme.start(0x76, &Wire))
   {
     serr.println("Could not find a valid BME280 sensor");
   }
@@ -271,8 +282,8 @@ void setup()
   * Enable the network configurator and OTA updater
   */
   configurator.registerIR(irctlr);
-  updater.onStart(updateStarted);
-  updater.onEnd(updateCompleted);
+  // updater.onStart(updateStarted);
+  // updater.onEnd(updateCompleted);
 
   /*
    * Set up the Web server
@@ -294,12 +305,15 @@ void loop()
       indicator.setColour(indicateNet);
     }
 
+    if (mqttctlr.poll()) indicator.off();
+    /*
     if (mqttClient.connected())
       mqttClient.loop();
     else if (mqttctlr.init())
     {
       indicator.off();
     }
+    */
 
     if (!ntpstarted)
     {
@@ -337,7 +351,7 @@ void loop()
   if ((now - then) > (1 * 60 * 1000))
   {
     then = now;
-    tempSensor.sendStatus();
+    bme.sendStatus();
   }
 
 

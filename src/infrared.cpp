@@ -7,14 +7,14 @@ DecodeList test =
         {0x323323, {(const IRMessage) "v1"}},
         {0x323323, {(const IRMessage) "v2", (const IRMessage) "v3"}}};
 
-const IRMessage IR_LAMP_OFF = (const IRMessage) "LAMP_OFF";
-const IRMessage IR_LAMP_ON = (const IRMessage) "LAMP_ON";
-const IRMessage IR_LAMP_TOGGLE = (const IRMessage) "LAMP_TOGGLE";
+const IRMessage IR_LAMP_OFF = (const IRMessage) "LMP_OFF";
+const IRMessage IR_LAMP_ON = (const IRMessage) "LMP_ON";
+const IRMessage IR_LAMP_TOGGLE = (const IRMessage) "LMP_TOG";
 
-const IRMessage IR_FAN_TOGGLE = (const IRMessage) "FAN_TOGGLE";
+const IRMessage IR_FAN_TOGGLE = (const IRMessage) "FAN_TOG";
 const IRMessage IR_FAN_REVERSE = (const IRMessage) "FAN_REV";
-const IRMessage IR_FAN_FASTER = (const IRMessage) "FAN_FASTER";
-const IRMessage IR_FAN_SLOWER = (const IRMessage) "FAN_SLOWER";
+const IRMessage IR_FAN_FASTER = (const IRMessage) "FAN_FST";
+const IRMessage IR_FAN_SLOWER = (const IRMessage) "FAN_SLW";
 
 DecodeList IRController::decList =
     {
@@ -28,7 +28,7 @@ const int IRDEBOUNCE = 200; // Number of milliseconds to leave fallow between IR
 
 // IRControlled *IRControlled::list = NULL;
 
-IRControlled::IRControlled(const String& n)
+IRControlled::IRControlled(const String &n)
 {
   name = n;
 }
@@ -67,7 +67,9 @@ unsigned long irDebounce(unsigned long then, unsigned long debounceTime)
 
 // IRrecv irrecv(IR_DETECTOR_PIN, kCaptureBufferSize, kTimeout, true);
 
-IRController::IRController() : IRrecv(IR_DETECTOR_PIN, kCaptureBufferSize, kTimeout, true), PTask("IRCtlr", 2500)
+IRController::IRController(const String &name)
+    : IRrecv(IR_DETECTOR_PIN, kCaptureBufferSize, kTimeout, true),
+      PTask(name, 2500)
 {
   pinMode(IR_DETECTOR_PIN, INPUT_PULLUP);
   enableIRIn();
@@ -109,7 +111,7 @@ bool IRController::operator()()
                 // send it to the subscribing device
 
                 char buffer[20];
-                sprintf(buffer, "IR(%s)->%s", msg, dev->getName().c_str());
+                sprintf(buffer, "IR(%s)->%s", msg.c_str(), dev->getName().c_str());
                 evLog.writeEvent(buffer);
                 dev->irmsgRecd(msg);
               }

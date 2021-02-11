@@ -2,13 +2,52 @@
 
 #include "config.h"
 #include "updater.h"
+#include "rgbled.h"
+#include "lamp.h"
+#include "fan.h"
+
+
+
+extern RGBLed indicator;
+extern Lamp lamp;
+extern Fan fan;
+
+extern RGBLed::Colour indicateUpdate;
+
+void updateStarted()
+{
+  serr.println("HTTP update process started");
+  indicator.setColour(indicateUpdate);
+  fan.setSpeed(0);
+  lamp.sw(0);
+}
+
+void updateCompleted()
+{
+  indicator.off();
+  time_t now = timeClient.getEpochTime();
+  serr.printf("HTTP update process complete at %s\n", ctime(&now));
+
+  persistant[persistant.updateTime_n] = String(now);
+  persistant.writeFile();
+}
+
+void updateNone()
+{
+  indicator.off();
+}
+
+void updateFail()
+{
+  indicator.off();
+}
 
 Updater::Updater(const String &devName)
 {
-  startCallback = NULL;
-  endCallback   = NULL;
-  nullCallback  = NULL;
-  failCallback  = NULL;
+  startCallback = updateStarted;
+  endCallback   = updateCompleted;
+  nullCallback  = updateNone;
+  failCallback  = updateFail;
 }
 
 Updater::~Updater()

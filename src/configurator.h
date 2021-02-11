@@ -6,7 +6,7 @@
 class Configurator : public IRControlled
 {
 public:
-    Configurator();
+    Configurator(const String& name);
     virtual ~Configurator();
     virtual void irmsgRecd(uint32_t code);
     void start();
