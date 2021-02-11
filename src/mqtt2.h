@@ -46,6 +46,7 @@ public:
     void publish(String& topic, String& msg, bool retained = true);
     void doSubscriptions();
     void addClientDev(MQTTClientDev& dev);
+    void rmClientDev(MQTTClientDev& dev);
 
 private:
     MQTTSubscriptionList subList;

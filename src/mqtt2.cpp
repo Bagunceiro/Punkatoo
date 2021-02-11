@@ -146,10 +146,15 @@ void MQTTController::rcvCallback(char *fullTopic, byte *payload, unsigned int le
 MQTTClientDev::MQTTClientDev(const String& devname)
 {
     name = devname;
+    mqttctlr = NULL;
 }
 
 MQTTClientDev::~MQTTClientDev()
 {
+    if (mqttctlr != NULL)
+    {
+        mqttctlr->rmClientDev(*this);
+    }
 }
 
 void MQTTClientDev::sendStatus()
@@ -169,4 +174,9 @@ void MQTTClientDev::registerMQTT(MQTTController &c)
 void MQTTController::addClientDev(MQTTClientDev &dev)
 {
     devList.push_back(&dev);
+}
+
+void MQTTController::rmClientDev(MQTTClientDev &dev)
+{
+    std::remove(devList.begin(), devList.end(), &dev);
 }
