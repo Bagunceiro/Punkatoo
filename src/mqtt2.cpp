@@ -134,7 +134,7 @@ void MQTTController::msgRecd(const String &fulltopic, const String &msg)
         for (MQTTClientDev *dev : record->second)
         {
             char buffer[20];
-            snprintf(buffer, 20, "MQTT(%s/%s)->%s", topic.c_str(), msg.c_str(), dev->getName().c_str());
+            snprintf(buffer, 20, "MQTT(%s:%s)->%s", topic.c_str(), msg.c_str(), dev->getName().c_str());
             evLog.writeEvent(buffer);
             dev->mqttMsgRecd(topic, msg);
         }

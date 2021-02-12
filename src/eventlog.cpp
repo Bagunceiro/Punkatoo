@@ -8,9 +8,16 @@ SemaphoreHandle_t serialNoMutex = NULL;
 
 Event::Event(const char* txt)
 {
-
-
-    timestamp = millis();
+    time_t secs1 = time(0);
+    uint16_t msecs = millis() % 1000;
+    time_t secs = time(0);
+    if (secs != secs1) {
+        // Seconds just ticked over, get the millis again to ensure
+        // that second is excluded
+        msecs = millis()%1000;
+    }
+    timestamp.secs  = secs;
+    timestamp.msecs = msecs;
     strncpy(text, txt, 25);
     serialNo = 0;
 }
@@ -40,7 +47,7 @@ uint32_t Event::setSerial()
 const String Event::asString()
 {
     char buffer[24];
-    sprintf(buffer, "%05d %011ld ", serialNo, timestamp);
+    sprintf(buffer, "%05d %08ld.%03d ", serialNo, timestamp.secs, timestamp.msecs);
     return (String(buffer) + text);
 }
 

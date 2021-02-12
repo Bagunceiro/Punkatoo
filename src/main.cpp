@@ -6,6 +6,7 @@
 #include <PubSubClient.h>
 #include <time.h>
 #include <esp_wps.h>
+#include <TimeLib.h> 
 
 const char *appVersion = "Punkatoo 0.3";
 const char *compDate = __DATE__;
@@ -26,6 +27,7 @@ const char *compTime = __TIME__;
 #include "rgbled.h"
 #include "tempSensor.h"
 #include "eventlog.h"
+#include "devices.h"
 
 WiFiSerialClient serr;
 EventLog evLog(20);
@@ -35,8 +37,6 @@ EventLog evLog(20);
 // WiFiClient updWifiClient;
 // PubSubClient mqttClient(mqttWifiClient);
 // MQTTController mqttctlr(mqttClient);
-
-
 
 /*
  * Physical Devices
@@ -53,7 +53,6 @@ BMESensor bme("bme");
  */
 MQTTController mqttctlr;
 Configurator configurator("configurator");
-// Updater updater("updater");
 
 /*
  * Status colours
@@ -208,6 +207,7 @@ void setup()
   Serial.begin(9600);
   delay(500);
 
+  // Devices dev;
   startup(); // set start time
 
   evLog.start(1);
@@ -227,29 +227,15 @@ void setup()
   /*
    * Start up the lamp
    */
+
   SwitchList sl;
   sl.push_back(LIGHT_SWITCH_PIN);
-  Serial.println("lamp.init"); delay(500);
-
   lamp.init(sl, LIGHT_RELAY_PIN);
-  Serial.println("lamp.registerIR"); delay(500);
-
   lamp.registerIR(irctlr);
-  Serial.println("lamp.registerMQTT"); delay(500);
-
   lamp.registerMQTT(mqttctlr);
-  Serial.println("lamp.start"); delay(500);
-
   lamp.start(5);
   lamp.sw(0);
-
   Serial.println("lamp.started"); delay(500);
-
-
-  /*
-   * Start up the Infra red controller
-   */
-  irctlr.start(4);
 
   /*
    * Start up the fan
@@ -258,6 +244,12 @@ void setup()
   fan.registerIR(irctlr);
   fan.registerMQTT(mqttctlr);
   fan.setSpeed(0);
+
+
+  /*
+   * Start up the Infra red controller
+   */
+  irctlr.start(4);
 
   bme.registerMQTT(mqttctlr);
 
