@@ -26,11 +26,11 @@ const char *compTime = __TIME__;
 // #include "updater.h"
 #include "rgbled.h"
 #include "tempSensor.h"
-#include "eventlog.h"
+// #include "eventlog.h"
 #include "devices.h"
 
 WiFiSerialClient serr;
-EventLog evLog(20);
+// EventLog evLog(20);
 
 
 // WiFiClient mqttWifiClient;
@@ -210,11 +210,11 @@ void setup()
   // Devices dev;
   startup(); // set start time
 
-  evLog.start(1);
+  // evLog.start(1);
 
   indicator.setColour(indicateStarting);
 
-  evLog.writeEvent("Starting");
+  // evLog.writeEvent("Starting");
 
   serr.println("");
   serr.println(appVersion);
@@ -257,7 +257,9 @@ void setup()
    * Ready to go (switch and IR). But network has not been initialised yet
    */
   indicator.setColour(indicateNoNet, 60);
-  evLog.writeEvent("Startup complete");
+  // evLog.writeEvent("Startup complete");
+  // evLog.writeEvent("Started");
+
 
   pinMode(WPS_PIN, INPUT_PULLUP);
   attachInterrupt(WPS_PIN, startwps, FALLING);
@@ -345,17 +347,6 @@ void loop()
     then = now;
     bme.sendStatus();
   }
-
-
-/*
-  static unsigned long then2 = 0;
-
-  if ((now - then2) > 60 * 1000)
-  {
-    then2= now;
-    evLog.printLog();
-  }
-*/
 
   indicator.poll();
 

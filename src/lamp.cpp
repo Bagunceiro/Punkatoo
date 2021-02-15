@@ -16,7 +16,7 @@ void Lamp::sw(int toState)
   char buffer[8];
   sprintf(buffer, "Lamp %d", toState);
   serr.printf("Switch Lamp to %d\n", toState);
-  evLog.writeEvent(buffer);
+  // evLog.writeEvent(buffer);
   if (toState == 0)
   {
     digitalWrite(lpin, HIGH);
@@ -53,7 +53,7 @@ bool Lamp::operator()()
         // serr.println("Switch pressed");
         String msg("Lamp sw ");
         msg += (newState == 1 ? "Open" : "Closed");
-        evLog.writeEvent(msg.c_str());
+        // evLog.writeEvent(msg.c_str());
         toggle();
         si.switchState = newState;
         si.debounce = 0;

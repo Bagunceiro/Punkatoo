@@ -112,7 +112,7 @@ bool IRController::operator()()
 
                 char buffer[20];
                 sprintf(buffer, "IR(%s)->%s", msg.c_str(), dev->getName().c_str());
-                evLog.writeEvent(buffer);
+                // evLog.writeEvent(buffer);
                 dev->irmsgRecd(msg);
               }
             }

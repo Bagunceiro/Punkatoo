@@ -6,17 +6,43 @@
 uint32_t Event::nextSerialNo = 1;
 SemaphoreHandle_t serialNoMutex = NULL;
 
-Event::Event(const char* txt)
+void Event::construct(const String& txt)
 {
-
-
-    timestamp = millis();
-    strncpy(text, txt, 25);
+    time_t secs1 = time(0);
+    uint16_t msecs = millis() % 1000;
+    time_t secs = time(0);
+    if (secs != secs1) {
+        // Seconds just ticked over, get the millis again to ensure
+        // that second is excluded
+        msecs = millis()%1000;
+    }
+    timestamp.secs  = secs;
+    timestamp.msecs = msecs;
+    text = (char*)pvPortMalloc(txt.length() + 1);
+    strcpy (text, txt.c_str());
     serialNo = 0;
+}
+
+Event::Event()
+{
+    construct("");
+}
+
+Event::Event(const Event &rhs)
+{
+    memcpy(this, &rhs, sizeof(*this));
+    text = (char*)pvPortMalloc(strlen(rhs.text)  + 1);
+    strcpy(text, rhs.text);
+}
+
+Event::Event(const String& txt)
+{
+    construct(txt);
 }
 
 Event::~Event()
 {
+    vPortFree(text);
 }
 
 uint32_t Event::setSerial()
@@ -30,6 +56,7 @@ uint32_t Event::setSerial()
     {
         xSemaphoreTake(serialNoMutex, portMAX_DELAY);
         serialNo = nextSerialNo++;
+        if (nextSerialNo >= 100) nextSerialNo = 0;
         xSemaphoreGive(serialNoMutex);
     }
 
@@ -40,19 +67,12 @@ uint32_t Event::setSerial()
 const String Event::asString()
 {
     char buffer[24];
-    sprintf(buffer, "%05d %011ld ", serialNo, timestamp);
+    sprintf(buffer, "%02d %08ld.%03d ", serialNo, timestamp.secs, timestamp.msecs);
     return (String(buffer) + text);
 }
 
 void Event::dump()
 {
-    /*
-    char buffer[24];
-    sprintf(buffer, "%05d %011ld", serialNo, timestamp);
-    serr.print(buffer);
-    serr.print("\t");
-    serr.println(text);
-    */
     serr.println(asString());
 }
 
@@ -68,30 +88,30 @@ EventLog::~EventLog()
 {
 }
 
-bool EventLog::writeEvent(const char* txt)
+bool EventLog::writeEvent(const String& txt)
 {
-
     Event e(txt);
     e.setSerial();
+    Serial.println("writing event:");
+    e.dump();
     return xQueueSend(queue, &e, 0);
-    return true;
 }
 
 bool EventLog::operator()()
 {
-    Event e;
-    
-    if (xQueueReceive(queue, &e, 0))
+    static Event ebuff;
+    if (xQueueReceive(queue, &ebuff, 0))
     {
+        // Event e = ebuff;
         // e.dump();
-        addToLog(e);
+        addToLog(ebuff);
     }
     // TODO: if log requested then provide it
     
     return true;
 }
 
-void EventLog::addToLog(const Event& e)
+void EventLog::addToLog(const Event e)
 {
     log[next++] = e;
     if (next >= logSize) next = 0;

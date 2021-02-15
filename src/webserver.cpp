@@ -500,7 +500,7 @@ void handleLog()
 <div class=content>
 <BR><B>)!" + persistant[persistant.controllername_n] + " Log, " + ctime(&now) + R"!(</B>
 <PRE>
-)!" + evLog.asString() + R"!(
+Event Log would go here"
 </PRE>
 </DIV>
 </BODY>
