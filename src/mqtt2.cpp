@@ -1,5 +1,6 @@
 #include "mqtt2.h"
 #include "config.h"
+#include "eventlog.h"
 
 /*
 MQTTController::MQTTController(PubSubClient& c)
@@ -14,7 +15,6 @@ MQTTController::MQTTController()
     thectlr = this;
     client = new PubSubClient(wifiClient);
 }
-
 
 MQTTController::~MQTTController()
 {
@@ -46,8 +46,8 @@ bool MQTTController::init()
             client->setCallback(rcvCallback);
 
             if (client->connect(clientID.c_str(),
-                                   persistant[persistant.mqttuser_n].c_str(),
-                                   persistant[persistant.mqttpwd_n].c_str()))
+                                persistant[persistant.mqttuser_n].c_str(),
+                                persistant[persistant.mqttpwd_n].c_str()))
             {
                 serr.println("MQTT connected");
                 doSubscriptions();
@@ -87,9 +87,7 @@ bool MQTTController::subscribe(MQTTClientDev *dev, const MQTTTopic &topic)
 
 String MQTTController::stdPrefix()
 {
-    return
-        persistant[persistant.mqttroot_n] + "/" 
-        + persistant[persistant.mqtttopic_n] + "/";
+    return persistant[persistant.mqttroot_n] + "/" + persistant[persistant.mqtttopic_n] + "/";
 }
 
 void MQTTController::publish(String &topic, String &msg, bool retained)
@@ -100,7 +98,6 @@ void MQTTController::publish(String &topic, String &msg, bool retained)
         client->publish(t.c_str(), msg.c_str(), retained);
     }
 }
-
 
 void MQTTController::doSubscriptions()
 {
@@ -133,6 +130,9 @@ void MQTTController::msgRecd(const String &fulltopic, const String &msg)
         // For each subscription for this message
         for (MQTTClientDev *dev : record->second)
         {
+            Event e;
+            String txt = "MQTT " + topic + ":" + msg + ">" + dev->getName();
+            e.enqueue(txt.c_str());
             // char buffer[20];
             // snprintf(buffer, 20, "MQTT(%s:%s)->%s", topic.c_str(), msg.c_str(), dev->getName().c_str());
             // evLog.writeEvent(String("MQTT(") + topic + ":" + msg + ")>" + dev->getName());
@@ -153,7 +153,7 @@ void MQTTController::rcvCallback(char *fullTopic, byte *payload, unsigned int le
     thectlr->msgRecd(fullTopic, msg);
 }
 
-MQTTClientDev::MQTTClientDev(const String& devname)
+MQTTClientDev::MQTTClientDev(const String &devname)
 {
     name = devname;
     pmqttctlr = NULL;
@@ -169,9 +169,16 @@ MQTTClientDev::~MQTTClientDev()
 
 void MQTTClientDev::sendStatus()
 {
-    String topic = name + "/" + MQTT_TPC_STAT;
-    String stat  = getStatus();
-    pmqttctlr->publish(topic, stat);
+    String stat = getStatus();
+    publish(MQTT_TPC_STAT, stat);
+}
+
+void MQTTClientDev::publish(const String topic, const String message)
+{
+    if (pmqttctlr != NULL)
+    {
+        pmqttctlr->publish(name + "/" + topic, (String &)message);
+    }
 }
 
 void MQTTClientDev::registerMQTT(MQTTController &c)
@@ -193,10 +200,11 @@ void MQTTController::rmClientDev(MQTTClientDev &dev)
 
 bool MQTTController::poll()
 {
-if (client->connected()) client->loop();
+    if (client->connected())
+        client->loop();
     else if (init())
     {
-      return true;
+        return true;
     }
     return false;
 }

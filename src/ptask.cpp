@@ -18,7 +18,7 @@ void PTask::loop(void *ctlr)
     while (true)
     {
         (*pThis)();
-        // delay(10);
+        delay(1);
         int hwmnow = uxTaskGetStackHighWaterMark(pThis->taskHandle);
         if (hwmnow < hwm)
         {

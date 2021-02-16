@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "config.h"
 #include "infrared.h"
+#include "eventlog.h"
 
 DecodeList test =
     {
@@ -89,7 +90,7 @@ bool IRController::operator()()
     uint64_t val = IRDecodeResults.value;
     if (val != ~0)
     {
-      serr.println("IRMsg " + uint64ToString(val, HEX));
+      Event e;
 
       if ((when = irDebounce(then)))
       {
@@ -108,16 +109,24 @@ bool IRController::operator()()
               // For each subscription for this message
               for (IRControlled *dev : search2->second)
               {
-                // send it to the subscribing device
-
-                char buffer[20];
-                sprintf(buffer, "IR(%s)->%s", msg.c_str(), dev->getName().c_str());
-                // evLog.writeEvent(buffer);
+                Event e;
+                e.enqueue("IR(" + msg + ")>" + dev->getName());
                 dev->irmsgRecd(msg);
               }
             }
+            else
+            {
+              Event e;
+              e.enqueue("IR(" + msg + ") no subs");
+            }
           }
         }
+        else
+        {
+          Event e;
+          e.enqueue("Unk IRMsg " + uint64ToString(val, HEX));
+        }
+
         then = when;
       }
     }

@@ -26,7 +26,7 @@ const char *compTime = __TIME__;
 // #include "updater.h"
 #include "rgbled.h"
 #include "tempSensor.h"
-// #include "eventlog.h"
+#include "eventlog.h"
 #include "devices.h"
 
 WiFiSerialClient serr;
@@ -210,11 +210,11 @@ void setup()
   // Devices dev;
   startup(); // set start time
 
-  // evLog.start(1);
+  Event ev1;
+  ev1.startLogger(mqttctlr);
+  ev1.enqueue("Starting");
 
   indicator.setColour(indicateStarting);
-
-  // evLog.writeEvent("Starting");
 
   serr.println("");
   serr.println(appVersion);
@@ -257,10 +257,9 @@ void setup()
    * Ready to go (switch and IR). But network has not been initialised yet
    */
   indicator.setColour(indicateNoNet, 60);
-  // evLog.writeEvent("Startup complete");
-  // evLog.writeEvent("Started");
-
-
+  Event e2;
+  e2.enqueue("Startup complete");
+  
   pinMode(WPS_PIN, INPUT_PULLUP);
   attachInterrupt(WPS_PIN, startwps, FALLING);
 
@@ -276,8 +275,6 @@ void setup()
   * Enable the network configurator and OTA updater
   */
   configurator.registerIR(irctlr);
-  // updater.onStart(updateStarted);
-  // updater.onEnd(updateCompleted);
 
   /*
    * Set up the Web server

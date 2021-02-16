@@ -2,6 +2,7 @@
 #include "config.h"
 #include "lamp.h"
 #include "rgbled.h"
+#include "eventlog.h"
 
 extern RGBLed indicator;
 
@@ -13,10 +14,9 @@ Lamp::~Lamp() {}
 
 void Lamp::sw(int toState)
 {
-  char buffer[8];
-  sprintf(buffer, "Lamp %d", toState);
-  serr.printf("Switch Lamp to %d\n", toState);
-  // evLog.writeEvent(buffer);
+  Event e;
+
+  e.enqueue("Lamp " + String(toState));
   if (toState == 0)
   {
     digitalWrite(lpin, HIGH);
@@ -50,10 +50,11 @@ bool Lamp::operator()()
       si.debounce++;
       if (si.debounce > MAXDEBOUNCE)
       {
-        // serr.println("Switch pressed");
+        Event e;
+
         String msg("Lamp sw ");
         msg += (newState == 1 ? "Open" : "Closed");
-        // evLog.writeEvent(msg.c_str());
+        e.enqueue(msg.c_str());
         toggle();
         si.switchState = newState;
         si.debounce = 0;

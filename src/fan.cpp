@@ -1,5 +1,6 @@
 #include "config.h"
 #include "fan.h"
+#include "eventlog.h"
 
 Fan::Fan(String devName) : MQTTClientDev(devName), IRControlled(devName) {}
 Fan::~Fan() {}
@@ -15,7 +16,10 @@ void Fan::setSpeed(const int s)
 {
   if (s >= -3 && s <= 3)
   {
-    serr.printf("Fan to %d\n", s);
+    Event e;
+    String txt = "Fan to " + String(s);
+    e.enqueue(txt.c_str());
+    // serr.printf("Fan to %d\n", s);
     if (s == 0) // turn it off
     {
       dir.pos(0);
