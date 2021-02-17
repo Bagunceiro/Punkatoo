@@ -110,7 +110,7 @@ bool IRController::operator()()
               for (IRControlled *dev : search2->second)
               {
                 Event e;
-                e.enqueue("IR(" + msg + ")>" + dev->getName());
+                e.enqueue("IR(" + msg + ") -> " + dev->getName());
                 dev->irmsgRecd(msg);
               }
             }

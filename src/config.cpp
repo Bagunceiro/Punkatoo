@@ -53,12 +53,7 @@ const unsigned int MQTT_CONNECT_ATTEMPT_PAUSE = 30000; // Delay between attempts
 const unsigned int WIFI_CONNECT_ATTEMPT_PAUSE = 15000;
 
 ConfigBlock persistant;
-time_t startTime = 0;
-
-void startup()
-{
-  startTime = time(0);
-}
+time_t startTime = time(0);
 
 String upTime()
 {

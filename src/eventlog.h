@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "ptask.h"
-#include "mqtt2.h"
+#include "mqtt.h"
 
 
 class EventLogger : public PTask, public MQTTClientDev

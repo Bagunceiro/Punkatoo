@@ -19,7 +19,6 @@ const String pageWiFiNetAdd   = "/config.addnet";
 const String pageReset        = "/reset";
 const String pageSystemUpdate = "/system.update";
 const String pageDoUpdate     = "/system.update.do";
-const String pageLog          = "/system.log";
 
 const String style = R"!(
 <script>
@@ -28,7 +27,6 @@ function gogenconf()   {location.assign(")!" + pageGen  + R"!(");}
 function gowificonf()  {location.assign(")!" + pageWiFi + R"!(");}
 function goreset()     {location.assign(")!" + pageReset + R"!(");}
 function gosysupdate() {location.assign(")!" + pageSystemUpdate + R"!(");}
-function golog()       {location.assign(")!" + pageLog + R"!(");}
 </script>
 <style>
 body {font-family:Arial, Sans-Serif; font-size: 4vw; background-color: lavender;}
@@ -68,7 +66,6 @@ const String body1(R"!(
 <button onclick="gohome()">Home</button>
 <button onclick=gogenconf()>General</button>
 <button onclick=gowificonf()>WiFi</button>
-<button onclick=golog()>Log</button>
 -)!");
 
 const String tail("");
@@ -442,8 +439,6 @@ void handleSystemUpdate()
 <td><input type=text name=port value=80></td></tr>
 <tr><td><label for=image>Update image file:</label></td>
 <td><input type=text name=image value=""></td></tr>
-<tr><td><label for=version>Version:</label></td>
-<td><input type=text name=version value=""></td></tr>
 </table>
 </FORM>
 </div>
@@ -458,19 +453,18 @@ void handleDoUpdate()
   String server;
   String port;
   String image;
-  String ver;
+
   for (int i = 0; i < webServer.args(); i++)
   {
     const String argName = webServer.argName(i);
     if (argName == "server") server = webServer.arg(i);
     else if (argName == "port") port = webServer.arg(i);
     else if (argName == "image") image = webServer.arg(i);
-    else if (argName == "image") ver = webServer.arg(i);
   }
   
   Updater updater("updater");
   
-  t_httpUpdate_return ret = updater.systemUpdate(server, port.toInt(), image, ver);
+  t_httpUpdate_return ret = updater.systemUpdate(server, port.toInt(), image);
 
   switch (ret) {
       case HTTP_UPDATE_FAILED:
@@ -487,27 +481,6 @@ void handleDoUpdate()
     }
 }
 
-void handleLog()
-{
-  const String title("Punkatoo Log");
-  const String head3("");
-  time_t now = timeClient.getEpochTime();
- 
-  String body2(R"!(
-<button onclick=goreset()>Reset</button>
-<button onclick=gosysupdate()>System Update</button>
-</div>
-<div class=content>
-<BR><B>)!" + persistant[persistant.controllername_n] + " Log, " + ctime(&now) + R"!(</B>
-<PRE>
-Event Log would go here"
-</PRE>
-</DIV>
-</BODY>
-)!");
-
-  sendPage(head1, title, head2, style, head3, headEnd, body1, body2);
-}
 
 void FanConWebServer::init()
 {
@@ -520,7 +493,6 @@ void FanConWebServer::init()
   webServer.on(pageReset,        blankResetMessage);
   webServer.on(pageSystemUpdate, handleSystemUpdate);
   webServer.on(pageDoUpdate,     handleDoUpdate);
-  webServer.on(pageLog,          handleLog);
 
   serr.println("Web Server");
   webServer.begin();

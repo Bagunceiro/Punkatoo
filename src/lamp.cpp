@@ -16,7 +16,7 @@ void Lamp::sw(int toState)
 {
   Event e;
 
-  e.enqueue("Lamp " + String(toState));
+  e.enqueue("Lamp to " + String(toState));
   if (toState == 0)
   {
     digitalWrite(lpin, HIGH);

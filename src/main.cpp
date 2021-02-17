@@ -15,7 +15,7 @@ const char *compTime = __TIME__;
 #include "wifiserial.h"
 #include "config.h"
 #include "spdt.h"
-#include "mqtt2.h"
+#include "mqtt.h"
 #include "infrared.h"
 #include "webserver.h"
 #include "configurator.h"
@@ -206,9 +206,6 @@ void setup()
   WiFi.mode(WIFI_STA);
   Serial.begin(9600);
   delay(500);
-
-  // Devices dev;
-  startup(); // set start time
 
   Event ev1;
   ev1.startLogger(mqttctlr);

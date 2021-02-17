@@ -7,7 +7,7 @@
 #include <RTClib.h>
 
 #include "config.h"
-#include "mqtt2.h"
+#include "mqtt.h"
 
 class BMESensor : public Adafruit_BME280, public MQTTClientDev
 {

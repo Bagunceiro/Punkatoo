@@ -1,3 +1,4 @@
+#include <ArduinoJson.h>
 #include "eventlog.h"
 
 QueueHandle_t Event::queue = xQueueCreate(20, sizeof(Event));
@@ -23,7 +24,7 @@ Event::~Event()
     }
 }
 
-bool Event::startLogger(MQTTController& c)
+bool Event::startLogger(MQTTController &c)
 {
     logger.registerMQTT(c);
     return logger.start(0);
@@ -48,7 +49,7 @@ const uint16_t Event::setSerial()
     return serial;
 }
 
-bool Event::enqueue(const String& msg)
+bool Event::enqueue(const String &msg)
 {
     setSerial();
     text = (char *)malloc(msg.length() + 1);
@@ -101,15 +102,22 @@ bool EventLogger::operator()()
     {
         result = true;
         char buffer[24];
-        sprintf (buffer, "%02d %ld.%03d ", ev.serial, ev.ts.secs, ev.ts.msecs);
-        String s = buffer + String(ev.text);
-        Serial.println(s);
+        sprintf(buffer, "%02d %ld.%03d ", ev.serial, ev.ts.secs, ev.ts.msecs);
+
+        Serial.println(String(buffer) + String(ev.text));
+        StaticJsonDocument<512> doc;
+        doc["serial"] = ev.serial;
+        JsonObject ts = doc.createNestedObject("ts");
+        ts["secs"] = ev.ts.secs;
+        ts["msecs"] = ev.ts.msecs;
+        doc["text"] = ev.text;
+        String s;
+        serializeJson(doc, s);
         publish("log", s.c_str());
     }
     return result;
 }
-
-/*
+    /*
 void setup()
 {
   Serial.begin(9600);

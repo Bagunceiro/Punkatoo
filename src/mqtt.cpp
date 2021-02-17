@@ -1,14 +1,6 @@
-#include "mqtt2.h"
+#include "mqtt.h"
 #include "config.h"
 #include "eventlog.h"
-
-/*
-MQTTController::MQTTController(PubSubClient& c)
-{
-    thectlr = this;
-    client = &c;
-}
-*/
 
 MQTTController::MQTTController()
 {
@@ -131,12 +123,8 @@ void MQTTController::msgRecd(const String &fulltopic, const String &msg)
         for (MQTTClientDev *dev : record->second)
         {
             Event e;
-            String txt = "MQTT " + topic + ":" + msg + ">" + dev->getName();
+            String txt = "MQTT " + topic + ":" + msg + " -> " + dev->getName();
             e.enqueue(txt.c_str());
-            // char buffer[20];
-            // snprintf(buffer, 20, "MQTT(%s:%s)->%s", topic.c_str(), msg.c_str(), dev->getName().c_str());
-            // evLog.writeEvent(String("MQTT(") + topic + ":" + msg + ")>" + dev->getName());
-            // evLog.writeEvent(buffer);
             dev->mqttMsgRecd(topic, msg);
         }
     }
@@ -173,11 +161,11 @@ void MQTTClientDev::sendStatus()
     publish(MQTT_TPC_STAT, stat);
 }
 
-void MQTTClientDev::publish(const String topic, const String message)
+void MQTTClientDev::publish(const String topic, const String message, bool retain)
 {
     if (pmqttctlr != NULL)
     {
-        pmqttctlr->publish(name + "/" + topic, (String &)message);
+        pmqttctlr->publish(name + "/" + topic, (String &)message, retain);
     }
 }
 

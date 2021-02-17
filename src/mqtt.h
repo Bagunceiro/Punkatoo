@@ -24,7 +24,7 @@ public:
     const String getName() { return name; }
     virtual String getStatus() { return ""; }
     virtual void sendStatus();
-    virtual void publish(const String topic, const String message);
+    virtual void publish(const String topic, const String message, bool retain = false);
 
 protected:
     MQTTController *pmqttctlr;
@@ -47,7 +47,7 @@ public:
     static void rcvCallback(char* fullTopic, byte* payload, unsigned int length);
 
     bool subscribe(MQTTClientDev *, const MQTTTopic &);
-    void publish(String& topic, String& msg, bool retained = true);
+    void publish(String& topic, String& msg, bool retained = false);
     void doSubscriptions();
     void addClientDev(MQTTClientDev& dev);
     void rmClientDev(MQTTClientDev& dev);

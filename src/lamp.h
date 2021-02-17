@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "mqtt2.h"
+#include "mqtt.h"
 #include "infrared.h"
 
 typedef std::vector<int> SwitchList;

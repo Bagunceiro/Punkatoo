@@ -5,6 +5,7 @@
 #include "rgbled.h"
 #include "lamp.h"
 #include "fan.h"
+#include "eventlog.h"
 
 
 
@@ -16,7 +17,8 @@ extern RGBLed::Colour indicateUpdate;
 
 void updateStarted()
 {
-  serr.println("HTTP update process started");
+  Event e;
+  e.enqueue("Update started");
   indicator.setColour(indicateUpdate);
   fan.setSpeed(0);
   lamp.sw(0);
@@ -24,21 +26,26 @@ void updateStarted()
 
 void updateCompleted()
 {
+  Event e;
+  e.enqueue("Update complete");
   indicator.off();
-  time_t now = timeClient.getEpochTime();
-  serr.printf("HTTP update process complete at %s\n", ctime(&now));
 
+  time_t now = timeClient.getEpochTime();
   persistant[persistant.updateTime_n] = String(now);
   persistant.writeFile();
 }
 
 void updateNone()
 {
+  Event e;
+  e.enqueue("No update available");
   indicator.off();
 }
 
 void updateFail()
 {
+  Event e;
+  e.enqueue("Update failed");
   indicator.off();
 }
 
@@ -54,7 +61,7 @@ Updater::~Updater()
 {
 }
 
-t_httpUpdate_return Updater::systemUpdate(const String &server, const uint16_t port, const String &image, const String& ver)
+t_httpUpdate_return Updater::systemUpdate(const String &server, const uint16_t port, const String &image)
 {
   // ToDo: Check out the version (ver) to see we dont already have it
 
