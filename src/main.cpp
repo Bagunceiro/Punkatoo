@@ -23,19 +23,12 @@ const char *compTime = __TIME__;
 #include "lamp.h"
 #include "fan.h"
 #include "ldr.h"
-// #include "updater.h"
 #include "indicator.h"
 #include "tempSensor.h"
 #include "eventlog.h"
 #include "devices.h"
 
 WiFiSerialClient serr;
-// EventLog evLog(20);
-
-// WiFiClient mqttWifiClient;
-// WiFiClient updWifiClient;
-// PubSubClient mqttClient(mqttWifiClient);
-// MQTTController mqttctlr(mqttClient);
 
 /*
  * Physical Devices
@@ -126,14 +119,12 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     serr.println("Station Mode Started");
     break;
   case SYSTEM_EVENT_STA_GOT_IP:
-    // evLog.writeEvent("Connected to WiFi");
     serr.println("Connected to : " + String(WiFi.SSID()));
     serr.print("Got IP: ");
     serr.println(WiFi.localIP());
     enterState(STATE_NETWORK);
     break;
   case SYSTEM_EVENT_STA_DISCONNECTED:
-    // evLog.writeEvent("Disconnected from WiFi");
     serr.println("Disconnected from station");
     enterState(STATE_AWAKE);
     WiFi.reconnect();
@@ -152,19 +143,11 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     serr.println("WPS Failed");
     enterState(STATE_AWAKE);
     esp_wifi_wps_disable();
-    /*
-    esp_wifi_wps_enable(&wpsconfig);
-    esp_wifi_wps_start(0);
-    */
     break;
   case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
-    serr.println("WPS Timedout");
+    serr.println("WPS Timed out");
     enterState(STATE_AWAKE);
     esp_wifi_wps_disable();
-    /*
-    esp_wifi_wps_enable(&wpsconfig);
-    esp_wifi_wps_start(0);
-    */
     break;
   case SYSTEM_EVENT_STA_WPS_ER_PIN:
     break;
