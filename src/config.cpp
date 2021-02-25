@@ -48,8 +48,8 @@ const int LDR_PIN          = 35;
 const int WPS_PIN          = 0;
 
 
-const unsigned int MQTT_CONNECT_ATTEMPT_PAUSE = 30000; // Delay between attempts to reconnect MQTT (ms)
-const unsigned int WIFI_CONNECT_ATTEMPT_PAUSE = 15000;
+const unsigned int MQTT_CONNECT_ATTEMPT_INT = (30 * 1000); // Interval between attempts to reconnect MQTT (ms)
+const unsigned int WIFI_CONNECT_ATTEMPT_INT = (5 * 60 * 1000);  // Interval between attempts to reconnect WiFi (ms)
 
 ConfigBlock persistant;
 time_t startTime = time(0);

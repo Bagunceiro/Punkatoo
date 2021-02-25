@@ -60,8 +60,8 @@ extern const int LDR_PIN;
 
 extern const int WPS_PIN;
 
-extern const unsigned int MQTT_CONNECT_ATTEMPT_PAUSE; // Delay between attempts to reconnect MQTT (ms)
-extern const unsigned int WIFI_CONNECT_ATTEMPT_PAUSE;
+extern const unsigned int MQTT_CONNECT_ATTEMPT_INT; // Delay between attempts to reconnect MQTT (ms)
+extern const unsigned int WIFI_CONNECT_ATTEMPT_INT;
 
 const int TZ = -3;
 extern NTPClient timeClient;

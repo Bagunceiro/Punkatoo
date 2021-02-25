@@ -23,7 +23,7 @@ bool MQTTController::init()
         result = true;
     else
     {
-        if ((lastAttempt == 0) || ((now - lastAttempt) > MQTT_CONNECT_ATTEMPT_PAUSE))
+        if ((lastAttempt == 0) || ((now - lastAttempt) > MQTT_CONNECT_ATTEMPT_INT))
         {
             serr.print("Connecting to MQTT ");
             serr.print(persistant[persistant.mqtthost_n]);
@@ -200,4 +200,5 @@ bool MQTTController::poll()
         enterState(STATE_NETWORK);
         result = false;
     }
+    return result;
 }

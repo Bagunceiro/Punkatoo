@@ -337,7 +337,6 @@ void loop()
   if (startWPS)
   {
     wpsInit();
-
     startWPS = false;
   }
 }

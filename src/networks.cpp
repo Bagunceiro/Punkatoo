@@ -173,7 +173,7 @@ void connectToWiFi()
 {
     static long then = 0;
     long now = millis();
-    if ((then == 0) || ((now - then) >= 5 * 60 * 1000))
+    if ((then == 0) || ((now - then) >= WIFI_CONNECT_ATTEMPT_INT))
     {
         then = now;
         networkConfRead();
@@ -185,8 +185,6 @@ void connectToWiFi()
                 serr.printf("Connect to %s/%s\n", configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
                 wifimulti.addAP(configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
             }
-            // In case of emergency break glass:
-            // wifimulti.addAP("asgard_2g", "enaLkraP");
             wifimulti.run();
         }
         else
