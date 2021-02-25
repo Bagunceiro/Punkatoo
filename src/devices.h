@@ -5,7 +5,7 @@
 
 #include "lamp.h"
 #include "fan.h"
-#include "rgbled.h"
+#include "indicator.h"
 #include "ldr.h"
 #include "tempSensor.h"
 #include "configurator.h"
@@ -14,7 +14,7 @@ class Devices
 {
 public:
     Devices();
-    RGBLed *indicator;
+    IndicatorLed *indicator;
     IRController *irctlr;
     Lamp *lamp;
     Fan *fan;

@@ -24,7 +24,7 @@ const char *compTime = __TIME__;
 #include "fan.h"
 #include "ldr.h"
 // #include "updater.h"
-#include "rgbled.h"
+#include "indicator.h"
 #include "tempSensor.h"
 #include "eventlog.h"
 #include "devices.h"
@@ -41,7 +41,7 @@ WiFiSerialClient serr;
 /*
  * Physical Devices
  */
-RGBLed indicator("indicator", LED_RED, LED_BLUE, LED_GREEN);
+IndicatorLed indicator("indicator", LED_RED, LED_BLUE, LED_GREEN);
 IRController irctlr("IRrcv");
 Lamp lamp("light");
 Fan fan("fan");
@@ -57,12 +57,12 @@ Configurator configurator("configurator");
 /*
  * Status colours
  */
-RGBLed::Colour indicateStarting = RGBLed::RED;
-RGBLed::Colour indicateNoNet    = RGBLed::YELLOW;
-RGBLed::Colour indicateNet      = RGBLed::GREEN;
-RGBLed::Colour indicateUpdate   = RGBLed::BLUE;
-RGBLed::Colour indicateConfig   = RGBLed::CYAN;
-RGBLed::Colour indicateWPS      = RGBLed::MAGENTA;
+IndicatorLed::Colour indicateStarting = IndicatorLed::RED;
+IndicatorLed::Colour indicateNoNet    = IndicatorLed::YELLOW;
+IndicatorLed::Colour indicateNet      = IndicatorLed::GREEN;
+IndicatorLed::Colour indicateUpdate   = IndicatorLed::BLUE;
+IndicatorLed::Colour indicateConfig   = IndicatorLed::CYAN;
+IndicatorLed::Colour indicateWPS      = IndicatorLed::MAGENTA;
 
 extern esp_wps_config_t wpsconfig;
 extern void wpsInit();
@@ -133,36 +133,6 @@ void initWiFi()
   MDNS.begin(persistant[persistant.controllername_n].c_str());
   MDNS.addService("http", "tcp", 80);
 }
-
-/*
-void updateStarted()
-{
-  serr.println("HTTP update process started");
-  indicator.setColour(indicateUpdate);
-  fan.setSpeed(0);
-  lamp.sw(0);
-}
-
-void updateCompleted()
-{
-  indicator.off();
-  time_t now = timeClient.getEpochTime();
-  serr.printf("HTTP update process complete at %s\n", ctime(&now));
-
-  persistant[persistant.updateTime_n] = String(now);
-  persistant.writeFile();
-}
-
-void updateNone()
-{
-  indicator.off();
-}
-
-void updateFail()
-{
-  indicator.off();
-}
-*/
 
 void i2cscan()
 {
@@ -294,14 +264,6 @@ void loop()
     }
 
     if (mqttctlr.poll()) indicator.off();
-    /*
-    if (mqttClient.connected())
-      mqttClient.loop();
-    else if (mqttctlr.init())
-    {
-      indicator.off();
-    }
-    */
 
     if (!ntpstarted)
     {
@@ -329,6 +291,7 @@ void loop()
       serr.println("WiFi connection lost");
       wifiWasConnected = false;
     }
+    connectToWiFi();
   }
 
   configurator.poll();
@@ -341,8 +304,6 @@ void loop()
     then = now;
     bme.sendStatus();
   }
-
-  indicator.poll();
 
   if (startWPS)
   {

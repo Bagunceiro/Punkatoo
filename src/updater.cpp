@@ -2,18 +2,16 @@
 
 #include "config.h"
 #include "updater.h"
-#include "rgbled.h"
+#include "indicator.h"
 #include "lamp.h"
 #include "fan.h"
 #include "eventlog.h"
 
-
-
-extern RGBLed indicator;
+extern IndicatorLed indicator;
 extern Lamp lamp;
 extern Fan fan;
 
-extern RGBLed::Colour indicateUpdate;
+extern IndicatorLed::Colour indicateUpdate;
 
 void updateStarted()
 {

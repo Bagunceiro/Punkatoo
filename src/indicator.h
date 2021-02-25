@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-class RGBLed
+class IndicatorLed
 {
     public:
     struct Colour
@@ -12,12 +12,19 @@ class RGBLed
         uint16_t green;
     };
 
-    RGBLed(const String& name, const uint8_t r, const uint8_t g, const uint8_t b);
-    virtual ~RGBLed();
+    struct Step
+    {
+        Colour colour;
+        uint8_t repeat;
+        uint16_t mark;
+        uint16_t space;
+    };
+
+    IndicatorLed(const String& name, const uint8_t r, const uint8_t g, const uint8_t b);
+    virtual ~IndicatorLed();
     const struct Colour getColour() const;
     void setColour(const struct Colour& c, const unsigned int timeout = 0);
     void off();
-    void poll();
 
     static const Colour RED;
     static const Colour ORANGE;
@@ -32,6 +39,7 @@ class RGBLed
     private:
 
     Colour colour;
+    Colour blipColour;
 
     uint8_t redPin;
     uint8_t greenPin;
@@ -40,12 +48,4 @@ class RGBLed
     uint8_t redChan;
     uint8_t greenChan;
     uint8_t blueChan;
-
-    uint8_t fadeRed;
-    uint8_t fadeGreen;
-    uint8_t fadeBlue;
-
-    unsigned long setAt;
-    unsigned long timeToLive;
-    unsigned long fade;
 };

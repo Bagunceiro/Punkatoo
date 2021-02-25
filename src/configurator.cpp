@@ -4,11 +4,11 @@
 #include "configurator.h"
 #include "lamp.h"
 #include "fan.h"
-#include "rgbled.h"
+#include "indicator.h"
 
 extern Fan fan;
 extern Lamp lamp;
-extern RGBLed indicator;
+extern IndicatorLed indicator;
 
 extern Configurator configurator;
 
@@ -55,10 +55,10 @@ void Configurator::irmsgRecd(uint32_t code)
             {
                 startCodeState++;
                 serr.printf("Configurator state = %d\n", startCodeState);
-                indicator.setColour(startCodeState % 2 ? RGBLed::GREEN : RGBLed::RED);
+                indicator.setColour(startCodeState % 2 ? IndicatorLed::GREEN : IndicatorLed::RED);
                 if (startCodeState >= numberOfPresses)
                 {
-                    //indicator.setColour(RGBLed::BLUE);
+                    //indicator.setColour(IndicatorLed::BLUE);
                     // running = true; // Here as well to avoid interupt bypassing it
                     stateChangedAt = 0;
                     startRequest = true; // done like this to avoid too much happening in the interrupt
@@ -77,7 +77,7 @@ void Configurator::start()
 {
     if (!running)
     {
-        indicator.setColour(RGBLed::CYAN);
+        indicator.setColour(IndicatorLed::CYAN);
 
         String m = WiFi.macAddress();
         String ssid = persistant[persistant.controllername_n] + "_" + m.substring(9, 11) + m.substring(12, 14) + m.substring(15);

@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include "config.h"
 #include "lamp.h"
-#include "rgbled.h"
+#include "indicator.h"
 #include "eventlog.h"
 
-extern RGBLed indicator;
+extern IndicatorLed indicator;
 
 const int MAXDEBOUNCE = 5; // Number of loops to allow light switch to settle
 
@@ -28,7 +28,7 @@ void Lamp::sw(int toState)
   {
     digitalWrite(lpin, LOW);
     #ifdef TESTING
-    indicator.setColour(RGBLed::WHITE);
+    indicator.setColour(IndicatorLed::WHITE);
     #endif
   }
   sendStatus();

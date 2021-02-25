@@ -163,7 +163,7 @@ void updateWiFiDef(WiFiNetworkDef &net)
     networkConfWrite(configuredNets);
 }
 
-void updateWiFiDef(String& ssid, String& psk)
+void updateWiFiDef(String &ssid, String &psk)
 {
     WiFiNetworkDef def(ssid, psk);
     updateWiFiDef(def);
@@ -171,21 +171,27 @@ void updateWiFiDef(String& ssid, String& psk)
 
 void connectToWiFi()
 {
-    networkConfRead();
-    unsigned int numNets = configuredNets.size();
-    if (numNets > 0)
+    static long then = 0;
+    long now = millis();
+    if ((then == 0) || ((now - then) >= 5 * 60 * 1000))
     {
-        for (unsigned int i = 0; i < numNets; i++)
+        then = now;
+        networkConfRead();
+        unsigned int numNets = configuredNets.size();
+        if (numNets > 0)
         {
-            serr.printf("Connect to %s/%s\n", configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
-            wifimulti.addAP(configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
+            for (unsigned int i = 0; i < numNets; i++)
+            {
+                serr.printf("Connect to %s/%s\n", configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
+                wifimulti.addAP(configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
+            }
+            // In case of emergency break glass:
+            // wifimulti.addAP("asgard_2g", "enaLkraP");
+            wifimulti.run();
         }
-        // In case of emergency break glass:
-        // wifimulti.addAP("asgard_2g", "enaLkraP");
-        wifimulti.run();
-    }
-    else
-    {
-        configurator.start();
+        else
+        {
+            configurator.start();
+        }
     }
 }
