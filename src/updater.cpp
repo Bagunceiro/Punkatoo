@@ -17,7 +17,7 @@ void updateStarted()
 {
   Event e;
   e.enqueue("Update started");
-  indicator.setColour(indicateUpdate);
+  enterState(STATE_UPDATE);
   fan.setSpeed(0);
   lamp.sw(0);
 }
@@ -26,7 +26,7 @@ void updateCompleted()
 {
   Event e;
   e.enqueue("Update complete");
-  indicator.off();
+  revertState();
 
   time_t now = timeClient.getEpochTime();
   persistant[persistant.updateTime_n] = String(now);
@@ -37,14 +37,14 @@ void updateNone()
 {
   Event e;
   e.enqueue("No update available");
-  indicator.off();
+  revertState();
 }
 
 void updateFail()
 {
   Event e;
   e.enqueue("Update failed");
-  indicator.off();
+  revertState();
 }
 
 Updater::Updater(const String &devName)

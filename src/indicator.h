@@ -12,19 +12,14 @@ class IndicatorLed
         uint16_t green;
     };
 
-    struct Step
-    {
-        Colour colour;
-        uint8_t repeat;
-        uint16_t mark;
-        uint16_t space;
-    };
+    bool override;
 
     IndicatorLed(const String& name, const uint8_t r, const uint8_t g, const uint8_t b);
     virtual ~IndicatorLed();
     const struct Colour getColour() const;
-    void setColour(const struct Colour& c, const unsigned int timeout = 0);
+    void setColour(const struct Colour& c, const bool ovr = false);
     void off();
+    void update() { setColour(colour, override); }
 
     static const Colour RED;
     static const Colour ORANGE;
@@ -35,6 +30,7 @@ class IndicatorLed
     static const Colour MAGENTA;
 
     static const Colour WHITE;
+    static const Colour BLACK;
 
     private:
 

@@ -188,11 +188,16 @@ void MQTTController::rmClientDev(MQTTClientDev &dev)
 
 bool MQTTController::poll()
 {
+    bool result = true;
     if (client->connected())
         client->loop();
     else if (init())
     {
-        return true;
+        enterState(STATE_MQTT);
     }
-    return false;
+    else 
+    {
+        enterState(STATE_NETWORK);
+        result = false;
+    }
 }

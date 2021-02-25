@@ -6,7 +6,7 @@
 #include <PubSubClient.h>
 #include <time.h>
 #include <esp_wps.h>
-#include <TimeLib.h> 
+#include <TimeLib.h>
 
 const char *appVersion = "Punkatoo 0.3";
 const char *compDate = __DATE__;
@@ -32,7 +32,6 @@ const char *compTime = __TIME__;
 WiFiSerialClient serr;
 // EventLog evLog(20);
 
-
 // WiFiClient mqttWifiClient;
 // WiFiClient updWifiClient;
 // PubSubClient mqttClient(mqttWifiClient);
@@ -54,19 +53,67 @@ BMESensor bme("bme");
 MQTTController mqttctlr;
 Configurator configurator("configurator");
 
+enum AppState appState;
+enum AppState prevState;
+
 /*
  * Status colours
  */
-IndicatorLed::Colour indicateStarting = IndicatorLed::RED;
-IndicatorLed::Colour indicateNoNet    = IndicatorLed::YELLOW;
-IndicatorLed::Colour indicateNet      = IndicatorLed::GREEN;
-IndicatorLed::Colour indicateUpdate   = IndicatorLed::BLUE;
-IndicatorLed::Colour indicateConfig   = IndicatorLed::CYAN;
-IndicatorLed::Colour indicateWPS      = IndicatorLed::MAGENTA;
+extern const IndicatorLed::Colour indicate_0;
+extern const IndicatorLed::Colour indicate_awake;
+extern const IndicatorLed::Colour indicate_network;
+extern const IndicatorLed::Colour indicate_mqtt;
+extern const IndicatorLed::Colour indicate_wps;
+extern const IndicatorLed::Colour indicate_configurator;
+extern const IndicatorLed::Colour indicate_update;
+
+const IndicatorLed::Colour indicate_0 = IndicatorLed::RED;
+const IndicatorLed::Colour indicate_awake = IndicatorLed::YELLOW;
+const IndicatorLed::Colour indicate_network = IndicatorLed::GREEN;
+const IndicatorLed::Colour indicate_update = IndicatorLed::BLUE;
+const IndicatorLed::Colour indicate_mqtt = IndicatorLed::BLACK;
+const IndicatorLed::Colour indicate_configurator = IndicatorLed::CYAN;
+const IndicatorLed::Colour indicate_wps = IndicatorLed::MAGENTA;
 
 extern esp_wps_config_t wpsconfig;
 extern void wpsInit();
 extern void updateWiFiDef(String &ssid, String &psk);
+
+void enterState(enum AppState s)
+{
+  prevState = appState;
+  switch (s)
+  {
+  case STATE_0:
+    indicator.setColour(indicate_0);
+    break;
+  case STATE_AWAKE:
+    indicator.setColour(indicate_awake);
+    break;
+  case STATE_NETWORK:
+    indicator.setColour(indicate_network);
+    break;
+  case STATE_MQTT:
+    indicator.setColour(indicate_mqtt);
+    break;
+  case STATE_WPS:
+    indicator.setColour(indicate_wps);
+    break;
+  case STATE_CONFIGURATOR:
+    indicator.setColour(indicate_configurator);
+    break;
+  case STATE_UPDATE:
+    indicator.setColour(indicate_update);
+    break;
+  default:
+    break;
+  }
+}
+
+void revertState()
+{
+  prevState = appState;
+}
 
 void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
 {
@@ -83,19 +130,19 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     serr.println("Connected to : " + String(WiFi.SSID()));
     serr.print("Got IP: ");
     serr.println(WiFi.localIP());
-    indicator.setColour(indicateNet, 60);
+    enterState(STATE_NETWORK);
     break;
   case SYSTEM_EVENT_STA_DISCONNECTED:
     // evLog.writeEvent("Disconnected from WiFi");
     serr.println("Disconnected from station");
-    indicator.setColour(indicateNoNet, 60);
+    enterState(STATE_AWAKE);
     WiFi.reconnect();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
     ssid = WiFi.SSID();
     psk = WiFi.psk();
     serr.println("WPS Successful : " + ssid + "/" + psk);
-    indicator.setColour(indicateNet, 60);
+    enterState(STATE_NETWORK);
     esp_wifi_wps_disable();
     updateWiFiDef(ssid, psk);
     delay(10);
@@ -103,7 +150,7 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     break;
   case SYSTEM_EVENT_STA_WPS_ER_FAILED:
     serr.println("WPS Failed");
-    indicator.setColour(indicateNoNet, 60);
+    enterState(STATE_AWAKE);
     esp_wifi_wps_disable();
     /*
     esp_wifi_wps_enable(&wpsconfig);
@@ -112,7 +159,7 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     break;
   case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
     serr.println("WPS Timedout");
-    indicator.setColour(indicateNoNet, 60);
+    enterState(STATE_AWAKE);
     esp_wifi_wps_disable();
     /*
     esp_wifi_wps_enable(&wpsconfig);
@@ -181,11 +228,10 @@ void setup()
   ev1.startLogger(mqttctlr);
   ev1.enqueue("Starting");
 
-  indicator.setColour(indicateStarting);
+  enterState(STATE_0);
 
   serr.println("");
   serr.println(appVersion);
-
 
   if (persistant.readFile() == false)
     persistant.writeFile();
@@ -202,7 +248,8 @@ void setup()
   lamp.registerMQTT(mqttctlr);
   lamp.start(5);
   lamp.sw(0);
-  Serial.println("lamp.started"); delay(500);
+  Serial.println("lamp.started");
+  delay(500);
 
   /*
    * Start up the fan
@@ -211,7 +258,6 @@ void setup()
   fan.registerIR(irctlr);
   fan.registerMQTT(mqttctlr);
   fan.setSpeed(0);
-
 
   /*
    * Start up the Infra red controller
@@ -223,10 +269,10 @@ void setup()
   /*
    * Ready to go (switch and IR). But network has not been initialised yet
    */
-  indicator.setColour(indicateNoNet, 60);
+  enterState(STATE_AWAKE);
   Event e2;
   e2.enqueue("Startup complete");
-  
+
   pinMode(WPS_PIN, INPUT_PULLUP);
   attachInterrupt(WPS_PIN, startwps, FALLING);
 
@@ -260,10 +306,10 @@ void loop()
       wifiWasConnected = true;
       serr.begin("Punkatoo");
       serr.println("WiFi connected");
-      indicator.setColour(indicateNet);
+      enterState(STATE_NETWORK);
     }
 
-    if (mqttctlr.poll()) indicator.off();
+    mqttctlr.poll();
 
     if (!ntpstarted)
     {
@@ -308,7 +354,7 @@ void loop()
   if (startWPS)
   {
     wpsInit();
-    indicator.setColour(indicateWPS);
+
     startWPS = false;
   }
 }

@@ -55,7 +55,7 @@ void Configurator::irmsgRecd(uint32_t code)
             {
                 startCodeState++;
                 serr.printf("Configurator state = %d\n", startCodeState);
-                indicator.setColour(startCodeState % 2 ? IndicatorLed::GREEN : IndicatorLed::RED);
+                indicator.setColour(startCodeState % 2 ? IndicatorLed::GREEN : IndicatorLed::RED, true);
                 if (startCodeState >= numberOfPresses)
                 {
                     //indicator.setColour(IndicatorLed::BLUE);
@@ -73,11 +73,12 @@ void Configurator::irmsgRecd(uint32_t code)
     }
 }
 
+
 void Configurator::start()
 {
     if (!running)
     {
-        indicator.setColour(IndicatorLed::CYAN);
+        enterState(STATE_CONFIGURATOR);
 
         String m = WiFi.macAddress();
         String ssid = persistant[persistant.controllername_n] + "_" + m.substring(9, 11) + m.substring(12, 14) + m.substring(15);

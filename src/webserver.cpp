@@ -5,8 +5,10 @@
 #include "updater.h"
 #include "ldr.h"
 #include "tempSensor.h"
+#include "indicator.h"
 
 extern BMESensor bme;
+extern IndicatorLed indicator;
 
 FanConWebServer webServer(80);
 
@@ -175,11 +177,7 @@ void resetMessage(const String& reason)
 {
   messagePage(reason + "<br><br>Resetting, please wait");
   delay(1000);
-  #ifdef ESP32
   ESP.restart();
-  #else
-  ESP.reset();
-  #endif
 }
 
 void blankResetMessage()
@@ -191,18 +189,26 @@ void handleGenUpdate()
 {
   if (webServer.method() == HTTP_POST)
   {
+    persistant[persistant.indicator_n] = "0";
 
     for (uint8_t i = 0; i < webServer.args(); i++)
     {
       const String argName = webServer.argName(i);
-      persistant[argName] = webServer.arg(i);
+      if (argName == persistant.indicator_n)
+      {
+        persistant[argName] = "1";
+      }
+      else persistant[argName] = webServer.arg(i);
     }
     persistant.dump(serr);
     persistant.writeFile();
-    serr.println("Resetting");
 
-    delay(3000);
-    resetMessage("");
+    indicator.update();
+    // serr.println("Resetting");
+
+    // delay(3000);
+    // resetMessage("");
+    messagePage("Configuration Updated");
   }
 }
 
@@ -211,7 +217,7 @@ void handleGenConfig()
   String title("Punkatoo Configuration");
   String head3("");
   String body2((String) R"!(
-<button type=submit form=theform>Save and Reset</button>
+<button type=submit form=theform>Save</button>
 </div>
 <div class=content>
 <BR><B>General Configuration: )!" + persistant[persistant.controllername_n] + R"!(</B>
@@ -231,6 +237,8 @@ void handleGenConfig()
 <td><input type=text name=")!" + persistant.mqttroot_n + "\" value=\"" + persistant[persistant.mqttroot_n] + R"!("></td></tr>
 <tr><td><label for=mqtttopic>MQTT Topic:</label></td>
 <td><input type=text name=")!" + persistant.mqtttopic_n + "\" value=\"" + persistant[persistant.mqtttopic_n] + R"!("></td></tr>
+<tr><td><label for="ind">Status Indicator:</label></td>
+<td><input type=checkbox id="ind" name=")!" + persistant.indicator_n + "\"" + (persistant[persistant.indicator_n] == "1" ? " checked" : "") + R"!(/><label for=ind>&nbsp;</label></td></tr>
 </table>
 </FORM>
 </div>
@@ -239,6 +247,9 @@ void handleGenConfig()
 
   sendPage(head1, title, head2, style, head3, headEnd, body1, body2);
 }
+/*
+<td><input type=checkbox id="ind" name=")!" + persistant.indicator_n + "\"" + (persistant[persistant.indicator_n] == "1" ? " checked" : "") + R"!(/><label for=ind>&nbsp;</label></td></tr>
+*/
 
 String &listNetworks(String &body, networkList &networks, bool selected)
 {

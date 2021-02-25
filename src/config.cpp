@@ -17,9 +17,8 @@ const char *ConfigBlock::mqttuser_n       = "mqttuser";
 const char *ConfigBlock::mqttpwd_n        = "mqttpwd";
 const char *ConfigBlock::mqttroot_n       = "mqttroot";
 const char *ConfigBlock::mqtttopic_n      = "mqtttopic";
-const char *ConfigBlock::updateInterval_n = "updateInterval";
-const char *ConfigBlock::updateServer_n   = "updateServer";
-const char *ConfigBlock::updateTime_n     = "updateTime";
+const char *ConfigBlock::updateTime_n     = "updatetime";
+const char *ConfigBlock::indicator_n      = "indicator";
 
 
 const String MQTT_TPC_STAT   = "status";

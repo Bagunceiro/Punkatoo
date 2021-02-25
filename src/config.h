@@ -7,11 +7,29 @@
 #include "wifiserial.h"
 #include "confblk.h"
 #include "ntpclient.h"
-// #include "eventlog.h"
+#include "indicator.h"
 
-extern const char* SSID;
-extern const char* PSK;
+enum AppState{
+  STATE_0 = 0,
+  STATE_AWAKE,
+  STATE_NETWORK,
+  STATE_MQTT,
+  STATE_WPS,
+  STATE_CONFIGURATOR,
+  STATE_UPDATE
+};
 
+extern void enterState(const enum AppState);
+extern void revertState();
+extern enum AppState appState;
+
+extern const IndicatorLed::Colour indicate_0;
+extern const IndicatorLed::Colour indicate_awake;
+extern const IndicatorLed::Colour indicate_network;
+extern const IndicatorLed::Colour indicate_mqtt;
+extern const IndicatorLed::Colour indicate_wps;
+extern const IndicatorLed::Colour indicate_configurator;
+extern const IndicatorLed::Colour indicate_update;
 
 extern const String MQTT_TPC_STAT;   // "status"
 extern const String MQTT_TPC_SPEED;  // "speed"
@@ -58,9 +76,8 @@ struct ConfigBlock : public ConfBlk
   static const char* mqttpwd_n;
   static const char* mqttroot_n;
   static const char* mqtttopic_n;
-  static const char* updateInterval_n;
-  static const char* updateServer_n;
   static const char* updateTime_n;
+  static const char* indicator_n;
 };
 
 extern ConfigBlock persistant;
