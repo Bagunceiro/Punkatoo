@@ -203,7 +203,8 @@ void handleGenUpdate()
     persistant.dump(serr);
     persistant.writeFile();
 
-    indicator.update();
+    indicator.setColour(indicate_update, true);
+    //indicator.update();
     // serr.println("Resetting");
 
     // delay(3000);

@@ -26,7 +26,7 @@ const char *compTime = __TIME__;
 #include "indicator.h"
 #include "tempSensor.h"
 #include "eventlog.h"
-#include "devices.h"
+// #include "devices.h"
 
 WiFiSerialClient serr;
 
@@ -60,13 +60,14 @@ extern const IndicatorLed::Colour indicate_wps;
 extern const IndicatorLed::Colour indicate_configurator;
 extern const IndicatorLed::Colour indicate_update;
 
-const IndicatorLed::Colour indicate_0 = IndicatorLed::RED;
-const IndicatorLed::Colour indicate_awake = IndicatorLed::YELLOW;
-const IndicatorLed::Colour indicate_network = IndicatorLed::GREEN;
-const IndicatorLed::Colour indicate_update = IndicatorLed::BLUE;
-const IndicatorLed::Colour indicate_mqtt = IndicatorLed::BLACK;
-const IndicatorLed::Colour indicate_configurator = IndicatorLed::CYAN;
-const IndicatorLed::Colour indicate_wps = IndicatorLed::MAGENTA;
+const IndicatorLed::Colour indicate_0            = IndicatorLed::BLACK;
+const IndicatorLed::Colour indicate_awake        = IndicatorLed::RED;
+const IndicatorLed::Colour indicate_network      = IndicatorLed::BLUE;
+const IndicatorLed::Colour indicate_mqtt         = IndicatorLed::GREEN;
+
+const IndicatorLed::Colour indicate_update       = IndicatorLed::CYAN;
+const IndicatorLed::Colour indicate_configurator = IndicatorLed::YELLOW;
+const IndicatorLed::Colour indicate_wps          = IndicatorLed::MAGENTA;
 
 extern esp_wps_config_t wpsconfig;
 extern void wpsInit();
@@ -178,8 +179,6 @@ void i2cscan()
     if (address % 16 == 0)
     {
       serr.println("");
-      serr.print(address, HEX);
-      serr.print(":");
     }
     serr.print(" ");
     if (error == 2)
@@ -339,4 +338,6 @@ void loop()
     wpsInit();
     startWPS = false;
   }
+
+  indicator.poll();
 }

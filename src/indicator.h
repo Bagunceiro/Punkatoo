@@ -12,14 +12,13 @@ class IndicatorLed
         uint16_t green;
     };
 
-    bool override;
-
     IndicatorLed(const String& name, const uint8_t r, const uint8_t g, const uint8_t b);
     virtual ~IndicatorLed();
     const struct Colour getColour() const;
     void setColour(const struct Colour& c, const bool ovr = false);
     void off();
-    void update() { setColour(colour, override); }
+    // void update() { setColour(colour, override); }
+    void poll();
 
     static const Colour RED;
     static const Colour ORANGE;
@@ -44,4 +43,7 @@ class IndicatorLed
     uint8_t redChan;
     uint8_t greenChan;
     uint8_t blueChan;
+
+    unsigned long setAt;
+    unsigned long timeout;
 };
