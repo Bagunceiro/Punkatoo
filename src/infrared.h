@@ -48,19 +48,16 @@ typedef std::map<IRCode, MsgList> DecodeList;
 /*
    Fan controller remote
 */
-const uint32_t IRREMOTE_FAN_ONOFF = 0xff20df;
-const uint32_t IRREMOTE_FAN_FASTER = 0xffe01f;
-const uint32_t IRREMOTE_FAN_SLOWER = 0xff58a7;
+const uint32_t IRREMOTE_FAN_ONOFF   = 0xff20df;
+const uint32_t IRREMOTE_FAN_FASTER  = 0xffe01f;
+const uint32_t IRREMOTE_FAN_SLOWER  = 0xff58a7;
 const uint32_t IRREMOTE_FAN_REVERSE = 0xff10ef;
-const uint32_t IRREMOTE_FAN_TIMER = 0xffd827;
+const uint32_t IRREMOTE_FAN_TIMER   = 0xffd827;
 
 const uint32_t IRREMOTE_LIGHT_ONOFF = 0xff609f;
-const uint32_t IRREMOTE_LIGHT_UP = 0xff906f;
-const uint32_t IRREMOTE_LIGHT_DOWN = 0xff38c7;
+const uint32_t IRREMOTE_LIGHT_UP    = 0xff906f;
+const uint32_t IRREMOTE_LIGHT_DOWN  = 0xff38c7;
 const uint32_t IRREMOTE_LIGHT_TIMER = 0xffa05f;
-
-const uint32_t IRREMOTE_CONFIGURATOR_START = IRREMOTE_FAN_FASTER;
-const uint32_t IRREMOTE_CONFIGURATOR_STOP = IRREMOTE_FAN_SLOWER;
 
 extern const int IRDEBOUNCE; // Number of milliseconds to leave fallow between IR messages
 
@@ -74,6 +71,11 @@ extern const IRMessage IR_FAN_TOGGLE;
 extern const IRMessage IR_FAN_REVERSE;
 extern const IRMessage IR_FAN_FASTER;
 extern const IRMessage IR_FAN_SLOWER;
+
+extern const IRMessage IR_CONFIGURATOR_START;
+extern const IRMessage IR_CONFIGURATOR_STOP;
+
+extern const IRMessage IR_RESET;
 
 class IRController : public IRrecv, public PTask
 {
@@ -99,7 +101,7 @@ public:
   virtual ~IRControlled();
   virtual void irmsgRecd(const IRMessage msg);
   void registerIR(IRController &c);
-  virtual void subscribeToIR() {}
+  virtual void subscribeToIR() = 0;
   String getName() { return name; }
 
 protected:

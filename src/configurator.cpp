@@ -25,7 +25,7 @@ Configurator::~Configurator()
 {
 }
 
-void Configurator::irmsgRecd(uint32_t code)
+void Configurator::irmsgRecd(const IRMessage msg)
 {
     /*
     Configurator entry uses the fan speed up keys on the remote. but ony when the fan is off.
@@ -37,9 +37,14 @@ void Configurator::irmsgRecd(uint32_t code)
 
     unsigned long now = millis();
 
+    if (msg == IR_RESET)
+    {
+        ESP.restart();
+    }
+
     if (running)
     {
-        if (code == IRREMOTE_CONFIGURATOR_STOP)
+        if (msg == IR_CONFIGURATOR_STOP)
         {
 
             stop();
@@ -51,7 +56,7 @@ void Configurator::irmsgRecd(uint32_t code)
 
         if (fan.getSpeed() == 0)
         {
-            if (code == IRREMOTE_CONFIGURATOR_START)
+            if (msg == IR_CONFIGURATOR_START)
             {
                 startCodeState++;
                 serr.printf("Configurator state = %d\n", startCodeState);
@@ -121,4 +126,11 @@ void Configurator::poll()
             stop();
         }
     }
+}
+
+void Configurator::subscribeToIR()
+{
+  subscribe(IR_CONFIGURATOR_START);
+  subscribe(IR_CONFIGURATOR_STOP);
+  subscribe(IR_RESET);
 }

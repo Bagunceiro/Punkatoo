@@ -8,7 +8,8 @@ class Configurator : public IRControlled
 public:
     Configurator(const String& name);
     virtual ~Configurator();
-    virtual void irmsgRecd(uint32_t code);
+    virtual void subscribeToIR();
+    virtual void irmsgRecd(const IRMessage m);
     void start();
     void stop();
     void poll();
