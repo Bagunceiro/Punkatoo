@@ -59,10 +59,24 @@ Updater::~Updater()
 {
 }
 
+void prog(size_t completed, size_t total)
+{
+  static int oldPhase = 1;
+  int progress = (completed * 100)/total;
+
+  int phase = (progress / 5) % 2; // report at 5% intervals
+
+  if (phase != oldPhase)
+  {
+      if (phase) indicator.off();
+      else indicator.setColour(indicate_update, true);
+      serr.printf("Progress: %d%% (%d/%d)\n", progress, completed, total);
+      oldPhase = phase;
+  }
+}
+
 t_httpUpdate_return Updater::systemUpdate(const String &server, const uint16_t port, const String &image)
 {
-  // ToDo: Check out the version (ver) to see we dont already have it
-
   WiFiClient client;
 
   if (startCallback != NULL)
@@ -71,6 +85,8 @@ t_httpUpdate_return Updater::systemUpdate(const String &server, const uint16_t p
   }
 
   httpUpdate.rebootOnUpdate(false);
+
+  Update.onProgress(prog);
 
   t_httpUpdate_return ret = httpUpdate.update(client, server, port, image);
 

@@ -52,14 +52,6 @@ enum AppState prevState;
 /*
  * Status colours
  */
-extern const IndicatorLed::Colour indicate_0;
-extern const IndicatorLed::Colour indicate_awake;
-extern const IndicatorLed::Colour indicate_network;
-extern const IndicatorLed::Colour indicate_mqtt;
-extern const IndicatorLed::Colour indicate_wps;
-extern const IndicatorLed::Colour indicate_configurator;
-extern const IndicatorLed::Colour indicate_update;
-
 const IndicatorLed::Colour indicate_0            = IndicatorLed::BLACK;
 const IndicatorLed::Colour indicate_awake        = IndicatorLed::RED;
 const IndicatorLed::Colour indicate_network      = IndicatorLed::BLUE;
@@ -69,7 +61,7 @@ const IndicatorLed::Colour indicate_update       = IndicatorLed::CYAN;
 const IndicatorLed::Colour indicate_configurator = IndicatorLed::YELLOW;
 const IndicatorLed::Colour indicate_wps          = IndicatorLed::MAGENTA;
 
-extern esp_wps_config_t wpsconfig;
+// extern esp_wps_config_t wpsconfig;
 extern void wpsInit();
 extern void updateWiFiDef(String &ssid, String &psk);
 
@@ -163,6 +155,22 @@ void initWiFi()
   connectToWiFi();
   MDNS.begin(persistant[persistant.controllername_n].c_str());
   MDNS.addService("http", "tcp", 80);
+}
+
+void wpsInit()
+{
+  esp_wps_config_t wpsconfig;
+
+  wpsconfig.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
+  wpsconfig.wps_type = WPS_TYPE_PBC;
+  strcpy(wpsconfig.factory_info.manufacturer, "PA");
+  strcpy(wpsconfig.factory_info.model_number, "1");
+  strcpy(wpsconfig.factory_info.model_name, "Punkatoo");
+  strcpy(wpsconfig.factory_info.device_name, persistant[persistant.controllername_n].c_str());
+  esp_wifi_wps_enable(&wpsconfig);
+  esp_wifi_wps_start(0);
+  serr.println("WPS started");
+  enterState(STATE_WPS);
 }
 
 void i2cscan()

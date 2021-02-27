@@ -158,7 +158,7 @@ MQTTClientDev::~MQTTClientDev()
 void MQTTClientDev::sendStatus()
 {
     String stat = getStatus();
-    publish(MQTT_TPC_STAT, stat);
+    publish(MQTT_TPC_STAT, stat, true);
 }
 
 void MQTTClientDev::publish(const String topic, const String message, bool retain)

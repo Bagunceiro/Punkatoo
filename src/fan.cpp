@@ -60,6 +60,7 @@ int8_t Fan::getSpeed()
 
 String Fan::getStatus()
 {
+  /*
   int result = 0; // Assume it's off
 
   int dstat = dir.stat();
@@ -75,6 +76,8 @@ String Fan::getStatus()
     if (dstat == 2) result = -result;
   }
   return String(result);
+  */
+  return String(getSpeed());
 }
 
 int Fan::speedToPos(const int s)

@@ -97,7 +97,7 @@ bool IRController::operator()()
     {
       Event e;
 
-      if ((when = irDebounce(then)))
+      if ((when = irDebounce(then, IRDEBOUNCE)))
       {
         // Decode data from remote
         auto search = decList.find(val);

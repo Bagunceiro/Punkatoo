@@ -1,5 +1,4 @@
-#ifndef FC_INFRARED_H
-#define FC_INFRARED_H
+#pragma once
 
 #include <IRrecv.h>
 #include <IRsend.h>
@@ -59,7 +58,7 @@ const uint32_t IRREMOTE_LIGHT_UP    = 0xff906f;
 const uint32_t IRREMOTE_LIGHT_DOWN  = 0xff38c7;
 const uint32_t IRREMOTE_LIGHT_TIMER = 0xffa05f;
 
-extern const int IRDEBOUNCE; // Number of milliseconds to leave fallow between IR messages
+// extern const int IRDEBOUNCE; // Number of milliseconds to leave fallow between IR messages
 
 // Internal (decoded) messages
 
@@ -100,7 +99,14 @@ public:
   IRControlled(const String& n);
   virtual ~IRControlled();
   virtual void irmsgRecd(const IRMessage msg);
+  /*
+  Register with the IR controller.
+  Also subscribes to messages of interest (via the subscribeToIR function for the derived class)
+  */
   void registerIR(IRController &c);
+  /*
+    Called by registerIR to allow derived class to subscribe to messages of interest
+  */
   virtual void subscribeToIR() = 0;
   String getName() { return name; }
 
@@ -123,8 +129,3 @@ public:
 private:
   uint8_t lpin;
 };
-
-extern unsigned long irDebounce(unsigned long then, unsigned long debounceTime = IRDEBOUNCE);
-extern IRController irctlr;
-
-#endif
