@@ -130,7 +130,7 @@ public:
   virtual void subscribeToMQTT();
   virtual void mqttMsgRecd(const String &topic, const String &msg);
 
-  void sendCode(long code);
+  void sendCode(String type, long code, int bits = 32);
   void on();
   void off();
 

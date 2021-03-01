@@ -2,7 +2,7 @@
 #include "config.h"
 #include "eventlog.h"
 
-PTask::PTask(const String& n, const int stack)
+PTask::PTask(const String &n, const int stack)
 {
     name = n;
     stackSize = stack;
@@ -25,7 +25,7 @@ void PTask::loop(void *ctlr)
         {
             hwm = hwmnow;
             Event e;
-            e.enqueue(String("Task " + pThis->name + " stack free " + String(hwm)));
+            e.enqueue(String("Task " + pThis->name + " HWM=" + String(hwm)));
         }
     }
 }
@@ -34,12 +34,12 @@ bool PTask::start(uint8_t priority)
 {
     serr.println(String("Creating task for ") + name);
     xTaskCreate(
-        loop,          // Function to implement the task
-        name.c_str(),  // Name of the task
-        stackSize,     // Stack size in words
-        this,          // Task input parameter
-        priority,      // Priority of the task
-        &taskHandle    // Task handle.
+        loop,         // Function to implement the task
+        name.c_str(), // Name of the task
+        stackSize,    // Stack size in words
+        this,         // Task input parameter
+        priority,     // Priority of the task
+        &taskHandle   // Task handle.
     );
 
     return true;
