@@ -6,6 +6,7 @@ MQTTController::MQTTController()
 {
     thectlr = this;
     client = new PubSubClient(wifiClient);
+    connFlag = false;
 }
 
 MQTTController::~MQTTController()
@@ -42,10 +43,12 @@ bool MQTTController::init()
                                 persistant[persistant.mqttpwd_n].c_str()))
             {
                 serr.println("MQTT connected");
+                poll();
                 doSubscriptions();
                 for (MQTTClientDev *dev : devList)
                 {
                     dev->sendStatus();
+                    client->loop();
                 }
                 result = true;
             }
@@ -84,10 +87,14 @@ String MQTTController::stdPrefix()
 
 void MQTTController::publish(String &topic, String &msg, bool retained)
 {
-    if (client->connected())
+    if (connected())
     {
+        static SemaphoreHandle_t pubMutex = xSemaphoreCreateMutex();
         String t = stdPrefix() + topic;
+        // serr.printf("publishing %s, %s, %d\n", t.c_str(), msg.c_str(), retained);
+        xSemaphoreTake(pubMutex, portMAX_DELAY);
         client->publish(t.c_str(), msg.c_str(), retained);
+        xSemaphoreGive(pubMutex);
     }
 }
 
@@ -157,8 +164,12 @@ MQTTClientDev::~MQTTClientDev()
 
 void MQTTClientDev::sendStatus()
 {
+    // serr.printf("sendStatus for %s\n", name.c_str());
     String stat = getStatus();
-    publish(MQTT_TPC_STAT, stat, true);
+    if (stat != "")
+    {
+        publish(MQTT_TPC_STAT, stat, true);
+    }
 }
 
 void MQTTClientDev::publish(const String topic, const String message, bool retain)
@@ -190,15 +201,40 @@ bool MQTTController::poll()
 {
     bool result = true;
     if (client->connected())
+    // if (client->state() == MQTT_CONNECTED)
+    // if (connected())
+    {
         client->loop();
+    }
     else if (init())
     {
         enterState(STATE_MQTT);
     }
-    else 
+    else
     {
         enterState(STATE_NETWORK);
         result = false;
+    }
+    connFlag = result;
+    return result;
+}
+
+/*
+ * Are we connected to the MQTT broker, or at least were we when last we looked.
+ * PubSubClient::connected does not appear to be thread safe so avoiding making the call here
+ */
+bool MQTTController::connected()
+{
+    // return (client->state() == MQTT_CONNECTED);
+    return connFlag;
+}
+
+bool MQTTClientDev::connected()
+{
+    bool result = false;
+    if (pmqttctlr != NULL)
+    {
+        result = pmqttctlr->connected();
     }
     return result;
 }

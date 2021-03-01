@@ -32,19 +32,22 @@ WiFiSerialClient serr;
 
 /*
  * Physical Devices
+ *  Note that for MQTT devices the names form part of the topic during publish
  */
 IndicatorLed indicator("indicator", LED_RED, LED_BLUE, LED_GREEN);
 IRController irctlr("IRrcv");
-Lamp lamp("light");
+Lamp lamp("lamp");
 Fan fan("fan");
 LDR ldr("LDR", LDR_PIN);
 BMESensor bme("bme");
+IRLed irled("ir", IRLED_PIN);
 
 /*
  * Pseudo Devices
  */
 MQTTController mqttctlr;
 Configurator configurator("configurator");
+EventLogger Event::logger("event");
 
 enum AppState appState;
 enum AppState prevState;
@@ -238,8 +241,7 @@ void setup()
   lamp.registerMQTT(mqttctlr);
   lamp.start(5);
   lamp.sw(0);
-  Serial.println("lamp.started");
-  delay(500);
+  // delay(500);
 
   /*
    * Start up the fan
@@ -254,6 +256,7 @@ void setup()
    */
   irctlr.start(4);
 
+  irled.registerMQTT(mqttctlr);
   bme.registerMQTT(mqttctlr);
 
   /*

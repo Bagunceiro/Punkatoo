@@ -25,6 +25,7 @@ public:
     virtual String getStatus() { return ""; }
     virtual void sendStatus();
     virtual void publish(const String topic, const String message, bool retain = false);
+    bool connected();
 
 protected:
     MQTTController *pmqttctlr;
@@ -32,12 +33,12 @@ protected:
 private:
     String topicPrefix;
     String name;
+
 };
 
 class MQTTController
 {
 public:
-    // MQTTController(PubSubClient& c);
     MQTTController();
     virtual ~MQTTController();
     bool init();
@@ -51,6 +52,7 @@ public:
     void doSubscriptions();
     void addClientDev(MQTTClientDev& dev);
     void rmClientDev(MQTTClientDev& dev);
+    bool connected();
 
 private:
     MQTTSubscriptionList subList;
@@ -59,4 +61,5 @@ private:
     WiFiClient wifiClient;
     PubSubClient* client;
     String stdPrefix();
+    bool connFlag; // set by poll to avoid using the thread unsafe PubSubClient::connected elsewhere
 };

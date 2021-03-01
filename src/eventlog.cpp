@@ -4,7 +4,7 @@
 QueueHandle_t Event::queue = xQueueCreate(20, sizeof(Event));
 SemaphoreHandle_t Event::serialNoMutex = xSemaphoreCreateMutex();
 uint16_t Event::nextSerial = 1;
-EventLogger Event::logger("event");
+// EventLogger Event::logger("event");
 
 Event::Event()
 {
@@ -63,29 +63,20 @@ bool Event::enqueue(const String &msg)
     return result;
 }
 
-/*
-bool Event::enqueue(const char *msg)
-{
-    setSerial();
-    text = (char *)malloc(strlen(msg) + 1);
-    strcpy(text, msg);
-
-    bool result = xQueueSend(queue, this, 0);
-    if (result)
-    {
-        onQueue = true;
-    }
-    return result;
-}
-*/
-
 bool Event::dequeue()
 {
     bool result = xQueueReceive(queue, this, 0);
+
     if (result)
     {
         onQueue = false;
     }
+    return result;
+}
+
+bool Event::queued()
+{
+    bool result = xQueuePeek(queue, this, 0);
     return result;
 }
 
@@ -95,45 +86,32 @@ EventLogger::EventLogger(const String name) : PTask(name, 3000), MQTTClientDev(n
 
 bool EventLogger::operator()()
 {
-    Event ev;
     bool result = false;
 
-    if (ev.dequeue())
+    Event ev;
+    if (true) // ev.queued())
     {
-        result = true;
-        char buffer[24];
-        sprintf(buffer, "%02d %ld.%03d ", ev.serial, ev.ts.secs, ev.ts.msecs);
+        if (connected())
+        {
+            Event ev;
+            if (ev.dequeue())
+            {
+                result = true;
+                char buffer[24];
+                sprintf(buffer, "%02d %ld.%03d ", ev.serial, ev.ts.secs, ev.ts.msecs);
 
-        Serial.println(String(buffer) + String(ev.text));
-        StaticJsonDocument<512> doc;
-        doc["serial"] = ev.serial;
-        JsonObject ts = doc.createNestedObject("ts");
-        ts["secs"] = ev.ts.secs;
-        ts["msecs"] = ev.ts.msecs;
-        doc["text"] = ev.text;
-        String s;
-        serializeJson(doc, s);
-        publish("log", s.c_str());
+                Serial.println(String(buffer) + String(ev.text));
+                StaticJsonDocument<512> doc;
+                doc["serial"] = ev.serial;
+                JsonObject ts = doc.createNestedObject("ts");
+                ts["secs"] = ev.ts.secs;
+                ts["msecs"] = ev.ts.msecs;
+                doc["text"] = ev.text;
+                String s;
+                serializeJson(doc, s);
+                publish("log", s.c_str());
+            }
+        }
     }
     return result;
 }
-    /*
-void setup()
-{
-  Serial.begin(9600);
-  Event e;
-  e.startLogger();
-}
-
-void loop()
-{
-  static int count = 0;
-
-  char buffer[20];
-  sprintf(buffer, "Message %d", ++count);
-
-  Event e;
-  e.enqueue(buffer);
-  delay (200);
-}
-*/

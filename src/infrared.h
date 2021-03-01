@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ptask.h"
+#include "mqtt.h"
 
 const uint8_t kTimeout = 15;
 const uint16_t kMinUnknownSize = 12;
@@ -74,7 +75,10 @@ extern const IRMessage IR_FAN_SLOWER;
 extern const IRMessage IR_CONFIGURATOR_START;
 extern const IRMessage IR_CONFIGURATOR_STOP;
 
+extern const IRMessage IR_SEND_IRCODE;
+
 extern const IRMessage IR_RESET;
+
 
 class IRController : public IRrecv, public PTask
 {
@@ -118,14 +122,19 @@ private:
   String name;
 };
 
-class IRLed
+class IRLed : public MQTTClientDev
 {
 public:
-  IRLed(uint8_t pin);
+  IRLed(const String& name, uint8_t pin);
   virtual ~IRLed();
+  virtual void subscribeToMQTT();
+  virtual void mqttMsgRecd(const String &topic, const String &msg);
+
+  void sendCode(long code);
   void on();
   void off();
 
 private:
   uint8_t lpin;
+  IRsend* irsend;
 };

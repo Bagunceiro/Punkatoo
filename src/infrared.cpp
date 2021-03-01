@@ -1,4 +1,6 @@
 #include <Arduino.h>
+// #include <IRremote.h>
+
 #include "config.h"
 #include "infrared.h"
 #include "eventlog.h"
@@ -157,10 +159,11 @@ bool IRController::subscribe(IRControlled *c, IRMessage m)
   return true;
 }
 
-IRLed::IRLed(uint8_t pin)
+IRLed::IRLed(const String& name, uint8_t pin) : MQTTClientDev(name)
 {
   lpin = pin;
   pinMode(lpin, OUTPUT);
+  irsend = new IRsend(lpin);
   off();
 }
 
@@ -177,4 +180,24 @@ void IRLed::on()
 void IRLed::off()
 {
   digitalWrite(lpin, LOW);
+}
+
+void IRLed::sendCode(long code)
+{
+  // serr.printf("IR Send code %016lx\n", code);
+  irsend->sendNEC(code);
+}
+
+void IRLed::subscribeToMQTT()
+{
+  pmqttctlr->subscribe(this, MQTT_TPC_SENDIRCODE);
+  sendStatus();
+}
+
+void IRLed::mqttMsgRecd(const String& topic, const String& msg)
+{
+  if (topic == MQTT_TPC_SENDIRCODE)
+  {
+    sendCode(strtoll(msg.c_str(), 0, 16));
+  }
 }

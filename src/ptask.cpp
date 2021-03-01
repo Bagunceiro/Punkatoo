@@ -1,5 +1,6 @@
 #include "ptask.h"
 #include "config.h"
+#include "eventlog.h"
 
 PTask::PTask(const String& n, const int stack)
 {
@@ -20,10 +21,11 @@ void PTask::loop(void *ctlr)
         (*pThis)();
         delay(1);
         int hwmnow = uxTaskGetStackHighWaterMark(pThis->taskHandle);
-        if (hwmnow < hwm)
+        if (hwmnow < hwm) // log maximum stack depth
         {
             hwm = hwmnow;
-            serr.printf("task stack %s unused = %d\n", (pThis->name).c_str(), hwm);
+            Event e;
+            e.enqueue(String("Task " + pThis->name + " stack free " + String(hwm)));
         }
     }
 }

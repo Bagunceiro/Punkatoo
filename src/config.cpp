@@ -21,10 +21,11 @@ const char *ConfigBlock::updateTime_n     = "updatetime";
 const char *ConfigBlock::indicator_n      = "indicator";
 
 
-const String MQTT_TPC_STAT   = "status";
-const String MQTT_TPC_SPEED  = "fan/speed";
-const String MQTT_TPC_SWITCH = "light/switch";
-const String MQTT_TPC_UPDATE = "update";
+const String MQTT_TPC_STAT       = "status";
+const String MQTT_TPC_SPEED      = "fan/speed";
+const String MQTT_TPC_SWITCH     = "lamp/switch";
+const String MQTT_TPC_UPDATE     = "update";
+const String MQTT_TPC_SENDIRCODE = "ir/sendcode";
 
 // GPIO pins
 
@@ -46,6 +47,8 @@ const int IR_TRANSMIT_PIN  = 4;
 const int LDR_PIN          = 35;
 
 const int WPS_PIN          = 0;
+
+const int IRLED_PIN        = 4;
 
 
 const unsigned int MQTT_CONNECT_ATTEMPT_INT = (30 * 1000); // Interval between attempts to reconnect MQTT (ms)

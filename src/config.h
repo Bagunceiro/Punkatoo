@@ -31,10 +31,11 @@ extern const IndicatorLed::Colour indicate_wps;
 extern const IndicatorLed::Colour indicate_configurator;
 extern const IndicatorLed::Colour indicate_update;
 
-extern const String MQTT_TPC_STAT;   // "status"
-extern const String MQTT_TPC_SPEED;  // "speed"
-extern const String MQTT_TPC_SWITCH; // "switch"
-extern const String MQTT_TPC_UPDATE; // "update"
+extern const String MQTT_TPC_STAT;       // "status"
+extern const String MQTT_TPC_SPEED;      // "speed"
+extern const String MQTT_TPC_SWITCH;     // "switch"
+extern const String MQTT_TPC_UPDATE;     // "update"
+extern const String MQTT_TPC_SENDIRCODE; // "ir/sendcode"
 
 extern const char* appVersion;
 extern const char* compDate;
@@ -59,6 +60,8 @@ extern const int IR_DETECTOR_PIN;
 extern const int LDR_PIN;
 
 extern const int WPS_PIN;
+
+extern const int IRLED_PIN;
 
 extern const unsigned int MQTT_CONNECT_ATTEMPT_INT; // Delay between attempts to reconnect MQTT (ms)
 extern const unsigned int WIFI_CONNECT_ATTEMPT_INT;

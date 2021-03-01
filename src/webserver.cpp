@@ -506,6 +506,5 @@ void FanConWebServer::init()
   webServer.on(pageSystemUpdate, handleSystemUpdate);
   webServer.on(pageDoUpdate,     handleDoUpdate);
 
-  serr.println("Web Server");
   webServer.begin();
 }
