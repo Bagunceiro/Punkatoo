@@ -3,7 +3,8 @@
 
 #include <ArduinoJson.h>
 #include "config.h"
-#include "configurator.h"
+//#include "configurator.h"
+#include "devices.h"
 #include "networks.h"
 
 networkList configuredNets;
@@ -13,7 +14,7 @@ networkList scannedNets;
 
 WiFiMulti wifimulti;
 
-extern Configurator configurator;
+// extern Configurator configurator;
 
 networkList &scanNetworks()
 {
@@ -189,7 +190,7 @@ void connectToWiFi()
         }
         else
         {
-            configurator.start();
+            dev.configurator.start();
         }
     }
 }

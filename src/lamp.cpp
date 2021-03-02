@@ -8,7 +8,7 @@ extern IndicatorLed indicator;
 
 const int MAXDEBOUNCE = 5; // Number of loops to allow light switch to settle
 
-Lamp::Lamp(String devName) : MQTTClientDev(devName), IRControlled(devName), PTask(devName, 2500) {}
+Lamp::Lamp(String devName) : MQTTClientDev(devName), IRControlled(devName), P2Task(devName, 2500) {}
 
 Lamp::~Lamp() {}
 
@@ -42,7 +42,7 @@ void Lamp::toggle()
 
 bool Lamp::operator()()
 {
-  for (SwBlk& si : swList)
+  for (Switch& si : swList)
   {
     int newState = digitalRead(si.spin);
     if (newState != si.switchState)
@@ -68,7 +68,7 @@ bool Lamp::operator()()
 int Lamp::switchstate()
 {
   int result = 42;
-  for (SwBlk& si : swList)
+  for (Switch& si : swList)
   {
     result = digitalRead(si.spin);
   }
@@ -98,11 +98,11 @@ void Lamp::blip(const int number, const int length)
     }
 }
 
-void Lamp::init(const SwitchList inpList, int out)
+void Lamp::init(const SwitchPinList inpList, int out)
 {
   for (int inp : inpList)
   {
-    SwBlk si;
+    Switch si;
     si.spin = inp;
     pinMode(si.spin, INPUT_PULLUP);
     delay(500); // input pin appears to need settling time after mode setting??

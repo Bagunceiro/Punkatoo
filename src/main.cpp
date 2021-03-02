@@ -8,34 +8,36 @@
 #include <esp_wps.h>
 #include <TimeLib.h>
 
-const char *appVersion = "Punkatoo 0.3";
+const char *appVersion = "Punkatoo 0.4";
 const char *compDate = __DATE__;
 const char *compTime = __TIME__;
 
 #include "wifiserial.h"
 #include "config.h"
+#include "devices.h"
 #include "spdt.h"
-#include "mqtt.h"
-#include "infrared.h"
-#include "webserver.h"
-#include "configurator.h"
+//#include "mqtt.h"
+//#include "infrared.h"
+//#include "webserver.h"
+//#include "configurator.h"
 #include "networks.h"
-#include "lamp.h"
-#include "fan.h"
-#include "ldr.h"
-#include "indicator.h"
-#include "tempSensor.h"
-#include "eventlog.h"
-// #include "devices.h"
+//#include "lamp.h"
+//#include "fan.h"
+//#include "ldr.h"
+//#include "indicator.h"
+//#include "tempSensor.h"
+//#include "eventlog.h"
+#include "updater.h"
 
 WiFiSerialClient serr;
+Devices dev;
 
 /*
  * Physical Devices
  *  Note that for MQTT devices the names form part of the topic during publish
  */
 IndicatorLed indicator("indicator", LED_RED, LED_BLUE, LED_GREEN);
-IRController irctlr("IRrcv");
+// IRController irctlr("IRrcv");
 Lamp lamp("lamp");
 Fan fan("fan");
 LDR ldr("LDR", LDR_PIN);
@@ -45,9 +47,11 @@ IRLed irled("ir", IRLED_PIN);
 /*
  * Pseudo Devices
  */
-MQTTController mqttctlr;
-Configurator configurator("configurator");
-EventLogger Event::logger("event");
+// MQTTController mqttctlr;
+// Configurator configurator("configurator");
+// EventLogger Event::logger("event");
+// Updater updater("updater");
+// P2WebServer webServer(80);
 
 enum AppState appState;
 enum AppState prevState;
@@ -64,7 +68,6 @@ const IndicatorLed::Colour indicate_update       = IndicatorLed::CYAN;
 const IndicatorLed::Colour indicate_configurator = IndicatorLed::YELLOW;
 const IndicatorLed::Colour indicate_wps          = IndicatorLed::MAGENTA;
 
-// extern esp_wps_config_t wpsconfig;
 extern void wpsInit();
 extern void updateWiFiDef(String &ssid, String &psk);
 
@@ -101,7 +104,7 @@ void enterState(enum AppState s)
 
 void revertState()
 {
-  prevState = appState;
+  appState = prevState;
 }
 
 void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
@@ -217,8 +220,10 @@ void setup()
   Serial.begin(9600);
   delay(500);
 
+  dev.build();
+
   Event ev1;
-  ev1.startLogger(mqttctlr);
+  ev1.startLogger(dev.mqtt);
   ev1.enqueue("Starting");
 
   enterState(STATE_0);
@@ -234,11 +239,11 @@ void setup()
    * Start up the lamp
    */
 
-  SwitchList sl;
+  SwitchPinList sl;
   sl.push_back(LIGHT_SWITCH_PIN);
   lamp.init(sl, LIGHT_RELAY_PIN);
-  lamp.registerIR(irctlr);
-  lamp.registerMQTT(mqttctlr);
+  lamp.registerIR(dev.irctlr);
+  lamp.registerMQTT(dev.mqtt);
   lamp.start(5);
   lamp.sw(0);
   // delay(500);
@@ -247,17 +252,17 @@ void setup()
    * Start up the fan
    */
   fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
-  fan.registerIR(irctlr);
-  fan.registerMQTT(mqttctlr);
+  fan.registerIR(dev.irctlr);
+  fan.registerMQTT(dev.mqtt);
   fan.setSpeed(0);
 
   /*
    * Start up the Infra red controller
    */
-  irctlr.start(4);
+  dev.irctlr.start(4);
 
-  irled.registerMQTT(mqttctlr);
-  bme.registerMQTT(mqttctlr);
+  irled.registerMQTT(dev.mqtt);
+  bme.registerMQTT(dev.mqtt);
 
   /*
    * Ready to go (switch and IR). But network has not been initialised yet
@@ -280,12 +285,12 @@ void setup()
   /*
   * Enable the network configurator and OTA updater
   */
-  configurator.registerIR(irctlr);
+  dev.configurator.registerIR(dev.irctlr);
 
   /*
    * Set up the Web server
    */
-  webServer.init();
+  dev.webServer.init();
 }
 
 void loop()
@@ -302,7 +307,7 @@ void loop()
       enterState(STATE_NETWORK);
     }
 
-    mqttctlr.poll();
+    dev.mqtt.poll();
 
     if (!ntpstarted)
     {
@@ -320,7 +325,7 @@ void loop()
       timeClient.update();
     }
 
-    webServer.handleClient();
+    dev.webServer.handleClient();
     serr.loop();
   }
   else
@@ -333,7 +338,7 @@ void loop()
     connectToWiFi();
   }
 
-  configurator.poll();
+  dev.configurator.poll();
 
   static unsigned long then = 0;
 

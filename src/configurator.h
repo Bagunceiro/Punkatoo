@@ -6,7 +6,7 @@
 class Configurator : public IRControlled
 {
 public:
-    Configurator(const String& name);
+    Configurator(const String& name = "configurator");
     virtual ~Configurator();
     virtual void subscribeToIR();
     virtual void irmsgRecd(const IRMessage m);

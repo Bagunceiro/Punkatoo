@@ -1,4 +1,5 @@
 #include <ArduinoJson.h>
+#include "devices.h"
 #include "eventlog.h"
 
 QueueHandle_t Event::queue = xQueueCreate(20, sizeof(Event));
@@ -26,8 +27,8 @@ Event::~Event()
 
 bool Event::startLogger(MQTTController &c)
 {
-    logger.registerMQTT(c);
-    return logger.start(0);
+    dev.eventlogger.registerMQTT(c);
+    return dev.eventlogger.start(0);
 }
 
 const uint16_t Event::setSerial()
@@ -80,7 +81,7 @@ bool Event::queued()
     return result;
 }
 
-EventLogger::EventLogger(const String name) : PTask(name, 3000), MQTTClientDev(name)
+EventLogger::EventLogger(const String name) : P2Task(name, 3000), MQTTClientDev(name)
 {
 }
 

@@ -1,18 +1,17 @@
+#pragma once
+
 #include <Arduino.h>
 #include <vector>
 #include <map>
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-#pragma once
-
 typedef String MQTTTopic;
 class MQTTController;
-class MQTTClientDev;
 
-typedef std::vector<MQTTClientDev *> MQTTDevList;
-typedef std::map<MQTTTopic, MQTTDevList> MQTTSubscriptionList;
-
+/*
+  Parent class for devices using the MQTT services
+*/
 class MQTTClientDev
 {
 public:
@@ -36,13 +35,17 @@ private:
 
 };
 
+/*
+  This is a sort of local proxy for the MQTT broker. Client devices register with it 
+  and it handles the external communications.
+*/
 class MQTTController
 {
 public:
     MQTTController();
     virtual ~MQTTController();
     bool init();
-    bool poll();
+    bool poll(); // Called by the app's main loop - ToDo: make MQTTController its own task?
 
     void msgRecd(const String& fullTopic, const String& msg);
     static void rcvCallback(char* fullTopic, byte* payload, unsigned int length);
@@ -55,6 +58,8 @@ public:
     bool connected();
 
 private:
+    typedef std::vector<MQTTClientDev *> MQTTDevList;
+    typedef std::map<MQTTTopic, MQTTDevList> MQTTSubscriptionList;
     MQTTSubscriptionList subList;
     MQTTDevList devList;
     static MQTTController* thectlr;

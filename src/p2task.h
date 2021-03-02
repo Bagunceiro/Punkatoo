@@ -2,11 +2,11 @@
 
 #include <Arduino.h>
 
-class PTask
+class P2Task
 {
 public:
-    PTask(const String& n, const int stack);
-    virtual ~PTask();
+    P2Task(const String& n, const int stack);
+    virtual ~P2Task();
     bool start(uint8_t priority);
     virtual bool operator()() = 0;
     static void loop(void*);

@@ -1,12 +1,12 @@
 #pragma once
 #include <Arduino.h>
-#include "ptask.h"
+#include "p2task.h"
 #include "mqtt.h"
 
-class EventLogger : public PTask, public MQTTClientDev
+class EventLogger : public P2Task, public MQTTClientDev
 {
     public:
-    EventLogger(const String name = "eventLog");
+    EventLogger(const String name = "event");
     virtual bool operator()();
     const uint16_t getSerialNo();
 };
@@ -37,6 +37,6 @@ private:
   const uint16_t setSerial();
   static QueueHandle_t queue;
   static uint16_t nextSerial;
-  static EventLogger logger;
+//  static EventLogger logger;
   static SemaphoreHandle_t serialNoMutex;
 };

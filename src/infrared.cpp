@@ -78,7 +78,7 @@ unsigned long irDebounce(unsigned long then, unsigned long debounceTime)
 
 IRController::IRController(const String &name)
     : IRrecv(IR_DETECTOR_PIN, kCaptureBufferSize, kTimeout, true),
-      PTask(name, 2500)
+      P2Task(name, 2500)
 {
   pinMode(IR_DETECTOR_PIN, INPUT_PULLUP);
   enableIRIn();
@@ -183,18 +183,19 @@ void IRLed::off()
   digitalWrite(lpin, LOW);
 }
 
-void IRLed::sendCode(String type, long code, int bits)
-{
-  if (type == "NEC")
-  {
-    irsend->sendNEC(code);
-  }
-}
 
 void IRLed::subscribeToMQTT()
 {
   pmqttctlr->subscribe(this, MQTT_TPC_SENDIRCODE);
   sendStatus();
+}
+
+void IRLed::txCode(String type, long code, int bits)
+{
+  if (type == "NEC")
+  {
+    irsend->sendNEC(code);
+  }
 }
 
 void IRLed::mqttMsgRecd(const String &topic, const String &msg)
@@ -234,7 +235,7 @@ void IRLed::mqttMsgRecd(const String &topic, const String &msg)
     }
     if ((type != "") && (code != ""))
     {
-      sendCode(type, strtoll(code.c_str(), 0, 16), bits);
+      txCode(type, strtoll(code.c_str(), 0, 16), bits);
     }
   }
 }

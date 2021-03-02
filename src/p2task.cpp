@@ -1,20 +1,20 @@
-#include "ptask.h"
+#include "p2task.h"
 #include "config.h"
 #include "eventlog.h"
 
-PTask::PTask(const String &n, const int stack)
+P2Task::P2Task(const String &n, const int stack)
 {
     name = n;
     stackSize = stack;
 }
 
-PTask::~PTask()
+P2Task::~P2Task()
 {
 }
 
-void PTask::loop(void *ctlr)
+void P2Task::loop(void *ctlr)
 {
-    PTask *pThis = reinterpret_cast<PTask *>(ctlr);
+    P2Task *pThis = reinterpret_cast<P2Task *>(ctlr);
     int hwm = uxTaskGetStackHighWaterMark(pThis->taskHandle);
     while (true)
     {
@@ -30,7 +30,7 @@ void PTask::loop(void *ctlr)
     }
 }
 
-bool PTask::start(uint8_t priority)
+bool P2Task::start(uint8_t priority)
 {
     serr.println(String("Creating task for ") + name);
     xTaskCreate(

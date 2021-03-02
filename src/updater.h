@@ -1,3 +1,5 @@
+#pragma once
+
 #include <HTTPUpdate.h>
 
 #include "mqtt.h"
@@ -5,7 +7,7 @@
 class Updater
 {
 public:
-    Updater(const String& devName);
+    Updater(const String& devName = "updater");
     virtual ~Updater();
     t_httpUpdate_return systemUpdate(const String& server, const uint16_t port, const String& image);
     void onStart(void(*callback)());

@@ -7,10 +7,10 @@
 #include <map>
 #include <vector>
 
-#include "ptask.h"
+#include "p2task.h"
 #include "mqtt.h"
 
-const uint8_t kTimeout = 15;
+const uint8_t  kTimeout = 15;
 const uint16_t kMinUnknownSize = 12;
 const uint16_t kCaptureBufferSize = 1024;
 
@@ -26,40 +26,38 @@ typedef std::map<IRCode, MsgList> DecodeList;
   Miniature test remote
 */
 /*
-  const uint32_t IRREMOTE_1     = 0xffa25d;
-  const uint32_t IRREMOTE_2     = 0xff629d;
-  const uint32_t IRREMOTE_3     = 0xffe21d;
-  const uint32_t IRREMOTE_4     = 0xff22dd;
-  const uint32_t IRREMOTE_5     = 0xff02fd;
-  const uint32_t IRREMOTE_6     = 0xffc23d;
-  const uint32_t IRREMOTE_7     = 0xffe01f;
-  const uint32_t IRREMOTE_8     = 0xffa857;
-  const uint32_t IRREMOTE_9     = 0xff906f;
-  const uint32_t IRREMOTE_0     = 0xff9867;
-  const uint32_t IRREMOTE_STAR  = 0xff6897;
-  const uint32_t IRREMOTE_HASH  = 0xffb04f;
-  const uint32_t IRREMOTE_UP    = 0xff18e7;
-  const uint32_t IRREMOTE_DOWN  = 0xff4ab5;
-  const uint32_t IRREMOTE_LEFT  = 0xff10ef;
-  const uint32_t IRREMOTE_RIGHT = 0xff5aa5;
-  const uint32_t IRREMOTE_OK    = 0xff38c7;
+  const IRCode IRREMOTE_1     = 0xffa25d;
+  const IRCode IRREMOTE_2     = 0xff629d;
+  const IRCode IRREMOTE_3     = 0xffe21d;
+  const IRCode IRREMOTE_4     = 0xff22dd;
+  const IRCode IRREMOTE_5     = 0xff02fd;
+  const IRCode IRREMOTE_6     = 0xffc23d;
+  const IRCode IRREMOTE_7     = 0xffe01f;
+  const IRCode IRREMOTE_8     = 0xffa857;
+  const IRCode IRREMOTE_9     = 0xff906f;
+  const IRCode IRREMOTE_0     = 0xff9867;
+  const IRCode IRREMOTE_STAR  = 0xff6897;
+  const IRCode IRREMOTE_HASH  = 0xffb04f;
+  const IRCode IRREMOTE_UP    = 0xff18e7;
+  const IRCode IRREMOTE_DOWN  = 0xff4ab5;
+  const IRCode IRREMOTE_LEFT  = 0xff10ef;
+  const IRCode IRREMOTE_RIGHT = 0xff5aa5;
+  const IRCode IRREMOTE_OK    = 0xff38c7;
 */
 
 /*
    Fan controller remote
 */
-const uint32_t IRREMOTE_FAN_ONOFF   = 0xff20df;
-const uint32_t IRREMOTE_FAN_FASTER  = 0xffe01f;
-const uint32_t IRREMOTE_FAN_SLOWER  = 0xff58a7;
-const uint32_t IRREMOTE_FAN_REVERSE = 0xff10ef;
-const uint32_t IRREMOTE_FAN_TIMER   = 0xffd827;
+const IRCode IRREMOTE_FAN_ONOFF   = 0xff20df;
+const IRCode IRREMOTE_FAN_FASTER  = 0xffe01f;
+const IRCode IRREMOTE_FAN_SLOWER  = 0xff58a7;
+const IRCode IRREMOTE_FAN_REVERSE = 0xff10ef;
+const IRCode IRREMOTE_FAN_TIMER   = 0xffd827;
 
-const uint32_t IRREMOTE_LIGHT_ONOFF = 0xff609f;
-const uint32_t IRREMOTE_LIGHT_UP    = 0xff906f;
-const uint32_t IRREMOTE_LIGHT_DOWN  = 0xff38c7;
-const uint32_t IRREMOTE_LIGHT_TIMER = 0xffa05f;
-
-// extern const int IRDEBOUNCE; // Number of milliseconds to leave fallow between IR messages
+const IRCode IRREMOTE_LIGHT_ONOFF = 0xff609f;
+const IRCode IRREMOTE_LIGHT_UP    = 0xff906f;
+const IRCode IRREMOTE_LIGHT_DOWN  = 0xff38c7;
+const IRCode IRREMOTE_LIGHT_TIMER = 0xffa05f;
 
 // Internal (decoded) messages
 
@@ -80,10 +78,10 @@ extern const IRMessage IR_SEND_IRCODE;
 extern const IRMessage IR_RESET;
 
 
-class IRController : public IRrecv, public PTask
+class IRController : public IRrecv, public P2Task
 {
 public:
-  IRController(const String& name);
+  IRController(const String& name = "irctlr");
   ~IRController();
   void poll();
   void newpoll();
@@ -102,10 +100,13 @@ class IRControlled
 public:
   IRControlled(const String& n);
   virtual ~IRControlled();
+  /*
+   Take action on receipt of an IR message. This function should be implemented by the derived class.
+  */
   virtual void irmsgRecd(const IRMessage msg);
   /*
-  Register with the IR controller.
-  Also subscribes to messages of interest (via the subscribeToIR function for the derived class)
+   Register with the IR controller.
+   Also subscribes to messages of interest (via the subscribeToIR function for the derived class)
   */
   void registerIR(IRController &c);
   /*
@@ -130,7 +131,7 @@ public:
   virtual void subscribeToMQTT();
   virtual void mqttMsgRecd(const String &topic, const String &msg);
 
-  void sendCode(String type, long code, int bits = 32);
+  void txCode(String type, long code, int bits = 32);
   void on();
   void off();
 

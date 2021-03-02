@@ -6,23 +6,23 @@
 #include "mqtt.h"
 #include "infrared.h"
 
-typedef std::vector<int> SwitchList;
+typedef std::vector<int> SwitchPinList;
 
-struct SwBlk
+struct Switch
 {
   int spin;
   int switchState;
   int debounce;
 };
 
-typedef std::vector<SwBlk> SwBlkList;
+typedef std::vector<Switch> SwitchList;
 
-class Lamp: public MQTTClientDev, public IRControlled, public PTask
+class Lamp: public MQTTClientDev, public IRControlled, public P2Task
 {
   public:
     Lamp(String devName);
 
-    void init(const SwitchList inpList, int out);
+    void init(const SwitchPinList inpList, int out);
     void sw(int toState);
     void toggle();
     virtual bool operator()();
@@ -41,7 +41,7 @@ class Lamp: public MQTTClientDev, public IRControlled, public PTask
     virtual void subscribeToIR();
     virtual void subscribeToMQTT();
 
-    SwBlkList swList;
+    SwitchList swList;
 };
 
 #endif

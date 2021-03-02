@@ -1,5 +1,5 @@
 #include <ArduinoJson.h>
-#include "tempSensor.h"
+#include "bme.h"
 
 BMESensor::BMESensor(const String& name) : MQTTClientDev(name)
 {
