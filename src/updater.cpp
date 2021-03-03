@@ -1,15 +1,17 @@
 #include <ArduinoJson.h>
 
 #include "config.h"
-#include "updater.h"
-#include "indicator.h"
-#include "lamp.h"
-#include "fan.h"
-#include "eventlog.h"
+#include "devices.h"
+
+//#include "updater.h"
+//#include "indicator.h"
+//#include "lamp.h"
+//#include "fan.h"
+//#include "eventlog.h"
 
 extern IndicatorLed indicator;
-extern Lamp lamp;
-extern Fan fan;
+// extern Lamp lamp;
+// extern Fan fan;
 
 extern IndicatorLed::Colour indicateUpdate;
 
@@ -18,8 +20,9 @@ void updateStarted()
   Event e;
   e.enqueue("Update started");
   enterState(STATE_UPDATE);
-  fan.setSpeed(0);
-  lamp.sw(0);
+  // fan.setSpeed(0);
+  dev.toSecure();
+  // lamp.sw(0);
 }
 
 void updateCompleted()

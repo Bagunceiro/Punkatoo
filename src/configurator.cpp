@@ -6,7 +6,7 @@
 #include "fan.h"
 #include "indicator.h"
 
-extern Fan fan;
+// extern Fan fan;
 extern Lamp lamp;
 extern IndicatorLed indicator;
 
@@ -54,8 +54,8 @@ void Configurator::irmsgRecd(const IRMessage msg)
     {
         stateChangedAt = now;
 
-        if (fan.getSpeed() == 0)
-        {
+        // if (fan.getSpeed() == 0)
+        // {
             if (msg == IR_CONFIGURATOR_START)
             {
                 startCodeState++;
@@ -69,7 +69,7 @@ void Configurator::irmsgRecd(const IRMessage msg)
                     startRequest = true; // done like this to avoid too much happening in the interrupt
                 }
             }
-        }
+        // }
     }
     else
     {

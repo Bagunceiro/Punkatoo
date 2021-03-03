@@ -23,7 +23,7 @@ struct Devices
     Configurator    configurator;
     EventLogger     eventlogger;
     Updater         updater;
-    P2WebServer webServer;
+    P2WebServer     webServer;
 
     vector<Lamp>         lamps;
     vector<Fan>          fans;
@@ -33,7 +33,11 @@ struct Devices
     vector<IRLed>        irleds;
     vector<IndicatorLed> indicators;
 
+    // Build the device block using a configuration file
     bool build(const String &filename = "devices.json");
+    // Turn motors off, lights out etc.
+    void toSecure();
+    void start();
 };
 
 extern struct Devices dev;

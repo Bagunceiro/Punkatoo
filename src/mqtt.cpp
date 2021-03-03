@@ -204,16 +204,24 @@ bool MQTTController::poll()
     // if (client->state() == MQTT_CONNECTED)
     // if (connected())
     {
+
         client->loop();
-    }
-    else if (init())
-    {
-        enterState(STATE_MQTT);
     }
     else
     {
-        enterState(STATE_NETWORK);
-        result = false;
+        if (connFlag)
+        {
+            serr.println("Lost MQTT Connection");
+        }
+        if (init())
+        {
+            enterState(STATE_MQTT);
+        }
+        else
+        {
+            enterState(STATE_NETWORK);
+            result = false;
+        }
     }
     connFlag = result;
     return result;

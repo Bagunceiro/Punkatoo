@@ -39,7 +39,7 @@ Devices dev;
 IndicatorLed indicator("indicator", LED_RED, LED_BLUE, LED_GREEN);
 // IRController irctlr("IRrcv");
 Lamp lamp("lamp");
-Fan fan("fan");
+// Fan fan("fan");
 LDR ldr("LDR", LDR_PIN);
 BMESensor bme("bme");
 IRLed irled("ir", IRLED_PIN);
@@ -221,6 +221,7 @@ void setup()
   delay(500);
 
   dev.build();
+  dev.start();
 
   Event ev1;
   ev1.startLogger(dev.mqtt);
@@ -251,10 +252,10 @@ void setup()
   /*
    * Start up the fan
    */
-  fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
-  fan.registerIR(dev.irctlr);
-  fan.registerMQTT(dev.mqtt);
-  fan.setSpeed(0);
+  // fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
+  // fan.registerIR(dev.irctlr);
+  // fan.registerMQTT(dev.mqtt);
+  // fan.setSpeed(0);
 
   /*
    * Start up the Infra red controller
