@@ -15,6 +15,9 @@ bool Devices::build(const String &filename)
     fan->init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
     fans.push_back(*fan);
 
+    LDR* ldr = new LDR("LDR", LDR_PIN);
+    ldrs.push_back(*ldr);
+
     return result;
 }
 

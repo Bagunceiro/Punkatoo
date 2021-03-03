@@ -117,13 +117,23 @@ String P2WebServer::tempSensorData()
   return data;
 }
 
+String lightLevels()
+{
+  String s;
+  for (LDR &ldr : dev.ldrs)
+  {
+      s += "<TR><TD>Light level</TD><TD colspan=3>" + ldr.getStatus() + "</TD></TR>\n";
+  }
+  return s;
+}
+
 void P2WebServer::rootPage()
 {
   const String title("Punkatoo");
   const String head3("");
   time_t now = timeClient.getEpochTime();
   time_t lastUpdate = persistant[persistant.updateTime_n].toInt();
-  extern LDR ldr;
+  // extern LDR ldr;
   // extern Lamp lamp;
 
   String body2(R"!(
@@ -136,10 +146,7 @@ void P2WebServer::rootPage()
 <TABLE>
 <TR><TD>Time now</TD><TD colspan=3 >)!" +
                ctime(&now) + R"!(</TD></TR>
-)!" + tempSensorData() +
-               R"!(
-<TR><TD>Light level</TD><TD colspan=3>)!" +
-               ldr.getStatus() + R"!(</TD></TR>
+)!" + tempSensorData() + lightLevels() + R"!(
 <TR><TD>Version</TD><TD colspan=3 >)!" +
                appVersion + " (" + compTime + " " + compDate + R"!()</TD></TR>
 <TR><TD>MAC Address</TD><TD colspan=3 >)!" +

@@ -40,7 +40,7 @@ IndicatorLed indicator("indicator", LED_RED, LED_BLUE, LED_GREEN);
 // IRController irctlr("IRrcv");
 // Lamp lamp("lamp");
 // Fan fan("fan");
-LDR ldr("LDR", LDR_PIN);
+// LDR ldr("LDR", LDR_PIN);
 BMESensor bme("bme");
 IRLed irled("ir", IRLED_PIN);
 
