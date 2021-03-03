@@ -203,35 +203,29 @@ void MQTTController::rmClientDev(MQTTClientDev &dev)
 
 bool MQTTController::poll()
 {
-    const int mqttPollInterval = 5;
     bool result = true;
-    static long then = 0;
-    long now = millis();
-    // if ((now - then) >= mqttPollInterval)
+
+    if (client->connected())
     {
-        then = now;
-        if (client->connected())
+        client->loop();
+    }
+    else
+    {
+        if (connFlag)
         {
-            client->loop();
+            serr.println("Lost MQTT Connection");
+        }
+        if (init())
+        {
+            p2state.enter(P2State::STATE_MQTT);
         }
         else
         {
-            if (connFlag)
-            {
-                serr.println("Lost MQTT Connection");
-            }
-            if (init())
-            {
-                p2state.enter(P2State::STATE_MQTT);
-            }
-            else
-            {
-                p2state.enter(P2State::STATE_NETWORK);
-                result = false;
-            }
+            p2state.enter(P2State::STATE_NETWORK);
+            result = false;
         }
-        connFlag = result;
     }
+    connFlag = result;
     return result;
 }
 

@@ -24,7 +24,8 @@ public:
     void sendPage(const int noItems, ...);
 
     String &listNetworks(String &body, networkList &networks, bool selected);
-    String tempSensorData();
+    const String bmeData();
+    const String lightLevels();
 
     static P2WebServer* pThis;
 

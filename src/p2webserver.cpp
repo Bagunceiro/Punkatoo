@@ -101,7 +101,7 @@ void P2WebServer::sendPage(const int noItems, ...)
   }
 }
 
-String P2WebServer::tempSensorData()
+const String P2WebServer::bmeData()
 {
   String data;
 
@@ -121,7 +121,7 @@ String P2WebServer::tempSensorData()
   return data;
 }
 
-String lightLevels()
+const String P2WebServer::lightLevels()
 {
   String s;
   for (LDR &ldr : dev.ldrs)
@@ -150,7 +150,7 @@ void P2WebServer::rootPage()
 <TABLE>
 <TR><TD>Time now</TD><TD colspan=3 >)!" +
                ctime(&now) + R"!(</TD></TR>
-)!" + tempSensorData() +
+)!" + bmeData() +
                lightLevels() + R"!(
 <TR><TD>Version</TD><TD colspan=3 >)!" +
                appVersion + " (" + compTime + " " + compDate + R"!()</TD></TR>
@@ -516,7 +516,7 @@ void P2WebServer::systemUpdatePage()
 <tr><td><label for=port>Port:</label></td>
 <td><input type=text name=port value=80></td></tr>
 <tr><td><label for=image>Update image file:</label></td>
-<td><input type=text name=image value=""></td></tr>
+<td><input type=text name=image value="/bin/punkatoo.bin"></td></tr>
 </table>
 </FORM>
 </div>
