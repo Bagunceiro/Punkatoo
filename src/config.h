@@ -1,5 +1,4 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#pragma once
 
 #include <Arduino.h>
 #include <WiFi.h>
@@ -7,21 +6,11 @@
 #include "wifiserial.h"
 #include "confblk.h"
 #include "ntpclient.h"
-#include "indicator.h"
+#include "devices.h"
 
-enum AppState{
-  STATE_0 = 0,
-  STATE_AWAKE,
-  STATE_NETWORK,
-  STATE_MQTT,
-  STATE_WPS,
-  STATE_CONFIGURATOR,
-  STATE_UPDATE
-};
-
-extern void enterState(const enum AppState);
-extern void revertState();
-extern enum AppState appState;
+//extern void enterState(const enum AppState);
+//extern void revertState();
+//extern enum AppState appState;
 
 extern const IndicatorLed::Colour indicate_0;
 extern const IndicatorLed::Colour indicate_awake;
@@ -37,9 +26,9 @@ extern const String MQTT_TPC_SWITCH;     // "switch"
 extern const String MQTT_TPC_UPDATE;     // "update"
 extern const String MQTT_TPC_SENDIRCODE; // "ir/sendcode"
 
-extern const char* appVersion;
-extern const char* compDate;
-extern const char* compTime;
+extern const char *appVersion;
+extern const char *compDate;
+extern const char *compTime;
 
 // GPIO pin definitions
 
@@ -72,23 +61,24 @@ extern NTPClient timeClient;
 
 struct ConfigBlock : public ConfBlk
 {
-  static const char* controllername_n;
-  static const char* mqtthost_n;
-  static const char* mqttport_n;
-  static const char* mqttuser_n;
-  static const char* mqttpwd_n;
-  static const char* mqttroot_n;
-  static const char* mqtttopic_n;
-  static const char* updateTime_n;
-  static const char* indicator_n;
+  static const char *controllername_n;
+  static const char *mqtthost_n;
+  static const char *mqttport_n;
+  static const char *mqttuser_n;
+  static const char *mqttpwd_n;
+  static const char *mqttroot_n;
+  static const char *mqtttopic_n;
+  static const char *updateTime_n;
+  static const char *indicator_n;
 };
+
+
 
 extern ConfigBlock persistant;
 // extern Stream &serr;
 extern WiFiSerialClient serr;
+// extern AppState appState;
 
-void   startup();
+void startup();
 String upTime();
-void   report();
-
-#endif
+void report();

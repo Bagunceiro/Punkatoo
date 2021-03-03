@@ -1,6 +1,7 @@
 #include "mqtt.h"
 #include "config.h"
 #include "eventlog.h"
+#include "p2state.h"
 
 MQTTController::MQTTController()
 {
@@ -91,6 +92,9 @@ void MQTTController::publish(String &topic, String &msg, bool retained)
     {
         static SemaphoreHandle_t pubMutex = xSemaphoreCreateMutex();
         String t = stdPrefix() + topic;
+        delay(5); // Needs further investigation. This delay or the debug output seems to stop
+                  // things tripping over each other and causing loss of connection to the
+                  // server. The debug line takes >100ms.
         // serr.printf("publishing %s, %s, %d\n", t.c_str(), msg.c_str(), retained);
         xSemaphoreTake(pubMutex, portMAX_DELAY);
         client->publish(t.c_str(), msg.c_str(), retained);
@@ -199,31 +203,35 @@ void MQTTController::rmClientDev(MQTTClientDev &dev)
 
 bool MQTTController::poll()
 {
+    const int mqttPollInterval = 5;
     bool result = true;
-    if (client->connected())
-    // if (client->state() == MQTT_CONNECTED)
-    // if (connected())
+    static long then = 0;
+    long now = millis();
+    // if ((now - then) >= mqttPollInterval)
     {
-
-        client->loop();
-    }
-    else
-    {
-        if (connFlag)
+        then = now;
+        if (client->connected())
         {
-            serr.println("Lost MQTT Connection");
-        }
-        if (init())
-        {
-            enterState(STATE_MQTT);
+            client->loop();
         }
         else
         {
-            enterState(STATE_NETWORK);
-            result = false;
+            if (connFlag)
+            {
+                serr.println("Lost MQTT Connection");
+            }
+            if (init())
+            {
+                p2state.enter(P2State::STATE_MQTT);
+            }
+            else
+            {
+                p2state.enter(P2State::STATE_NETWORK);
+                result = false;
+            }
         }
+        connFlag = result;
     }
-    connFlag = result;
     return result;
 }
 

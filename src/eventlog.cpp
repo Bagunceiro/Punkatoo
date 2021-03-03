@@ -25,11 +25,13 @@ Event::~Event()
     }
 }
 
+/*
 bool Event::startLogger(MQTTController &c)
 {
     dev.eventlogger.registerMQTT(c);
     return dev.eventlogger.start(0);
 }
+*/
 
 const uint16_t Event::setSerial()
 {
@@ -111,6 +113,7 @@ bool EventLogger::operator()()
                 String s;
                 serializeJson(doc, s);
                 publish("log", s.c_str());
+                // delay(50);
             }
         }
     }

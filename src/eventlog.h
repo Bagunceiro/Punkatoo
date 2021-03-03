@@ -29,7 +29,7 @@ public:
   bool enqueue(const String& msg);
   bool dequeue();
   bool queued();
-  bool startLogger(MQTTController& c);
+  // bool startLogger(MQTTController& c);
 
 private:
   bool onQueue;

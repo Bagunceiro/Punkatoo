@@ -9,8 +9,8 @@
 #include "devices.h"
 
 // extern P2WebServer webServer;
-extern BMESensor bme;
-extern IndicatorLed indicator;
+// extern BMESensor bme;
+// extern IndicatorLed indicator;
 // extern Updater updater;
 
 P2WebServer *P2WebServer::pThis;
@@ -28,15 +28,15 @@ const String P2WebServer::pageDoUpdate = "/system.update.do";
 const String P2WebServer::style = R"!(
 <script>
 function gohome()      {location.assign(")!" +
-                     P2WebServer::pageRoot + R"!(");}
+                                  P2WebServer::pageRoot + R"!(");}
 function gogenconf()   {location.assign(")!" +
-                     P2WebServer::pageGen + R"!(");}
+                                  P2WebServer::pageGen + R"!(");}
 function gowificonf()  {location.assign(")!" +
-                     P2WebServer::pageWiFi + R"!(");}
+                                  P2WebServer::pageWiFi + R"!(");}
 function goreset()     {location.assign(")!" +
-                     P2WebServer::pageReset + R"!(");}
+                                  P2WebServer::pageReset + R"!(");}
 function gosysupdate() {location.assign(")!" +
-                     P2WebServer::pageSystemUpdate + R"!(");}
+                                  P2WebServer::pageSystemUpdate + R"!(");}
 </script>
 <style>
 body {font-family:Arial, Sans-Serif; font-size: 4vw; background-color: lavender;}
@@ -104,15 +104,19 @@ void P2WebServer::sendPage(const int noItems, ...)
 String P2WebServer::tempSensorData()
 {
   String data;
-  if (bme.running())
+
+  for (BME &bme : dev.bmes)
   {
-    data =
-        R"!(<TR><TD>Ambient</TD><TD>)!" + String((bme.readTemperature() * 10) / 10) + R"!(°C</TD>
+    if (bme.running())
+    {
+      data +=
+          R"!(<TR><TD>Ambient</TD><TD>)!" + String((bme.readTemperature() * 10) / 10) + R"!(°C</TD>
 <TD>)!" +
-        String((bme.readHumidity() * 10) / 10) + R"!(%</TD>
+          String((bme.readHumidity() * 10) / 10) + R"!(%</TD>
 <TD>)!" +
-        String((bme.readPressure() * 10) / 1000) + R"!( mBar</TD></TR>
+          String((bme.readPressure() * 10) / 1000) + R"!( mBar</TD></TR>
 )!";
+    }
   }
   return data;
 }
@@ -122,7 +126,7 @@ String lightLevels()
   String s;
   for (LDR &ldr : dev.ldrs)
   {
-      s += "<TR><TD>Light level</TD><TD colspan=3>" + ldr.getStatus() + "</TD></TR>\n";
+    s += "<TR><TD>Light level</TD><TD colspan=3>" + ldr.getStatus() + "</TD></TR>\n";
   }
   return s;
 }
@@ -146,7 +150,8 @@ void P2WebServer::rootPage()
 <TABLE>
 <TR><TD>Time now</TD><TD colspan=3 >)!" +
                ctime(&now) + R"!(</TD></TR>
-)!" + tempSensorData() + lightLevels() + R"!(
+)!" + tempSensorData() +
+               lightLevels() + R"!(
 <TR><TD>Version</TD><TD colspan=3 >)!" +
                appVersion + " (" + compTime + " " + compDate + R"!()</TD></TR>
 <TR><TD>MAC Address</TD><TD colspan=3 >)!" +
@@ -229,7 +234,7 @@ void P2WebServer::genUpdatePage()
     persistant.dump(serr);
     persistant.writeFile();
 
-    indicator.setColour(indicate_update, true);
+    // indicator.setColour(indicate_update, true);
 
     messagePage("Configuration Updated");
   }
@@ -306,8 +311,9 @@ String &P2WebServer::listNetworks(String &body, networkList &networks, bool sele
 <td>)=====") +
             String(networks[i].openNet ? "🔓" : "🔒") +
             (selected ? (String(" <a href=\"") +
-            P2WebServer::pageWiFiNet + "?ssid=" +
-            networks[i].ssid + "\">") : "") +
+                         P2WebServer::pageWiFiNet + "?ssid=" +
+                         networks[i].ssid + "\">")
+                      : "") +
             networks[i].ssid + String(selected ? "</a>" : "") + String(R"=====(
 </td>
 </tr>
@@ -374,8 +380,8 @@ void P2WebServer::netConfigPage()
 <TR><TH colspan=2>Discovered Networks</TH></TR>
 )=====";
   networkList &snetworks = scanNetworks();
-//  std::sort(snetworks.begin(), snetworks.end(), sortByRSSI);
-  std::sort(snetworks.begin(), snetworks.end(), [](WiFiNetworkDef i, WiFiNetworkDef j){ return (i.rssi > j.rssi); });
+  //  std::sort(snetworks.begin(), snetworks.end(), sortByRSSI);
+  std::sort(snetworks.begin(), snetworks.end(), [](WiFiNetworkDef i, WiFiNetworkDef j) { return (i.rssi > j.rssi); });
   listNetworks(body2, snetworks, false);
   body2 += R"=====(
   </TABLE></FORM></DIV>

@@ -2,13 +2,15 @@
 #include <LITTLEFS.h>
 #include "config.h"
 #include "configurator.h"
-#include "lamp.h"
-#include "fan.h"
-#include "indicator.h"
+#include "p2state.h"
+
+//#include "lamp.h"
+//#include "fan.h"
+// #include "indicator.h"
 
 // extern Fan fan;
 // extern Lamp lamp;
-extern IndicatorLed indicator;
+// extern IndicatorLed indicator;
 
 extern Configurator configurator;
 
@@ -60,10 +62,8 @@ void Configurator::irmsgRecd(const IRMessage msg)
             {
                 startCodeState++;
                 serr.printf("Configurator state = %d\n", startCodeState);
-                indicator.setColour(startCodeState % 2 ? IndicatorLed::GREEN : IndicatorLed::RED, true);
                 if (startCodeState >= numberOfPresses)
                 {
-                    //indicator.setColour(IndicatorLed::BLUE);
                     // running = true; // Here as well to avoid interupt bypassing it
                     stateChangedAt = 0;
                     startRequest = true; // done like this to avoid too much happening in the interrupt
@@ -83,7 +83,7 @@ void Configurator::start()
 {
     if (!running)
     {
-        enterState(STATE_CONFIGURATOR);
+        p2state.enter(P2State::STATE_CONFIGURATOR);
 
         String m = WiFi.macAddress();
         String ssid = persistant[persistant.controllername_n] + "_" + m.substring(9, 11) + m.substring(12, 14) + m.substring(15);
@@ -106,7 +106,6 @@ void Configurator::stop()
     running = false;
     startCodeState = 0;
     stateChangedAt = 0;
-    indicator.off();
     serr.println("SoftAP stopped");
 }
 

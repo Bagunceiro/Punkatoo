@@ -1,20 +1,21 @@
 #include <ArduinoJson.h>
 #include "bme.h"
+#include "config.h"
 
-BMESensor::BMESensor(const String& name) : MQTTClientDev(name)
+BME::BME(const String& name) : MQTTClientDev(name)
 {
   ok = false;
 }
 
-BMESensor::~BMESensor()
+BME::~BME()
 {
 }
 
-void BMESensor::msgRecd(const String &topic, const String &msg)
+void BME::msgRecd(const String &topic, const String &msg)
 {
 }
 
-void BMESensor::mqttMsgRecd(const String &topic, const String &msg)
+void BME::mqttMsgRecd(const String &topic, const String &msg)
 {
 }
 
@@ -24,7 +25,7 @@ double setPrecision(double value, const unsigned int precision)
   return (round(value * factor) / factor);
 }
 
-String BMESensor::getStatus()
+String BME::getStatus()
 {
   time_t now = timeClient.getEpochTime();
   char tbuf[sizeof "YYYY-MM-DDTHH:MM:SS+ZZZZ"];
@@ -43,7 +44,7 @@ String BMESensor::getStatus()
   return message;
 }
 
-bool BMESensor::start(uint8_t addr, TwoWire *theWire)
+bool BME::start(uint8_t addr, TwoWire *theWire)
 {
   bool started = begin(addr, theWire);
   ok = started;

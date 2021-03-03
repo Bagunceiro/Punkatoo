@@ -51,7 +51,7 @@ const int WPS_PIN          = 0;
 const int IRLED_PIN        = 4;
 
 
-const unsigned int MQTT_CONNECT_ATTEMPT_INT = (30 * 1000); // Interval between attempts to reconnect MQTT (ms)
+const unsigned int MQTT_CONNECT_ATTEMPT_INT = (10 * 1000); // Interval between attempts to reconnect MQTT (ms)
 const unsigned int WIFI_CONNECT_ATTEMPT_INT = (5 * 60 * 1000);  // Interval between attempts to reconnect WiFi (ms)
 
 ConfigBlock persistant;

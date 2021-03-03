@@ -6,14 +6,14 @@
 #include <Adafruit_BME280.h>
 #include <RTClib.h>
 
-#include "config.h"
+// #include "config.h"
 #include "mqtt.h"
 
-class BMESensor : public Adafruit_BME280, public MQTTClientDev
+class BME : public Adafruit_BME280, public MQTTClientDev
 {
   public:
-  BMESensor(const String& name);
-  ~BMESensor();
+  BME(const String& name);
+  ~BME();
   bool start(uint8_t addr, TwoWire *theWire);
   void msgRecd(const String& topic, const String& msg);
   virtual void mqttMsgRecd(const String& topic, const String& msg);

@@ -29,7 +29,7 @@ struct Devices
     vector<Fan>          fans;
     vector<Switch>       switches;
     vector<LDR>          ldrs;
-    vector<BMESensor>    bmes;
+    vector<BME>          bmes;
     vector<IRLed>        irleds;
     vector<IndicatorLed> indicators;
 

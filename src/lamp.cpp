@@ -4,8 +4,6 @@
 #include "indicator.h"
 #include "eventlog.h"
 
-extern IndicatorLed indicator;
-
 const int MAXDEBOUNCE = 5; // Number of loops to allow light switch to settle
 
 Lamp::Lamp(String devName) : MQTTClientDev(devName), IRControlled(devName), P2Task(devName, 2500) {}
@@ -20,16 +18,10 @@ void Lamp::sw(int toState)
   if (toState == 0)
   {
     digitalWrite(lpin, HIGH);
-    #ifdef TESTING
-    indicator.off();
-    #endif
   }
   else
   {
     digitalWrite(lpin, LOW);
-    #ifdef TESTING
-    indicator.setColour(IndicatorLed::WHITE);
-    #endif
   }
   sendStatus();
 }

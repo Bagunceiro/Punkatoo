@@ -2,6 +2,7 @@
 
 #include "config.h"
 #include "devices.h"
+#include "p2state.h"
 
 //#include "updater.h"
 //#include "indicator.h"
@@ -9,7 +10,7 @@
 //#include "fan.h"
 //#include "eventlog.h"
 
-extern IndicatorLed indicator;
+// extern IndicatorLed indicator;
 // extern Lamp lamp;
 // extern Fan fan;
 
@@ -19,7 +20,7 @@ void updateStarted()
 {
   Event e;
   e.enqueue("Update started");
-  enterState(STATE_UPDATE);
+  p2state.enter(P2State::STATE_UPDATE);
   // fan.setSpeed(0);
   dev.toSecure();
   // lamp.sw(0);
@@ -29,7 +30,7 @@ void updateCompleted()
 {
   Event e;
   e.enqueue("Update complete");
-  revertState();
+  p2state.revert();
 
   time_t now = timeClient.getEpochTime();
   persistant[persistant.updateTime_n] = String(now);
@@ -40,14 +41,14 @@ void updateNone()
 {
   Event e;
   e.enqueue("No update available");
-  revertState();
+  p2state.revert();
 }
 
 void updateFail()
 {
   Event e;
   e.enqueue("Update failed");
-  revertState();
+  p2state.revert();
 }
 
 Updater::Updater(const String &devName)
@@ -71,8 +72,8 @@ void prog(size_t completed, size_t total)
 
   if (phase != oldPhase)
   {
-      if (phase) indicator.off();
-      else indicator.setColour(indicate_update, true);
+      if (phase) dev.indicators[0].off();
+      else dev.indicators[0].setColour(indicate_update, true);
       serr.printf("Progress: %d%% (%d/%d)\n", progress, completed, total);
       oldPhase = phase;
   }

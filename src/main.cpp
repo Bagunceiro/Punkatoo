@@ -15,6 +15,7 @@ const char *compTime = __TIME__;
 #include "wifiserial.h"
 #include "config.h"
 #include "devices.h"
+#include "p2state.h"
 #include "spdt.h"
 //#include "mqtt.h"
 //#include "infrared.h"
@@ -31,18 +32,19 @@ const char *compTime = __TIME__;
 
 WiFiSerialClient serr;
 Devices dev;
+P2State p2state;
 
 /*
  * Physical Devices
  *  Note that for MQTT devices the names form part of the topic during publish
  */
-IndicatorLed indicator("indicator", LED_RED, LED_BLUE, LED_GREEN);
+// IndicatorLed indicator("indicator", LED_RED, LED_BLUE, LED_GREEN);
 // IRController irctlr("IRrcv");
 // Lamp lamp("lamp");
 // Fan fan("fan");
 // LDR ldr("LDR", LDR_PIN);
-BMESensor bme("bme");
-IRLed irled("ir", IRLED_PIN);
+// BMESensor bme("bme");
+// IRLed irled("ir", IRLED_PIN);
 
 /*
  * Pseudo Devices
@@ -53,59 +55,62 @@ IRLed irled("ir", IRLED_PIN);
 // Updater updater("updater");
 // P2WebServer webServer(80);
 
-enum AppState appState;
-enum AppState prevState;
+// enum AppState appState;
+// enum AppState prevState;
 
 /*
  * Status colours
  */
-const IndicatorLed::Colour indicate_0            = IndicatorLed::BLACK;
-const IndicatorLed::Colour indicate_awake        = IndicatorLed::RED;
-const IndicatorLed::Colour indicate_network      = IndicatorLed::BLUE;
-const IndicatorLed::Colour indicate_mqtt         = IndicatorLed::GREEN;
+const IndicatorLed::Colour indicate_0 = IndicatorLed::BLACK;
+const IndicatorLed::Colour indicate_awake = IndicatorLed::RED;
+const IndicatorLed::Colour indicate_network = IndicatorLed::BLUE;
+const IndicatorLed::Colour indicate_mqtt = IndicatorLed::GREEN;
 
-const IndicatorLed::Colour indicate_update       = IndicatorLed::CYAN;
+const IndicatorLed::Colour indicate_update = IndicatorLed::CYAN;
 const IndicatorLed::Colour indicate_configurator = IndicatorLed::YELLOW;
-const IndicatorLed::Colour indicate_wps          = IndicatorLed::MAGENTA;
+const IndicatorLed::Colour indicate_wps = IndicatorLed::MAGENTA;
 
 extern void wpsInit();
 extern void updateWiFiDef(String &ssid, String &psk);
 
-void enterState(enum AppState s)
+/*
+void p2state.enter(P2State::enum AppState s)
 {
   prevState = appState;
   switch (s)
   {
   case STATE_0:
-    indicator.setColour(indicate_0);
+    dev.indicators[0].setColour(indicate_0);
     break;
   case STATE_AWAKE:
-    indicator.setColour(indicate_awake);
+    dev.indicators[0].setColour(indicate_awake);
     break;
   case STATE_NETWORK:
-    indicator.setColour(indicate_network);
+    dev.indicators[0].setColour(indicate_network);
     break;
   case STATE_MQTT:
-    indicator.setColour(indicate_mqtt);
+    dev.indicators[0].setColour(indicate_mqtt);
     break;
   case STATE_WPS:
-    indicator.setColour(indicate_wps);
+    dev.indicators[0].setColour(indicate_wps);
     break;
   case STATE_CONFIGURATOR:
-    indicator.setColour(indicate_configurator);
+    dev.indicators[0].setColour(indicate_configurator);
     break;
   case STATE_UPDATE:
-    indicator.setColour(indicate_update);
+    dev.indicators[0].setColour(indicate_update);
     break;
   default:
     break;
   }
 }
-
+*/
+/*
 void revertState()
 {
   appState = prevState;
 }
+*/
 
 void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
 {
@@ -121,18 +126,18 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     serr.println("Connected to : " + String(WiFi.SSID()));
     serr.print("Got IP: ");
     serr.println(WiFi.localIP());
-    enterState(STATE_NETWORK);
+    p2state.enter(P2State::STATE_NETWORK);
     break;
   case SYSTEM_EVENT_STA_DISCONNECTED:
     serr.println("Disconnected from station");
-    enterState(STATE_AWAKE);
+    p2state.enter(P2State::STATE_AWAKE);
     WiFi.reconnect();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
     ssid = WiFi.SSID();
     psk = WiFi.psk();
     serr.println("WPS Successful : " + ssid + "/" + psk);
-    enterState(STATE_NETWORK);
+    p2state.enter(P2State::STATE_NETWORK);
     esp_wifi_wps_disable();
     updateWiFiDef(ssid, psk);
     delay(10);
@@ -140,12 +145,12 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     break;
   case SYSTEM_EVENT_STA_WPS_ER_FAILED:
     serr.println("WPS Failed");
-    enterState(STATE_AWAKE);
+    p2state.enter(P2State::STATE_AWAKE);
     esp_wifi_wps_disable();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
     serr.println("WPS Timed out");
-    enterState(STATE_AWAKE);
+    p2state.enter(P2State::STATE_AWAKE);
     esp_wifi_wps_disable();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_PIN:
@@ -176,7 +181,7 @@ void wpsInit()
   esp_wifi_wps_enable(&wpsconfig);
   esp_wifi_wps_start(0);
   serr.println("WPS started");
-  enterState(STATE_WPS);
+  p2state.enter(P2State::STATE_WPS);
 }
 
 void i2cscan()
@@ -220,80 +225,31 @@ void setup()
   Serial.begin(9600);
   delay(500);
 
-  dev.build();
-  dev.start();
-
-  Event ev1;
-  ev1.startLogger(dev.mqtt);
-  ev1.enqueue("Starting");
-
-  enterState(STATE_0);
+  if (persistant.readFile() == false)
+    persistant.writeFile();
 
   serr.println("");
   serr.println(appVersion);
 
-  if (persistant.readFile() == false)
-    persistant.writeFile();
-  persistant.dump(serr);
+  Event ev1;
+  ev1.enqueue("Starting");
 
-  /*
-   * Start up the lamp
-   */
+  dev.build();
+  dev.start();
 
-/*
-  SwitchPinList sl;
-  sl.push_back(LIGHT_SWITCH_PIN);
-  lamp.init(sl, LIGHT_RELAY_PIN);
-  lamp.registerIR(dev.irctlr);
-  lamp.registerMQTT(dev.mqtt);
-  lamp.start(5);
-  lamp.sw(0);
-  */
-  // delay(500);
-
-  /*
-   * Start up the fan
-   */
-  // fan.init(DIR_RELAY1_PIN, DIR_RELAY2_PIN, SPD_RELAY1_PIN, SPD_RELAY2_PIN);
-  // fan.registerIR(dev.irctlr);
-  // fan.registerMQTT(dev.mqtt);
-  // fan.setSpeed(0);
-
-  /*
-   * Start up the Infra red controller
-   */
-  dev.irctlr.start(4);
-
-  irled.registerMQTT(dev.mqtt);
-  bme.registerMQTT(dev.mqtt);
-
-  /*
-   * Ready to go (switch and IR). But network has not been initialised yet
-   */
-  enterState(STATE_AWAKE);
-  Event e2;
-  e2.enqueue("Startup complete");
+  p2state.enter(P2State::STATE_0);
 
   pinMode(WPS_PIN, INPUT_PULLUP);
   attachInterrupt(WPS_PIN, startwps, FALLING);
 
-  initWiFi();
-
-  Wire.begin();
-  if (!bme.start(0x76, &Wire))
-  {
-    serr.println("Could not find a valid BME280 sensor");
-  }
-
   /*
-  * Enable the network configurator and OTA updater
-  */
-  dev.configurator.registerIR(dev.irctlr);
-
-  /*
-   * Set up the Web server
+   * Ready to go (switch and IR). But network has not been initialised yet
    */
-  dev.webServer.init();
+  p2state.enter(P2State::STATE_AWAKE);
+  Event e2;
+  e2.enqueue("Startup complete");
+
+  initWiFi();
 }
 
 void loop()
@@ -307,7 +263,7 @@ void loop()
       wifiWasConnected = true;
       serr.begin("Punkatoo");
       serr.println("WiFi connected");
-      enterState(STATE_NETWORK);
+      p2state.enter(P2State::STATE_NETWORK);
     }
 
     dev.mqtt.poll();
@@ -346,10 +302,11 @@ void loop()
   static unsigned long then = 0;
 
   unsigned long now = millis();
+
   if ((now - then) > (1 * 60 * 1000))
   {
     then = now;
-    bme.sendStatus();
+    dev.bmes[0].sendStatus();
   }
 
   if (startWPS)
@@ -358,5 +315,5 @@ void loop()
     startWPS = false;
   }
 
-  indicator.poll();
+  dev.indicators[0].poll();
 }
