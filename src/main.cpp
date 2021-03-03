@@ -38,7 +38,7 @@ Devices dev;
  */
 IndicatorLed indicator("indicator", LED_RED, LED_BLUE, LED_GREEN);
 // IRController irctlr("IRrcv");
-Lamp lamp("lamp");
+// Lamp lamp("lamp");
 // Fan fan("fan");
 LDR ldr("LDR", LDR_PIN);
 BMESensor bme("bme");
@@ -240,6 +240,7 @@ void setup()
    * Start up the lamp
    */
 
+/*
   SwitchPinList sl;
   sl.push_back(LIGHT_SWITCH_PIN);
   lamp.init(sl, LIGHT_RELAY_PIN);
@@ -247,6 +248,7 @@ void setup()
   lamp.registerMQTT(dev.mqtt);
   lamp.start(5);
   lamp.sw(0);
+  */
   // delay(500);
 
   /*

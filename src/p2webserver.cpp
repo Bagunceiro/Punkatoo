@@ -124,7 +124,7 @@ void P2WebServer::rootPage()
   time_t now = timeClient.getEpochTime();
   time_t lastUpdate = persistant[persistant.updateTime_n].toInt();
   extern LDR ldr;
-  extern Lamp lamp;
+  // extern Lamp lamp;
 
   String body2(R"!(
 <button onclick=goreset()>Reset</button>
@@ -150,8 +150,6 @@ void P2WebServer::rootPage()
                upTime() + R"!(</TD></TR>
 <TR><TD>WiFi SSID</TD><TD colspan=3>)!" +
                WiFi.SSID() + R"!(</TD></TR>
-<TR><TD>Light Switch</TD><TD colspan=3>)!" +
-               (lamp.switchstate() ? "Open" : "Closed") + R"!(</TD></TR>
 </TABLE><BR>
 </DIV>
 </BODY>

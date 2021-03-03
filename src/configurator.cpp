@@ -7,7 +7,7 @@
 #include "indicator.h"
 
 // extern Fan fan;
-extern Lamp lamp;
+// extern Lamp lamp;
 extern IndicatorLed indicator;
 
 extern Configurator configurator;
