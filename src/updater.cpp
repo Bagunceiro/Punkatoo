@@ -4,16 +4,6 @@
 #include "devices.h"
 #include "p2state.h"
 
-//#include "updater.h"
-//#include "indicator.h"
-//#include "lamp.h"
-//#include "fan.h"
-//#include "eventlog.h"
-
-// extern IndicatorLed indicator;
-// extern Lamp lamp;
-// extern Fan fan;
-
 extern IndicatorLed::Colour indicateUpdate;
 
 void updateStarted()
@@ -21,9 +11,7 @@ void updateStarted()
   Event e;
   e.enqueue("Update started");
   p2state.enter(P2State::STATE_UPDATE);
-  // fan.setSpeed(0);
   dev.toSecure();
-  // lamp.sw(0);
 }
 
 void updateCompleted()

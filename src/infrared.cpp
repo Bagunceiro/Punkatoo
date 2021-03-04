@@ -52,9 +52,9 @@ void IRControlled::irmsgRecd(const IRMessage msg)
 {
 }
 
-void IRControlled::registerIR(IRController &c)
+void IRControlled::registerIR(IRController *c)
 {
-  ctlr = &c;
+  ctlr = c;
   subscribeToIR();
 }
 
@@ -76,11 +76,11 @@ unsigned long irDebounce(unsigned long then, unsigned long debounceTime)
     return 0;
 }
 
-IRController::IRController(const String &name)
-    : IRrecv(IR_DETECTOR_PIN, kCaptureBufferSize, kTimeout, true),
+IRController::IRController(const String &name, int pin)
+    : IRrecv(pin, kCaptureBufferSize, kTimeout, true),
       P2Task(name, 2500)
 {
-  pinMode(IR_DETECTOR_PIN, INPUT_PULLUP);
+  pinMode(pin, INPUT_PULLUP);
   enableIRIn();
 }
 

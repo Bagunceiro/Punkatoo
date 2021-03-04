@@ -17,46 +17,12 @@ const char *compTime = __TIME__;
 #include "devices.h"
 #include "p2state.h"
 #include "spdt.h"
-//#include "mqtt.h"
-//#include "infrared.h"
-//#include "webserver.h"
-//#include "configurator.h"
 #include "networks.h"
-//#include "lamp.h"
-//#include "fan.h"
-//#include "ldr.h"
-//#include "indicator.h"
-//#include "tempSensor.h"
-//#include "eventlog.h"
 #include "updater.h"
 
 WiFiSerialClient serr;
 Devices dev;
 P2State p2state;
-
-/*
- * Physical Devices
- *  Note that for MQTT devices the names form part of the topic during publish
- */
-// IndicatorLed indicator("indicator", LED_RED, LED_BLUE, LED_GREEN);
-// IRController irctlr("IRrcv");
-// Lamp lamp("lamp");
-// Fan fan("fan");
-// LDR ldr("LDR", LDR_PIN);
-// BMESensor bme("bme");
-// IRLed irled("ir", IRLED_PIN);
-
-/*
- * Pseudo Devices
- */
-// MQTTController mqttctlr;
-// Configurator configurator("configurator");
-// EventLogger Event::logger("event");
-// Updater updater("updater");
-// P2WebServer webServer(80);
-
-// enum AppState appState;
-// enum AppState prevState;
 
 /*
  * Status colours
@@ -72,45 +38,6 @@ const IndicatorLed::Colour indicate_wps = IndicatorLed::MAGENTA;
 
 extern void wpsInit();
 extern void updateWiFiDef(String &ssid, String &psk);
-
-/*
-void p2state.enter(P2State::enum AppState s)
-{
-  prevState = appState;
-  switch (s)
-  {
-  case STATE_0:
-    dev.indicators[0].setColour(indicate_0);
-    break;
-  case STATE_AWAKE:
-    dev.indicators[0].setColour(indicate_awake);
-    break;
-  case STATE_NETWORK:
-    dev.indicators[0].setColour(indicate_network);
-    break;
-  case STATE_MQTT:
-    dev.indicators[0].setColour(indicate_mqtt);
-    break;
-  case STATE_WPS:
-    dev.indicators[0].setColour(indicate_wps);
-    break;
-  case STATE_CONFIGURATOR:
-    dev.indicators[0].setColour(indicate_configurator);
-    break;
-  case STATE_UPDATE:
-    dev.indicators[0].setColour(indicate_update);
-    break;
-  default:
-    break;
-  }
-}
-*/
-/*
-void revertState()
-{
-  appState = prevState;
-}
-*/
 
 void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
 {
@@ -299,8 +226,8 @@ void loop()
 
   dev.configurator.poll();
 
+/*
   static unsigned long then = 0;
-
   unsigned long now = millis();
 
   if ((now - then) > (1 * 60 * 1000))
@@ -308,6 +235,7 @@ void loop()
     then = now;
     dev.bmes[0].sendStatus();
   }
+*/
 
   if (startWPS)
   {

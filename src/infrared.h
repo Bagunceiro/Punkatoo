@@ -81,7 +81,7 @@ extern const IRMessage IR_RESET;
 class IRController : public IRrecv, public P2Task
 {
 public:
-  IRController(const String& name = "irctlr");
+  IRController(const String& name, int pin);
   ~IRController();
   void poll();
   void newpoll();
@@ -108,7 +108,7 @@ public:
    Register with the IR controller.
    Also subscribes to messages of interest (via the subscribeToIR function for the derived class)
   */
-  void registerIR(IRController &c);
+  void registerIR(IRController *c);
   /*
     Called by registerIR to allow derived class to subscribe to messages of interest
   */

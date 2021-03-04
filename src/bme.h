@@ -12,7 +12,7 @@
 class BME : public Adafruit_BME280, public MQTTClientDev
 {
   public:
-  BME(const String& name);
+  BME(const String& name, int addr);
   ~BME();
   bool start(uint8_t addr, TwoWire *theWire);
   void msgRecd(const String& topic, const String& msg);

@@ -10,12 +10,12 @@ class Fan: public MQTTClientDev, public IRControlled
 
     */
   public:
-    Fan(String devName);
+    Fan(String devName, const int dirRly1, const int dirRly2, const int speedRly1, const int speedRly2);
     virtual ~Fan();
     /*
       initialise the fan with GPIO pins for the relays
     */
-    void init(const int dirRly1, const int dirRly2, const int speedRly1, const int speedRly2);
+    // void init(const int dirRly1, const int dirRly2, const int speedRly1, const int speedRly2);
     /*
       Set speed of motor.
       Speed is a number between -3 and +3 where 0 is off and sign = direction

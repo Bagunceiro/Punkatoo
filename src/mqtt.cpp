@@ -205,11 +205,14 @@ bool MQTTController::poll()
 {
     bool result = true;
 
+/*
     if (client->connected())
     {
         client->loop();
     }
     else
+    */
+    if (!client->loop())
     {
         if (connFlag)
         {

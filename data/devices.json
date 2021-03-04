@@ -1,26 +1,26 @@
 {
     "irrcv":{
-        "id":"irrcv",
+        "id":"irctlr",
         "pin":34
     },
     "irled":[{
         "id":"irled",
         "pin":4
     }],
-    "indicator":{
+    "indicator":[{
         "id":"indicator",
-        "pinRed":2,
-        "pinGreen":12,
-        "pinBlue":15
-    },
+        "pinR":2,
+        "pinG":12,
+        "pinB":15
+    }],
     "lamp":[{
-        "name":"lamp",
-        "pin":13,
-        "switch":[{"id":"sw1"}]
+        "id":"lamp",
+        "pin":13
     }],
     "switch":[{
         "id":"sw1",
-        "pin":19
+        "pin":19,
+        "switched":[{"id":"lamp"}]
     }],
     "fan":[{
         "id":"fan",
@@ -35,6 +35,6 @@
     }],
     "bme":[{
         "id":"bme",
-        "add":"0x76"
+        "addr":"0x76"
     }]
 }

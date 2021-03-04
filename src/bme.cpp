@@ -2,7 +2,7 @@
 #include "bme.h"
 #include "config.h"
 
-BME::BME(const String& name) : MQTTClientDev(name)
+BME::BME(const String& name, int addr) : MQTTClientDev(name)
 {
   ok = false;
 }

@@ -113,7 +113,7 @@ bool EventLogger::operator()()
                 String s;
                 serializeJson(doc, s);
                 publish("log", s.c_str());
-                // delay(50);
+                delay(200);
             }
         }
     }

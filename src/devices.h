@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <ArduinoJson.h>
 
 #include "mqtt.h"
 #include "lamp.h"
@@ -19,11 +20,12 @@ using namespace std;
 struct Devices
 {
     MQTTController  mqtt;
-    IRController    irctlr;
+    IRController*   irctlr;
     Configurator    configurator;
     EventLogger     eventlogger;
     Updater         updater;
     P2WebServer     webServer;
+    Switches*       switchTask;
 
     vector<Lamp>         lamps;
     vector<Fan>          fans;
@@ -33,11 +35,28 @@ struct Devices
     vector<IRLed>        irleds;
     vector<IndicatorLed> indicators;
 
+    Devices()
+    {
+        irctlr = NULL;
+        switchTask = NULL;
+    }
+
     // Build the device block using a configuration file
     bool build(const String &filename = "devices.json");
     // Turn motors off, lights out etc.
     void toSecure();
     void start();
+
+private:
+    void parse();
+    void buildIRController(JsonObject obj);
+    void buildIRLed(JsonArray list);
+    void buildIndicator(JsonArray list);
+    void buildLamp(JsonArray list);
+    void buildSwitch(JsonArray list);
+    void buildFan(JsonArray list);
+    void buildLDR(JsonArray list);
+    void buildBME(JsonArray list);
 };
 
 extern struct Devices dev;
