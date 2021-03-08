@@ -3,7 +3,6 @@
 
 #include <ArduinoJson.h>
 #include "config.h"
-//#include "configurator.h"
 #include "devices.h"
 #include "networks.h"
 
@@ -13,8 +12,6 @@ networkList scannedNets;
 #define LittleFS LITTLEFS
 
 WiFiMulti wifimulti;
-
-// extern Configurator configurator;
 
 networkList &scanNetworks()
 {

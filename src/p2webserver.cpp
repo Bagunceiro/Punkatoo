@@ -1,17 +1,9 @@
 #include <Arduino.h>
+#include <LITTLEFS.h>
+#include <HTTPClient.h>
 #include "config.h"
 #include "p2webserver.h"
-//#include "networks.h"
-//#include "updater.h"
-//#include "ldr.h"
-//#include "tempSensor.h"
-//#include "indicator.h"
 #include "devices.h"
-
-// extern P2WebServer webServer;
-// extern BMESensor bme;
-// extern IndicatorLed indicator;
-// extern Updater updater;
 
 P2WebServer *P2WebServer::pThis;
 
@@ -551,22 +543,68 @@ void P2WebServer::doUpdatePage()
       image = arg(i);
   }
 
-  t_httpUpdate_return ret = dev.updater.systemUpdate(server, port.toInt(), image);
+  String ext;
+  int extidx = image.lastIndexOf('.');
+  if (extidx >= 0)
+    ext = image.substring(extidx + 1);
 
-  switch (ret)
+  if (ext == "bin")
   {
-  case HTTP_UPDATE_FAILED:
-    messagePage("Update Failed");
-    break;
-  case HTTP_UPDATE_NO_UPDATES:
-    messagePage("No Update Available");
-    break;
-  case HTTP_UPDATE_OK:
-    resetMessagePage("Update Successful");
-    break;
-  default:
-    messagePage("Default case");
+    t_httpUpdate_return ret = dev.updater.systemUpdate(server, port.toInt(), image);
+
+    switch (ret)
+    {
+    case HTTP_UPDATE_FAILED:
+      messagePage("Update Failed");
+      break;
+    case HTTP_UPDATE_NO_UPDATES:
+      messagePage("No Update Available");
+      break;
+    case HTTP_UPDATE_OK:
+      resetMessagePage("Update Successful");
+      break;
+    default:
+      messagePage("Default case");
+    }
   }
+  else if (ext == "json")
+  {
+    HTTPClient http;
+    String url = "http://" + server + ":" + port + "/" + image;
+    serr.printf("getting %s\n", url.c_str());
+    http.begin(url);
+    int httpCode = http.GET();
+    if (httpCode == HTTP_CODE_OK)
+    {
+      String payload = http.getString();
+      extern fs::LITTLEFSFS &LittleFS;
+      LittleFS.begin();
+
+      int baseidx = image.lastIndexOf('/');
+      String fname = image.substring(baseidx + 1);
+      serr.printf("Opening %s\n", fname.c_str());
+      File configFile = LittleFS.open(String('/') + image.substring(baseidx + 1), "w+");
+      if (!configFile)
+      {
+        perror("");
+        serr.println("Config file open for write failed");
+      }
+      else
+      {
+        serr.printf("writing:\n %s", payload.c_str());
+        configFile.print(payload);
+      }
+      configFile.close();
+      LittleFS.end();
+    }
+    else
+    {
+      serr.printf("[HTTP] GET failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
+    messagePage("Configuration file");
+  }
+  else
+    messagePage("Unknown file type");
 }
 
 void P2WebServer::init()
