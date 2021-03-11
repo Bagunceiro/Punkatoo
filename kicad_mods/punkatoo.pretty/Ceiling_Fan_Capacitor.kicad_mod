@@ -1,0 +1,18 @@
+(module Ceiling_Fan_Capacitor (layer F.Cu) (tedit 5FF4A821)
+  (fp_text reference Capacitor (at 25 -20.25) (layer F.SilkS) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value Ceiling_Fan_Capacitor (at 26 -11) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_line (start 50 0) (end 0 0) (layer F.SilkS) (width 0.12))
+  (fp_line (start 50 -30) (end 50 0) (layer F.SilkS) (width 0.12))
+  (fp_line (start 0 -30) (end 50 -30) (layer F.SilkS) (width 0.12))
+  (fp_line (start 0 0) (end 0 -30) (layer F.SilkS) (width 0.12))
+  (fp_line (start 0 -15) (end 50 -15) (layer F.SilkS) (width 0.12))
+  (model ${KISYS_USER_3DMOD}/cap_3wire.step
+    (offset (xyz 0 15 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -90))
+  )
+)
