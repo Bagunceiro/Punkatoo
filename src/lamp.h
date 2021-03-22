@@ -26,7 +26,7 @@ class Lamp: public MQTTClientDev, public IRControlled, public SwitchedDev
     void blip(const int number, const int length);
 
     virtual ~Lamp();
-    virtual String getStatus();
+    virtual String mqttGetStatus();
     virtual void mqttMsgRecd(const String &topic, const String &msg);
     
     virtual void irmsgRecd(IRMessage msg);

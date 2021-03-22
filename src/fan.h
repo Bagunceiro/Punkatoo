@@ -29,7 +29,7 @@ class Fan: public MQTTClientDev, public IRControlled
     /*
       Return the current speed of the fan as a string for MQTT status publication
     */
-    virtual String getStatus();
+    virtual String mqttGetStatus();
     /*
         Converts speed value to positions of the speed switch.
     */

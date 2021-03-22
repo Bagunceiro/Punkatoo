@@ -94,7 +94,7 @@ bool EventLogger::operator()()
     Event ev;
     if (true) // ev.queued())
     {
-        if (connected())
+        if (mqttConnected())
         {
             Event ev;
             if (ev.dequeue())
@@ -112,7 +112,7 @@ bool EventLogger::operator()()
                 doc["text"] = ev.text;
                 String s;
                 serializeJson(doc, s);
-                publish("log", s.c_str());
+                mqttPublish("log", s.c_str());
                 delay(200);
             }
         }

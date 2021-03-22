@@ -20,11 +20,11 @@ public:
     void registerMQTT(MQTTController &c);
     virtual void subscribeToMQTT() {}
     virtual void mqttMsgRecd(const String &topic, const String &msg) {}
-    const String getName() { return name; }
-    virtual String getStatus() { return ""; }
-    virtual void sendStatus();
-    virtual void publish(const String topic, const String message, bool retain = false);
-    bool connected();
+    const String mqttGetName() { return name; }
+    virtual String mqttGetStatus() { return ""; }
+    virtual void mqttSendStatus();
+    virtual void mqttPublish(const String topic, const String message, bool retain = false);
+    bool mqttConnected();
 
 protected:
     MQTTController *pmqttctlr;

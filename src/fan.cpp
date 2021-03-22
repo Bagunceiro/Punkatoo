@@ -43,7 +43,7 @@ void Fan::setSpeed(const int s)
       spd.pos(speedToPos(s));
     }
 
-    sendStatus();
+    mqttSendStatus();
   }
 }
 
@@ -67,7 +67,7 @@ int8_t Fan::getSpeed()
   return result;
 }
 
-String Fan::getStatus()
+String Fan::mqttGetStatus()
 {
   /*
   int result = 0; // Assume it's off
@@ -197,7 +197,7 @@ void Fan::mqttMsgRecd(const String &topic, const String &msg)
 void Fan::subscribeToMQTT()
 {
   pmqttctlr->subscribe(this, MQTT_TPC_SPEED);
-  sendStatus();
+  mqttSendStatus();
 }
 
 void Fan::irmsgRecd(const IRMessage msg)

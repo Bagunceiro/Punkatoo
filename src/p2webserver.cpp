@@ -118,7 +118,7 @@ const String P2WebServer::lightLevels()
   String s;
   for (LDR &ldr : dev.ldrs)
   {
-    s += "<TR><TD>Light level</TD><TD colspan=3>" + ldr.getStatus() + "</TD></TR>\n";
+    s += "<TR><TD>Light level</TD><TD colspan=3>" + ldr.mqttGetStatus() + "</TD></TR>\n";
   }
   return s;
 }

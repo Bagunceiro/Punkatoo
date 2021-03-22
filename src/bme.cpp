@@ -25,7 +25,7 @@ double setPrecision(double value, const unsigned int precision)
   return (round(value * factor) / factor);
 }
 
-String BME::getStatus()
+String BME::mqttGetStatus()
 {
   time_t now = timeClient.getEpochTime();
   char tbuf[sizeof "YYYY-MM-DDTHH:MM:SS+ZZZZ"];

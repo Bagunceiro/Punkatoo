@@ -2,11 +2,11 @@
 
 #include "mqtt.h"
 
-class LDR
+class LDR : public MQTTClientDev
 {
 public:
     LDR(String devName, uint8_t p);
-    virtual String getStatus();
+    virtual String mqttGetStatus();
 
     virtual ~LDR();
     uint16_t read();

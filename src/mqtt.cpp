@@ -48,7 +48,7 @@ bool MQTTController::init()
                 doSubscriptions();
                 for (MQTTClientDev *dev : devList)
                 {
-                    dev->sendStatus();
+                    dev->mqttSendStatus();
                     client->loop();
                 }
                 result = true;
@@ -134,7 +134,7 @@ void MQTTController::msgRecd(const String &fulltopic, const String &msg)
         for (MQTTClientDev *dev : record->second)
         {
             Event e;
-            String txt = "MQTT " + topic + ":" + msg + " -> " + dev->getName();
+            String txt = "MQTT " + topic + ":" + msg + " -> " + dev->mqttGetName();
             e.enqueue(txt.c_str());
             dev->mqttMsgRecd(topic, msg);
         }
@@ -166,17 +166,17 @@ MQTTClientDev::~MQTTClientDev()
     }
 }
 
-void MQTTClientDev::sendStatus()
+void MQTTClientDev::mqttSendStatus()
 {
     // serr.printf("sendStatus for %s\n", name.c_str());
-    String stat = getStatus();
+    String stat = mqttGetStatus();
     if (stat != "")
     {
-        publish(MQTT_TPC_STAT, stat, true);
+        mqttPublish(MQTT_TPC_STAT, stat, true);
     }
 }
 
-void MQTTClientDev::publish(const String topic, const String message, bool retain)
+void MQTTClientDev::mqttPublish(const String topic, const String message, bool retain)
 {
     if (pmqttctlr != NULL)
     {
@@ -245,7 +245,7 @@ bool MQTTController::connected()
     return connFlag;
 }
 
-bool MQTTClientDev::connected()
+bool MQTTClientDev::mqttConnected()
 {
     bool result = false;
     if (pmqttctlr != NULL)

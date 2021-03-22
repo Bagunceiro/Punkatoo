@@ -25,16 +25,16 @@ void Lamp::sw(int toState)
   {
     digitalWrite(lpin, LOW);
   }
-  sendStatus();
+  mqttSendStatus();
 }
 
 void Lamp::toggle()
 {
-  int isOn = getStatus().toInt();
+  int isOn = mqttGetStatus().toInt();
   sw(isOn == 0 ? 1 : 0);
 }
 
-String Lamp::getStatus()
+String Lamp::mqttGetStatus()
 {
   int l = digitalRead(lpin);
   return String((l == 0 ? 1 : 0));
@@ -69,7 +69,7 @@ void Lamp::mqttMsgRecd(const String &topic, const String &msg)
 void Lamp::subscribeToMQTT()
 {
   pmqttctlr->subscribe(this, MQTT_TPC_SWITCH);
-  sendStatus();
+  mqttSendStatus();
 }
 
 void Lamp::irmsgRecd(IRMessage msg)

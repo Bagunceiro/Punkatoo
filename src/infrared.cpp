@@ -103,21 +103,21 @@ bool IRController::operator()()
 
       if ((when = irDebounce(then, IRDEBOUNCE)))
       {
-        // Decode data from remote
+        // Inform anyone who's interested
         String payload = R"--({"source":")--" 
         + persistant[persistant.controllername_n] 
         + R"--(","code":")--"  + uint64ToString(val, HEX) + R"--("})--";
-        // serr.println(payload);
+        mqttPublish(MQTT_TPC_RECDIRCODE, payload);
 
-        publish(MQTT_TPC_RECDIRCODE, payload);
-
+        // Decode data from remote...
         auto search = decList.find(val);
+        // ...and if we found a decode
         if (search != decList.end())
         {
           // for everything that code could mean
           for (IRMessage msg : search->second)
           {
-            serr.println(String(" = ") + msg);
+            // serr.println(String(" = ") + msg);
             // Find subscriptions for it
             auto search2 = subList.find(msg);
             if (search2 != subList.end())
@@ -127,17 +127,18 @@ bool IRController::operator()()
               {
                 Event e;
                 e.enqueue("IR(" + msg + ") -> " + dev->getName());
+                // pass to the subscribing device
                 dev->irmsgRecd(msg);
               }
             }
-            else
+            else // No devices subscribed to this message
             {
               Event e;
               e.enqueue("IR(" + msg + ") no subs");
             }
           }
         }
-        else
+        else // Message is not in our decode table
         {
           Event e;
           e.enqueue("Unk IRMsg " + uint64ToString(val, HEX));
@@ -149,20 +150,20 @@ bool IRController::operator()()
     }
     resume();
   }
-  delay(20);
+  delay(20); // should this be yield?
   return true;
 }
 
 bool IRController::subscribe(IRControlled *c, IRMessage m)
 {
-  auto record = subList.find(m);
-  if (record == subList.end())
+  auto record = subList.find(m); // Any subscriptions to this message yet?
+  if (record == subList.end())   // No, create a new bucket in the subscription list
   {
     DevList newVector;
     newVector.push_back(c);
     subList.insert({m, newVector});
   }
-  else
+  else                           // Yes, add this sub to the existing bucket
   {
     record->second.push_back(c);
   }
@@ -196,7 +197,7 @@ void IRLed::off()
 void IRLed::subscribeToMQTT()
 {
   pmqttctlr->subscribe(this, MQTT_TPC_SENDIRCODE);
-  sendStatus();
+  mqttSendStatus();
 }
 
 void IRLed::txCode(String type, long code, int bits)
