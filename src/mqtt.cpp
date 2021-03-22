@@ -180,9 +180,9 @@ void MQTTClientDev::mqttPublish(const String topic, const String message, bool r
 {
     if (pmqttctlr != NULL)
     {
-        serr.println("Publishing:");
-        serr.println(name + "/" + topic);
-        serr.println(message);
+        // serr.println("Publishing:");
+        // serr.println(name + "/" + topic);
+        // serr.println(message);
         pmqttctlr->publish(name + "/" + topic, (String &)message, retain);
     }
 }

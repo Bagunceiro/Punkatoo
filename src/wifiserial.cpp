@@ -4,7 +4,7 @@ class WiFiSerialServer : public WiFiServer
 {
 public:
     WiFiSerialServer();
-    void init(const String &a, const uint8_t port = 23);
+    void init(const String &a, const uint16_t port = 0);
     void handle();
 
 private:
@@ -23,11 +23,11 @@ void WiFiSerialClient::loop()
     WSerialServer.handle();
 }
 
-WiFiSerialServer::WiFiSerialServer() : WiFiServer(23)
+WiFiSerialServer::WiFiSerialServer() : WiFiServer(1685)
 {
 }
 
-void WiFiSerialServer::init(const String &a, const uint8_t port)
+void WiFiSerialServer::init(const String &a, const uint16_t port)
 {
     begin(port);
     setNoDelay(true);
