@@ -78,7 +78,7 @@ extern const IRMessage IR_SEND_IRCODE;
 extern const IRMessage IR_RESET;
 
 
-class IRController : public IRrecv, public P2Task
+class IRController : public IRrecv, public P2Task, public MQTTClientDev
 {
 public:
   IRController(const String& name, int pin);

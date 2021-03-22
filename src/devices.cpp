@@ -352,7 +352,10 @@ void Devices::start()
     Wire.begin();
 
     switchTask->start(5);
+
+    irctlr->registerMQTT(mqtt);
     irctlr->start(4);
+
     eventlogger.registerMQTT(mqtt);
     eventlogger.start(0);
 

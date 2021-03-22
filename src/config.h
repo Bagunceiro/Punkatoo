@@ -25,6 +25,7 @@ extern const String MQTT_TPC_SPEED;      // "speed"
 extern const String MQTT_TPC_SWITCH;     // "switch"
 extern const String MQTT_TPC_UPDATE;     // "update"
 extern const String MQTT_TPC_SENDIRCODE; // "ir/sendcode"
+extern const String MQTT_TPC_RECDIRCODE; // "recdcode"
 
 extern const char *appVersion;
 extern const char *compDate;

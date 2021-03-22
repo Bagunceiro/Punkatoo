@@ -78,7 +78,8 @@ unsigned long irDebounce(unsigned long then, unsigned long debounceTime)
 
 IRController::IRController(const String &name, int pin)
     : IRrecv(pin, kCaptureBufferSize, kTimeout, true),
-      P2Task(name, 2500)
+      P2Task(name, 2500),
+      MQTTClientDev(name)
 {
   pinMode(pin, INPUT_PULLUP);
   enableIRIn();
@@ -103,6 +104,13 @@ bool IRController::operator()()
       if ((when = irDebounce(then, IRDEBOUNCE)))
       {
         // Decode data from remote
+        String payload = R"--({"source":")--" 
+        + persistant[persistant.controllername_n] 
+        + R"--(","code":")--"  + uint64ToString(val, HEX) + R"--("})--";
+        // serr.println(payload);
+
+        publish(MQTT_TPC_RECDIRCODE, payload);
+
         auto search = decList.find(val);
         if (search != decList.end())
         {
@@ -133,6 +141,7 @@ bool IRController::operator()()
         {
           Event e;
           e.enqueue("Unk IRMsg " + uint64ToString(val, HEX));
+          serr.println("Unknown IR: " + uint64ToString(val, HEX));
         }
 
         then = when;

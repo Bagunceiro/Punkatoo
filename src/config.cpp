@@ -26,6 +26,7 @@ const String MQTT_TPC_SPEED      = "fan/speed";
 const String MQTT_TPC_SWITCH     = "lamp/switch";
 const String MQTT_TPC_UPDATE     = "update";
 const String MQTT_TPC_SENDIRCODE = "ir/sendcode";
+const String MQTT_TPC_RECDIRCODE = "recdcode";
 
 // GPIO pins
 

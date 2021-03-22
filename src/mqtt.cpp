@@ -180,6 +180,9 @@ void MQTTClientDev::publish(const String topic, const String message, bool retai
 {
     if (pmqttctlr != NULL)
     {
+        serr.println("Publishing:");
+        serr.println(name + "/" + topic);
+        serr.println(message);
         pmqttctlr->publish(name + "/" + topic, (String &)message, retain);
     }
 }
