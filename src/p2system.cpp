@@ -65,7 +65,7 @@ void P2System::mqttMsgRecd(const String &topic, const String &msg)
 
 String P2System::mqttGetStatus()
 {
-    return ("{\"name\":\"" + persistant[persistant.controllername_n] + "\"}");
+    return ("{\"name\":\"" + config[controllername_n] + "\"}");
 }
 
 void P2System::enterState(enum State s)

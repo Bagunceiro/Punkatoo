@@ -324,6 +324,17 @@ class NTPClient
              ((millis() - this->_lastUpdate + (_currentFraction / FRACTIONSPERMILLI)) / 1000); // Time since last update
     }
    
+    unsigned long long mygetEpochMillis() const 
+    {
+      unsigned long long currentEpochMillis = (unsigned long long)this->_currentEpoc * 1000;
+            Serial.printf("currentEpoc = %ld\n", _currentEpoc);
+      Serial.printf("currentEpochMillis = %lld\n", currentEpochMillis);
+      return (currentEpochMillis+     // Epoc returned by the NTP server
+             millis() 
+             - this->_lastUpdate 
+             + (_currentFraction / FRACTIONSPERMILLI));
+    }
+
     /**
        @return time in seconds since Jan. 1, 1970
     */

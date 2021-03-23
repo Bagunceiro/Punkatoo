@@ -49,7 +49,7 @@ void IndicatorLed::setColour(const struct Colour &c, const bool ovr)
 {
     if (ovr) setAt = 0;
     else setAt = millis();
-    if (ovr || (persistant[persistant.indicator_n] == "1"))
+    if (ovr || (config[indicator_n] == "1"))
     {
         colour = c;
         ledcWrite(redChan, 256 - colour.red);

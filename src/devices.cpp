@@ -143,7 +143,7 @@ void Devices::buildLamp(JsonArray list)
         }
         serr.printf("lamp %s on pin %d\n", id.c_str(), pin);
         Lamp *lamp = new Lamp(id, pin);
-        lamp->sw(0);
+        // lamp->sw(0);
         lamps.push_back(*lamp);
     }
 }

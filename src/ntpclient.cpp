@@ -154,9 +154,9 @@ unsigned long long NTPClient::getUTCEpochMillis()
 {
   unsigned long long epoch;
 
-  epoch  = this->_currentEpoc * 1000;                   // last time returned via server in millis
-  epoch += this->_currentFraction / FRACTIONSPERMILLI;  // add the fraction from the server
-  epoch += millis() - this->_lastUpdate;          // add the millis that have passed since the last update
+  epoch  = (unsigned long long)this->_currentEpoc * 1000;  // last time returned via server in millis
+  epoch += this->_currentFraction / FRACTIONSPERMILLI;     // add the fraction from the server
+  epoch += millis() - this->_lastUpdate;                   // add the millis that have passed since the last update
 
   return epoch;
 }
@@ -165,7 +165,7 @@ unsigned long long NTPClient::getEpochMillis()
 {
   unsigned long long epoch;
   
-  epoch = (this->_timeOffset * 1000) + getUTCEpochMillis();
+  epoch = getUTCEpochMillis() + (this->_timeOffset * 1000);
 
   return epoch;
 }

@@ -1,6 +1,7 @@
 #include <ArduinoJson.h>
 #include "devices.h"
 #include "eventlog.h"
+#include "config.h"
 
 QueueHandle_t Event::queue = xQueueCreate(20, sizeof(Event));
 SemaphoreHandle_t Event::serialNoMutex = xSemaphoreCreateMutex();
@@ -42,6 +43,18 @@ const uint16_t Event::setSerial()
         nextSerial = 0;
     xSemaphoreGive(serialNoMutex);
 
+    if (startedAt != 0)
+    {
+        validts = true;
+        timestamp = timeClient.getEpochMillis();
+    }
+    else
+    {
+        validts = false;
+        timestamp = millis();
+    }
+
+    /*
     time_t now = time(0);
     ts.msecs = millis() % 1000;
     ts.secs = time(0);
@@ -49,6 +62,7 @@ const uint16_t Event::setSerial()
     {
         ts.msecs = millis() % 1000;
     }
+    */
     return serial;
 }
 
@@ -92,29 +106,51 @@ bool EventLogger::operator()()
     bool result = false;
 
     Event ev;
-    if (true) // ev.queued())
-    {
-        if (mqttConnected())
-        {
-            Event ev;
-            if (ev.dequeue())
-            {
-                result = true;
-                char buffer[24];
-                sprintf(buffer, "%02d %ld.%03d ", ev.serial, ev.ts.secs, ev.ts.msecs);
 
-                Serial.println(String(buffer) + String(ev.text));
-                StaticJsonDocument<512> doc;
-                doc["serial"] = ev.serial;
-                JsonObject ts = doc.createNestedObject("ts");
-                ts["secs"] = ev.ts.secs;
-                ts["msecs"] = ev.ts.msecs;
-                doc["text"] = ev.text;
-                String s;
-                serializeJson(doc, s);
-                mqttPublish("log", s.c_str());
-                delay(200);
+    // Limit the transmission rate, and give NTP a chance to
+    // get the RTC up to date if it's going to.
+    delay(startedAt == 0 ? 3000 : 500);
+    
+    if (mqttConnected())
+    {
+        Event ev;
+        if (ev.dequeue())
+        {
+            result = true;
+            char buffer[24];
+
+            if (!ev.validts) // Can we correct it now?
+            {
+                if (startedAt != 0) // Yes
+                {
+                    ev.timestamp += startedAt;
+                    ev.validts = true;
+                }
             }
+            if (ev.validts)
+            {
+                time_t tssecs = ev.timestamp / 1000;
+                struct tm tmstr;
+                localtime_r(&tssecs, &tmstr);
+                strftime(buffer, sizeof(buffer) - 1, "%Y-%m-%d %H:%M:%S", &tmstr);
+                char msbuff[4];
+                sprintf(msbuff, ".%03d", (int)ev.timestamp % 1000);
+                strcat(buffer, msbuff);
+            }
+            else
+            {
+                sprintf(buffer, "%llu", ev.timestamp);
+            }
+            StaticJsonDocument<512> doc;
+            doc["serial"] = ev.serial;
+            JsonObject ts = doc.createNestedObject("ts");
+            ts["valid"] = ev.validts;
+            ts["timestamp"] = buffer;
+            doc["text"] = ev.text;
+            String s;
+            serializeJson(doc, s);
+            mqttPublish("log", s.c_str());
+            delay(200);
         }
     }
     return result;

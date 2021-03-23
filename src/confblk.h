@@ -3,6 +3,7 @@
 #include <map>
 #include <Stream.h>
 
+
 class ConfBlk: public std::map<String, String>
 {
 public:
@@ -17,6 +18,3 @@ public:
     private:
     String _fileName;
 };
-
-// extern const String conffilename;
-// extern ConfBlk configuration;

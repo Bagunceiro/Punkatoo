@@ -24,8 +24,12 @@ void P2Task::loop(void *ctlr)
         if (hwmnow < hwm) // log maximum stack depth
         {
             hwm = hwmnow;
-            Event e;
-            e.enqueue(String("Task " + pThis->name + " HWM=" + String(hwm)));
+            serr.printf("Task %s HWM=%d\n", pThis->name.c_str(), hwm);
+            if (hwm < 500) // Arbitrary warning limit
+            {
+                Event e;
+                e.enqueue(String("Task " + pThis->name + " HWM=" + String(hwm)));
+            }
         }
     }
 }

@@ -1,7 +1,6 @@
 #include "mqtt.h"
 #include "config.h"
 #include "eventlog.h"
-#include "p2state.h"
 
 MQTTController::MQTTController()
 {
@@ -21,27 +20,27 @@ bool MQTTController::init()
     unsigned long now = millis();
     bool result = false;
 
-    if ((persistant[persistant.mqtthost_n].length() == 0) || (persistant[persistant.mqttport_n].length()) == 0)
+    if ((config[mqtthost_n].length() == 0) || (config[mqttport_n].length()) == 0)
         result = true;
     else
     {
         if ((lastAttempt == 0) || ((now - lastAttempt) > MQTT_CONNECT_ATTEMPT_INT))
         {
             serr.print("Connecting to MQTT ");
-            serr.print(persistant[persistant.mqtthost_n]);
+            serr.print(config[mqtthost_n]);
             serr.print(" port ");
-            serr.println(persistant[persistant.mqttport_n]);
+            serr.println(config[mqttport_n]);
 
             lastAttempt = now;
 
-            String clientID = String("ctlr_") + String(persistant[persistant.controllername_n]) + String("_") + String(millis() % 1000);
+            String clientID = String("ctlr_") + String(config[controllername_n]) + String("_") + String(millis() % 1000);
 
-            client->setServer(persistant[persistant.mqtthost_n].c_str(), persistant[persistant.mqttport_n].toInt());
+            client->setServer(config[mqtthost_n].c_str(), config[mqttport_n].toInt());
             client->setCallback(rcvCallback);
 
             if (client->connect(clientID.c_str(),
-                                persistant[persistant.mqttuser_n].c_str(),
-                                persistant[persistant.mqttpwd_n].c_str()))
+                                config[mqttuser_n].c_str(),
+                                config[mqttpwd_n].c_str()))
             {
                 serr.println("MQTT connected");
                 poll();
@@ -83,7 +82,7 @@ bool MQTTController::subscribe(MQTTClientDev *dev, const MQTTTopic &topic)
 
 String MQTTController::stdPrefix()
 {
-    return persistant[persistant.mqttroot_n] + "/" + persistant[persistant.mqtttopic_n] + "/";
+    return config[mqttroot_n] + "/" + config[mqtttopic_n] + "/";
 }
 
 void MQTTController::publish(String &topic, String &msg, bool retained)

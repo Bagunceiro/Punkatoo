@@ -62,26 +62,29 @@ const int TZ = -3;
 extern NTPClient timeClient;
 // extern EventLog evLog;
 
-struct ConfigBlock : public ConfBlk
-{
-  static const char *controllername_n;
-  static const char *mqtthost_n;
-  static const char *mqttport_n;
-  static const char *mqttuser_n;
-  static const char *mqttpwd_n;
-  static const char *mqttroot_n;
-  static const char *mqtttopic_n;
-  static const char *updateTime_n;
-  static const char *indicator_n;
-};
+extern const char *controllername_n;
+extern const char *mqtthost_n;
+extern const char *mqttport_n;
+extern const char *mqttuser_n;
+extern const char *mqttpwd_n;
+extern const char *mqttroot_n;
+extern const char *mqtttopic_n;
+extern const char *updateTime_n;
+extern const char *indicator_n;
 
-
-
-extern ConfigBlock persistant;
-// extern Stream &serr;
+extern ConfBlk config;
 extern WiFiSerialClient serr;
-// extern AppState appState;
+
+extern unsigned long long startedAt;
 
 void startup();
-String upTime();
+
+unsigned long long upFor();
+const char* timeAndDate(char buff[], const int maxSize, const time_t when);
+
+const char* nowTime();
+const char* startTime();
+const char* lastUpdateTime();
+const char* upTime();
+
 void report();

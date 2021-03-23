@@ -21,8 +21,8 @@ void updateCompleted()
   dev.p2sys.revertState();
 
   time_t now = timeClient.getEpochTime();
-  persistant[persistant.updateTime_n] = String(now);
-  persistant.writeFile();
+  config[updateTime_n] = String(now);
+  config.writeFile();
 }
 
 void updateNone()

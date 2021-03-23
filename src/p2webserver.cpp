@@ -127,8 +127,8 @@ void P2WebServer::rootPage()
 {
   const String title("Punkatoo");
   const String head3("");
-  time_t now = timeClient.getEpochTime();
-  time_t lastUpdate = persistant[persistant.updateTime_n].toInt();
+  // time_t now = timeClient.getEpochTime();
+  // time_t lastUpdate = config[updateTime_n].toInt();
   // extern LDR ldr;
   // extern Lamp lamp;
 
@@ -138,18 +138,20 @@ void P2WebServer::rootPage()
 </div>
 <div class=content>
 <BR><B>Controller: )!" +
-               persistant[persistant.controllername_n] + R"!(</B>
+               config[controllername_n] + R"!(</B>
 <TABLE>
 <TR><TD>Time now</TD><TD colspan=3 >)!" +
-               ctime(&now) + R"!(</TD></TR>
+               nowTime() + R"!(</TD></TR>
 )!" + bmeData() +
                lightLevels() + R"!(
 <TR><TD>Version</TD><TD colspan=3 >)!" +
-               appVersion + " (" + compTime + " " + compDate + R"!()</TD></TR>
+               appVersion + " (" + compDate + " " + compTime + R"!()</TD></TR>
 <TR><TD>MAC Address</TD><TD colspan=3 >)!" +
                WiFi.macAddress() + R"!(</TD></TR>
-<TR><TD>Last update</TD><TD colspan=3 >)!" +
-               (lastUpdate != 0 ? ctime(&lastUpdate) : "N/A") + R"!(</TD></TR>
+<TR><TD>Last OTA update</TD><TD colspan=3 >)!" +
+               lastUpdateTime() + R"!(</TD></TR>
+<TR><TD>Started At</TD><TD colspan=3 >)!" +
+               startTime() + R"!(</TD></TR>
 <TR><TD>Uptime</TD><TD colspan=3>)!" +
                upTime() + R"!(</TD></TR>
 <TR><TD>WiFi SSID</TD><TD colspan=3>)!" +
@@ -178,7 +180,7 @@ void P2WebServer::messagePage(const String &message)
   <div class=content>
   <BODY>
   <br><B>Controller: )!" +
-               persistant[persistant.controllername_n] + "</B><br><br>" + message + R"!(
+               config[controllername_n] + "</B><br><br>" + message + R"!(
   </div>
   </BODY>
   )!");
@@ -211,20 +213,20 @@ void P2WebServer::genUpdatePage()
 {
   if (method() == HTTP_POST)
   {
-    persistant[persistant.indicator_n] = "0";
+    config[indicator_n] = "0";
 
     for (uint8_t i = 0; i < args(); i++)
     {
       const String argN = argName(i);
-      if (argN == persistant.indicator_n)
+      if (argN == indicator_n)
       {
-        persistant[argN] = "1";
+        config[argN] = "1";
       }
       else
-        persistant[argN] = arg(i);
+        config[argN] = arg(i);
     }
-    persistant.dump(serr);
-    persistant.writeFile();
+    config.dump(serr);
+    config.writeFile();
 
     // indicator.setColour(indicate_update, true);
 
@@ -241,34 +243,34 @@ void P2WebServer::genConfigPage()
 </div>
 <div class=content>
 <BR><B>General Configuration: )!" +
-               persistant[persistant.controllername_n] + R"!(</B>
+               config[controllername_n] + R"!(</B>
 <FORM id=theform method=post action=")!" +
                pageGenUpdate + R"!(")>
 <table>
 <tr><td><label for=ctlrname>Controller Name:</label></td>
 <td><input type=text name=")!" +
-               persistant.controllername_n + "\" value=\"" + persistant[persistant.controllername_n] + R"!("></td></tr>
+               controllername_n + "\" value=\"" + config[controllername_n] + R"!("></td></tr>
 <tr><td><label for=mqtthost>MQTT Broker:</label></td>
 <td><input type=text name=")!" +
-               persistant.mqtthost_n + "\" value=\"" + persistant[persistant.mqtthost_n] + R"!("></td></tr>
+               mqtthost_n + "\" value=\"" + config[mqtthost_n] + R"!("></td></tr>
 <tr><td><label for=mqttport>MQTT Port:</label></td>
 <td><input type=text name=")!" +
-               persistant.mqttport_n + "\" value=\"" + persistant[persistant.mqttport_n] + R"!("></td></tr>
+               mqttport_n + "\" value=\"" + config[mqttport_n] + R"!("></td></tr>
 <tr><td><label for=mqttuser>MQTT User:</label></td>
 <td><input type=text name=")!" +
-               persistant.mqttuser_n + "\" value=\"" + persistant[persistant.mqttuser_n] + R"!("></td></tr>
+               mqttuser_n + "\" value=\"" + config[mqttuser_n] + R"!("></td></tr>
 <tr><td><label for=mqttuser>MQTT Password:</label></td>
 <td><input type=text name=")!" +
-               persistant.mqttpwd_n + "\" value=\"" + persistant[persistant.mqttpwd_n] + R"!("></td></tr>
+               mqttpwd_n + "\" value=\"" + config[mqttpwd_n] + R"!("></td></tr>
 <tr><td><label for=mqttroot>MQTT Topic root:</label></td>
 <td><input type=text name=")!" +
-               persistant.mqttroot_n + "\" value=\"" + persistant[persistant.mqttroot_n] + R"!("></td></tr>
+               mqttroot_n + "\" value=\"" + config[mqttroot_n] + R"!("></td></tr>
 <tr><td><label for=mqtttopic>MQTT Topic:</label></td>
 <td><input type=text name=")!" +
-               persistant.mqtttopic_n + "\" value=\"" + persistant[persistant.mqtttopic_n] + R"!("></td></tr>
+               mqtttopic_n + "\" value=\"" + config[mqtttopic_n] + R"!("></td></tr>
 <tr><td><label for="ind">Status Indicator:</label></td>
 <td><input type=checkbox id="ind" name=")!" +
-               persistant.indicator_n + "\"" + (persistant[persistant.indicator_n] == "1" ? " checked" : "") + R"!(/><label for=ind>&nbsp;</label></td></tr>
+               indicator_n + "\"" + (config[indicator_n] == "1" ? " checked" : "") + R"!(/><label for=ind>&nbsp;</label></td></tr>
 </table>
 </FORM>
 </div>
@@ -358,7 +360,7 @@ void P2WebServer::netConfigPage()
 </div>
 <div class=content>
 <BR><B>WiFi Configuration: )=====") +
-               String(persistant[persistant.controllername_n]) + String(R"=====(</B>
+               String(config[controllername_n]) + String(R"=====(</B>
 <FORM id=theform method=post action=/config.net>
 <TABLE>
 <TR><TH colspan=2>Configured Networks</TH></TR>
@@ -422,7 +424,7 @@ void P2WebServer::newNetPage()
 </div>
 <div class=content>
 <br><B>WiFi Network Edit: )====" +
-               persistant[persistant.controllername_n] + R"====(</B><br><br>
+               config[controllername_n] + R"====(</B><br><br>
 )====" + net.ssid +
                R"====( Updated
 </div>
@@ -459,7 +461,7 @@ void P2WebServer::netEditPage()
 </div>
 <div class=content>
 <BR><B>WiFi Network Edit: ")=====" +
-          persistant[persistant.controllername_n] + R"=====("</B>
+          config[controllername_n] + R"=====("</B>
 <FORM id=theform method=post action=)=====" +
           pageWiFiNetAdd + R"=====(>
 <table>
@@ -498,13 +500,13 @@ void P2WebServer::systemUpdatePage()
 </div>
 <div class=content>
 <BR><B>System Update: )=====" +
-               persistant[persistant.controllername_n] + R"=====(</B>
+               config[controllername_n] + R"=====(</B>
 <FORM id=theform method=post action=")=====" +
                pageDoUpdate + R"=====(")>
 <table>
 <tr><td><label for=server>Update server:</label></td>
 <td><input type=text name=server value=")=====" +
-               persistant[persistant.mqtthost_n] + R"=====("></td></tr>
+               config[mqtthost_n] + R"=====("></td></tr>
 <tr><td><label for=port>Port:</label></td>
 <td><input type=text name=port value=80></td></tr>
 <tr><td><label for=image>Update image file:</label></td>

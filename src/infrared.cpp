@@ -105,7 +105,7 @@ bool IRController::operator()()
       {
         // Inform anyone who's interested
         String payload = R"--({"source":")--" 
-        + persistant[persistant.controllername_n] 
+        + config[controllername_n] 
         + R"--(","code":")--"  + uint64ToString(val, HEX) + R"--("})--";
         mqttPublish(MQTT_TPC_RECDIRCODE, payload);
 

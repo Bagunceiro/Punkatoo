@@ -15,14 +15,12 @@ const char *compTime = __TIME__;
 #include "wifiserial.h"
 #include "config.h"
 #include "devices.h"
-#include "p2state.h"
 #include "spdt.h"
 #include "networks.h"
 #include "updater.h"
 
 WiFiSerialClient serr;
 Devices dev;
-// P2State p2state;
 
 /*
  * Status colours
@@ -91,7 +89,7 @@ void initWiFi()
 {
   WiFi.onEvent(WiFiEvent);
   connectToWiFi();
-  MDNS.begin(persistant[persistant.controllername_n].c_str());
+  MDNS.begin(config[controllername_n].c_str());
   MDNS.addService("http", "tcp", 80);
 }
 
@@ -104,7 +102,7 @@ void wpsInit()
   strcpy(wpsconfig.factory_info.manufacturer, "PA");
   strcpy(wpsconfig.factory_info.model_number, "1");
   strcpy(wpsconfig.factory_info.model_name, "Punkatoo");
-  strcpy(wpsconfig.factory_info.device_name, persistant[persistant.controllername_n].c_str());
+  strcpy(wpsconfig.factory_info.device_name, config[controllername_n].c_str());
   esp_wifi_wps_enable(&wpsconfig);
   esp_wifi_wps_start(0);
   serr.println("WPS started");
@@ -152,8 +150,8 @@ void setup()
   Serial.begin(9600);
   delay(500);
 
-  if (persistant.readFile() == false)
-    persistant.writeFile();
+  if (config.readFile() == false)
+    config.writeFile();
 
   serr.println("");
   serr.println(appVersion);
@@ -179,6 +177,15 @@ void setup()
   initWiFi();
 }
 
+unsigned long long startedAt = 0;
+
+void ntpUpdated(NTPClient *c)
+{
+  serr.println("NTPUpdate");
+  startedAt = c->getEpochMillis();
+  c->setUpdateCallback(NULL);
+}
+
 void loop()
 {
   static bool wifiWasConnected = false;
@@ -200,19 +207,17 @@ void loop()
 
     if (!ntpstarted)
     {
+      timeClient.setUpdateCallback(ntpUpdated);
       timeClient.begin();
       timeClient.setUpdateInterval(3600000);
-      ntpstarted = true;
-      timeClient.update();
       timeClient.setTimeOffset(TZ * 60 * 60);
+      ntpstarted = true;
+      // timeClient.update();
     }
-    else
-    {
-      // in NTPClient_Generic false return is not (necessarily) a failure - it just means
-      // not updated, which happens most spins of the loop becasue no attempt is made.
-      // if (!timeClient.update()) serr.println("NTP failure");
-      timeClient.update();
-    }
+    // in NTPClient_Generic false return is not (necessarily) a failure - it just means
+    // not updated, which happens most spins of the loop becasue no attempt is made.
+    // if (!timeClient.update()) serr.println("NTP failure");
+    timeClient.update();
 
     dev.webServer.handleClient();
     serr.loop();
@@ -229,7 +234,7 @@ void loop()
 
   // dev.configurator.poll();
 
-/*
+  /*
   static unsigned long then = 0;
   unsigned long now = millis();
 
@@ -237,6 +242,22 @@ void loop()
   {
     then = now;
     dev.bmes[0].sendStatus();
+  }
+*/
+
+  /*
+  static unsigned long then = 0;
+  unsigned long now = millis();
+
+  if ((now - then) > (1000))
+  {
+    then = now;
+    time_t s = timeClient.getUTCEpochTime();
+    unsigned long long m = timeClient.getEpochMillis();
+    time_t mm = m /1000;
+    serr.printf("%lu %llu %lu\n", s, m, mm);
+    serr.printf("%s\n", ctime(&s));
+    serr.printf("%s\n", ctime(&mm));
   }
 */
 
