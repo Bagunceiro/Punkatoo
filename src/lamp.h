@@ -21,6 +21,8 @@ class Lamp: public MQTTClientDev, public IRControlled, public SwitchedDev
     // void init(const SwitchPinList inpList, int out);
     void sw(int toState);
     void toggle();
+    const int getStatus();
+    
     // virtual bool operator()();
     const int blip(const int t = 500);
     void blip(const int number, const int length);

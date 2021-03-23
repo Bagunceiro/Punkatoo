@@ -23,6 +23,7 @@ extern const IndicatorLed::Colour indicate_update;
 extern const String MQTT_TPC_STAT;       // "status"
 extern const String MQTT_TPC_SPEED;      // "speed"
 extern const String MQTT_TPC_SWITCH;     // "switch"
+extern const String MQTT_TPC_SWITCHTO;   // "switchto"
 extern const String MQTT_TPC_UPDATE;     // "update"
 extern const String MQTT_TPC_SENDIRCODE; // "ir/sendcode"
 extern const String MQTT_TPC_RECDIRCODE; // "recdcode"

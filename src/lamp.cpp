@@ -30,14 +30,21 @@ void Lamp::sw(int toState)
 
 void Lamp::toggle()
 {
-  int isOn = mqttGetStatus().toInt();
+  const int isOn = getStatus();
   sw(isOn == 0 ? 1 : 0);
+}
+
+const int Lamp::getStatus()
+{
+  int l = digitalRead(lpin);
+  return (l==0 ? 1 : 0);
 }
 
 String Lamp::mqttGetStatus()
 {
   int l = digitalRead(lpin);
   return String((l == 0 ? 1 : 0));
+  // return ((String)"{\"tostate\":\"" + (l == 0 ? "on" : "off") + "\"}");
 }
 
 const int Lamp::blip(const int t)
@@ -64,11 +71,45 @@ void Lamp::mqttMsgRecd(const String &topic, const String &msg)
   {
     sw(msg.toInt());
   }
+  else if (topic == MQTT_TPC_SWITCHTO)
+  {
+    StaticJsonDocument<512> doc;
+    DeserializationError error = deserializeJson(doc, msg);
+    if (error)
+    {
+      serr.printf("Lamp cannot decode switchto (%d)\n", error.code());
+    }
+    else
+    {
+      JsonObject root = doc.as<JsonObject>();
+      for (JsonPair kv : root)
+      {
+        if (kv.key() == "tostate")
+        {
+          const char *val = (const char *)kv.value();
+          serr.printf("lamp.switchto %s\n", val);
+          if (strcmp(val, "on") == 0)
+          {
+            sw(1);
+          }
+          else if (strcmp(val, "off") == 0)
+          {
+            sw(0);
+          }
+          else if (strcmp(val, "toggle") == 0)
+          {
+            toggle();
+          }
+        }
+      }
+    }
+  }
 }
 
 void Lamp::subscribeToMQTT()
 {
   pmqttctlr->subscribe(this, MQTT_TPC_SWITCH);
+  pmqttctlr->subscribe(this, MQTT_TPC_SWITCHTO);
   mqttSendStatus();
 }
 

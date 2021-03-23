@@ -5,6 +5,7 @@
 #include <map>
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 typedef String MQTTTopic;
 class MQTTController;
