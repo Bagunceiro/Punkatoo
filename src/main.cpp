@@ -8,7 +8,7 @@
 #include <esp_wps.h>
 #include <TimeLib.h>
 
-const char *appVersion = "Punkatoo 0.4";
+const char *appVersion = "Punkatoo 0.5";
 const char *compDate = __DATE__;
 const char *compTime = __TIME__;
 
@@ -22,7 +22,7 @@ const char *compTime = __TIME__;
 
 WiFiSerialClient serr;
 Devices dev;
-P2State p2state;
+// P2State p2state;
 
 /*
  * Status colours
@@ -53,18 +53,18 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     serr.println("Connected to : " + String(WiFi.SSID()));
     serr.print("Got IP: ");
     serr.println(WiFi.localIP());
-    p2state.enter(P2State::STATE_NETWORK);
+    dev.p2sys.enterState(P2System::STATE_NETWORK);
     break;
   case SYSTEM_EVENT_STA_DISCONNECTED:
     serr.println("Disconnected from station");
-    p2state.enter(P2State::STATE_AWAKE);
+    dev.p2sys.enterState(P2System::STATE_AWAKE);
     WiFi.reconnect();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
     ssid = WiFi.SSID();
     psk = WiFi.psk();
     serr.println("WPS Successful : " + ssid + "/" + psk);
-    p2state.enter(P2State::STATE_NETWORK);
+    dev.p2sys.enterState(P2System::STATE_NETWORK);
     esp_wifi_wps_disable();
     updateWiFiDef(ssid, psk);
     delay(10);
@@ -72,12 +72,12 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     break;
   case SYSTEM_EVENT_STA_WPS_ER_FAILED:
     serr.println("WPS Failed");
-    p2state.enter(P2State::STATE_AWAKE);
+    dev.p2sys.enterState(P2System::STATE_AWAKE);
     esp_wifi_wps_disable();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
     serr.println("WPS Timed out");
-    p2state.enter(P2State::STATE_AWAKE);
+    dev.p2sys.enterState(P2System::STATE_AWAKE);
     esp_wifi_wps_disable();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_PIN:
@@ -108,7 +108,7 @@ void wpsInit()
   esp_wifi_wps_enable(&wpsconfig);
   esp_wifi_wps_start(0);
   serr.println("WPS started");
-  p2state.enter(P2State::STATE_WPS);
+  dev.p2sys.enterState(P2System::STATE_WPS);
 }
 
 void i2cscan()
@@ -164,7 +164,7 @@ void setup()
   dev.build();
   dev.start();
 
-  p2state.enter(P2State::STATE_0);
+  dev.p2sys.enterState(P2System::STATE_0);
 
   pinMode(WPS_PIN, INPUT_PULLUP);
   attachInterrupt(WPS_PIN, startwps, FALLING);
@@ -172,7 +172,7 @@ void setup()
   /*
    * Ready to go (switch and IR). But network has not been initialised yet
    */
-  p2state.enter(P2State::STATE_AWAKE);
+  dev.p2sys.enterState(P2System::STATE_AWAKE);
   Event e2;
   e2.enqueue("Startup complete");
 
@@ -183,6 +183,9 @@ void loop()
 {
   static bool wifiWasConnected = false;
   static bool ntpstarted = false;
+
+  dev.p2sys.routine();
+
   if (WiFi.status() == WL_CONNECTED)
   {
     if (!wifiWasConnected)
@@ -190,7 +193,7 @@ void loop()
       wifiWasConnected = true;
       serr.begin("Punkatoo");
       serr.println("WiFi connected");
-      p2state.enter(P2State::STATE_NETWORK);
+      dev.p2sys.enterState(P2System::STATE_NETWORK);
     }
 
     dev.mqtt.poll();
@@ -224,7 +227,7 @@ void loop()
     connectToWiFi();
   }
 
-  dev.configurator.poll();
+  // dev.configurator.poll();
 
 /*
   static unsigned long then = 0;

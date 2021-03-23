@@ -3,6 +3,7 @@
 #include <vector>
 #include <ArduinoJson.h>
 
+#include "p2system.h"
 #include "mqtt.h"
 #include "lamp.h"
 #include "fan.h"
@@ -19,9 +20,10 @@ using namespace std;
 
 struct Devices
 {
+    P2System        p2sys;
     MQTTController  mqtt;
     IRController*   irctlr;
-    Configurator    configurator;
+    // Configurator    configurator;
     EventLogger     eventlogger;
     Updater         updater;
     P2WebServer     webServer;

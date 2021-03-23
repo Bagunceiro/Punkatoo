@@ -28,6 +28,7 @@ const String MQTT_TPC_SWITCHTO   = "lamp/switchto";
 const String MQTT_TPC_UPDATE     = "update";
 const String MQTT_TPC_SENDIRCODE = "ir/sendcode";
 const String MQTT_TPC_RECDIRCODE = "recdcode";
+const String MQTT_TPC_SYSTEM     = "system";
 
 // GPIO pins
 

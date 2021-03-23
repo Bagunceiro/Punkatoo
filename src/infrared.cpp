@@ -37,28 +37,28 @@ DecodeList IRController::decList =
 
 const int IRDEBOUNCE = 200; // Number of milliseconds to leave fallow between IR messages
 
-// IRControlled *IRControlled::list = NULL;
+// IRClientDev *IRClientDev::list = NULL;
 
-IRControlled::IRControlled(const String &n)
+IRClientDev::IRClientDev(const String &n)
 {
   name = n;
 }
 
-IRControlled::~IRControlled()
+IRClientDev::~IRClientDev()
 {
 }
 
-void IRControlled::irmsgRecd(const IRMessage msg)
+void IRClientDev::irmsgRecd(const IRMessage msg)
 {
 }
 
-void IRControlled::registerIR(IRController *c)
+void IRClientDev::registerIR(IRController *c)
 {
   ctlr = c;
   subscribeToIR();
 }
 
-bool IRControlled::subscribe(IRMessage m)
+bool IRClientDev::subscribe(IRMessage m)
 {
   if (ctlr != NULL)
   {
@@ -123,7 +123,7 @@ bool IRController::operator()()
             if (search2 != subList.end())
             {
               // For each subscription for this message
-              for (IRControlled *dev : search2->second)
+              for (IRClientDev *dev : search2->second)
               {
                 Event e;
                 e.enqueue("IR(" + msg + ") -> " + dev->getName());
@@ -154,7 +154,7 @@ bool IRController::operator()()
   return true;
 }
 
-bool IRController::subscribe(IRControlled *c, IRMessage m)
+bool IRController::subscribe(IRClientDev *c, IRMessage m)
 {
   auto record = subList.find(m); // Any subscriptions to this message yet?
   if (record == subList.end())   // No, create a new bucket in the subscription list

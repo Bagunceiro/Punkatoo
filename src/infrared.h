@@ -14,11 +14,11 @@ const uint8_t  kTimeout = 15;
 const uint16_t kMinUnknownSize = 12;
 const uint16_t kCaptureBufferSize = 1024;
 
-class IRControlled;
+class IRClientDev;
 
 typedef uint32_t IRCode;
 typedef String IRMessage;
-typedef std::vector<IRControlled *> DevList;
+typedef std::vector<IRClientDev *> DevList;
 typedef std::vector<IRMessage> MsgList;
 typedef std::map<IRMessage, DevList> SubscriptionList;
 typedef std::map<IRCode, MsgList> DecodeList;
@@ -85,7 +85,7 @@ public:
   ~IRController();
   void poll();
   void newpoll();
-  bool subscribe(IRControlled *, IRMessage);
+  bool subscribe(IRClientDev *, IRMessage);
   virtual bool operator()();
 
 private:
@@ -95,11 +95,11 @@ private:
   static DecodeList decList;
 };
 
-class IRControlled
+class IRClientDev
 {
 public:
-  IRControlled(const String& n);
-  virtual ~IRControlled();
+  IRClientDev(const String& n);
+  virtual ~IRClientDev();
   /*
    Take action on receipt of an IR message. This function should be implemented by the derived class.
   */

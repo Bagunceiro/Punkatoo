@@ -1,9 +1,10 @@
 #pragma once
 
+/*
 #include "infrared.h"
 
 
-class Configurator : public IRControlled
+class Configurator : public IRClientDev
 {
 public:
     Configurator(const String& name = "configurator");
@@ -21,3 +22,4 @@ private:
     unsigned int startCodeState;
     unsigned long stateChangedAt;
 };
+*/

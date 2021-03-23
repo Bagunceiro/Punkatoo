@@ -187,7 +187,7 @@ void connectToWiFi()
         }
         else
         {
-            dev.configurator.start();
+            // dev.configurator.start();
         }
     }
 }

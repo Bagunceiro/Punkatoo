@@ -359,6 +359,9 @@ void Devices::start()
     eventlogger.registerMQTT(mqtt);
     eventlogger.start(0);
 
+    p2sys.registerIR(irctlr);
+    p2sys.registerMQTT(mqtt);
+
     for (Fan &fan : fans)
     {
         fan.registerIR(irctlr);
@@ -382,6 +385,6 @@ void Devices::start()
             serr.println("Could not find a valid BME280 sensor on dev 0x76");
         }
     }
-    configurator.registerIR(irctlr);
+    // configurator.registerIR(irctlr);
     webServer.init();
 }

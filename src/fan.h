@@ -4,7 +4,7 @@
 #include "infrared.h"
 #include "spdt.h"
 
-class Fan: public MQTTClientDev, public IRControlled
+class Fan: public MQTTClientDev, public IRClientDev
 {
     /*
 
@@ -59,7 +59,7 @@ class Fan: public MQTTClientDev, public IRControlled
     */
     virtual void mqttMsgRecd(const String &topic, const String &msg);
     /*
-      Deal with incoming IR message. Virtual, derived from IRControlled
+      Deal with incoming IR message. Virtual, derived from IRClientDev
     */
     virtual void irmsgRecd(const IRMessage code);
 

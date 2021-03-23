@@ -1,3 +1,5 @@
+#ifdef CONFIGURATOR
+
 #include <WiFi.h>
 #include <LITTLEFS.h>
 #include "config.h"
@@ -14,7 +16,7 @@
 
 extern Configurator configurator;
 
-Configurator::Configurator(const String& name) : IRControlled(name)
+Configurator::Configurator(const String& name) : IRClientDev(name)
 {
     startedAt = 0;
     running = false;
@@ -83,7 +85,7 @@ void Configurator::start()
 {
     if (!running)
     {
-        p2state.enter(P2State::STATE_CONFIGURATOR);
+        dev.p2sys.enterState(P2System::STATE_CONFIGURATOR);
 
         String m = WiFi.macAddress();
         String ssid = persistant[persistant.controllername_n] + "_" + m.substring(9, 11) + m.substring(12, 14) + m.substring(15);
@@ -133,3 +135,5 @@ void Configurator::subscribeToIR()
   subscribe(IR_CONFIGURATOR_STOP);
   subscribe(IR_RESET);
 }
+
+#endif

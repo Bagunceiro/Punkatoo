@@ -2,7 +2,7 @@
 #include "fan.h"
 #include "eventlog.h"
 
-Fan::Fan(String devName, const int d1, const int d2, const int s1, const int s2) : MQTTClientDev(devName), IRControlled(devName)
+Fan::Fan(String devName, const int d1, const int d2, const int s1, const int s2) : MQTTClientDev(devName), IRClientDev(devName)
 {
   dir.setPins(d1, d2);
   spd.setPins(s1, s2);

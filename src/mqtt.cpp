@@ -223,11 +223,11 @@ bool MQTTController::poll()
         }
         if (init())
         {
-            p2state.enter(P2State::STATE_MQTT);
+            dev.p2sys.enterState(P2System::STATE_MQTT);
         }
         else
         {
-            p2state.enter(P2State::STATE_NETWORK);
+            dev.p2sys.enterState(P2System::STATE_NETWORK);
             result = false;
         }
     }

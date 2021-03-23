@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 #include "devices.h"
 
 class P2State
@@ -58,3 +59,5 @@ private:
 };
 
 extern P2State p2state;
+
+*/

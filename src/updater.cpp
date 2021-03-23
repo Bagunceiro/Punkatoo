@@ -2,7 +2,7 @@
 
 #include "config.h"
 #include "devices.h"
-#include "p2state.h"
+#include "p2system.h"
 
 extern IndicatorLed::Colour indicateUpdate;
 
@@ -10,7 +10,7 @@ void updateStarted()
 {
   Event e;
   e.enqueue("Update started");
-  p2state.enter(P2State::STATE_UPDATE);
+  dev.p2sys.enterState(P2System::STATE_UPDATE);
   dev.toSecure();
 }
 
@@ -18,7 +18,7 @@ void updateCompleted()
 {
   Event e;
   e.enqueue("Update complete");
-  p2state.revert();
+  dev.p2sys.revertState();
 
   time_t now = timeClient.getEpochTime();
   persistant[persistant.updateTime_n] = String(now);
@@ -29,14 +29,14 @@ void updateNone()
 {
   Event e;
   e.enqueue("No update available");
-  p2state.revert();
+  dev.p2sys.revertState();
 }
 
 void updateFail()
 {
   Event e;
   e.enqueue("Update failed");
-  p2state.revert();
+  dev.p2sys.revertState();
 }
 
 Updater::Updater(const String &devName)
