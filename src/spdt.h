@@ -1,12 +1,15 @@
 #pragma once
 
+// #define SPDT_BOTH_ON
+
 class SPDT
 {
     /*
        Implements a single pole double throw switch with centre off
        using two SPST relays driven by the GPIO pins defined in
        the construction.
-       Relay coils are active low. Both energised at the same time is permitted
+       Relay coils are active low. Both energised at the same time is not permitted
+       unless SPDT_BOTH_ON is defined.
     */
   public:
     SPDT();

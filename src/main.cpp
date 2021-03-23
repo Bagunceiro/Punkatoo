@@ -15,7 +15,6 @@ const char *compTime = __TIME__;
 #include "wifiserial.h"
 #include "config.h"
 #include "devices.h"
-#include "p2state.h"
 #include "spdt.h"
 #include "networks.h"
 #include "updater.h"

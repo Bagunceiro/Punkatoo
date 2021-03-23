@@ -1,7 +1,6 @@
 #include "mqtt.h"
 #include "config.h"
 #include "eventlog.h"
-#include "p2state.h"
 
 MQTTController::MQTTController()
 {

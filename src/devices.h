@@ -11,7 +11,6 @@
 #include "infrared.h"
 #include "indicator.h"
 #include "bme.h"
-#include "configurator.h"
 #include "eventlog.h"
 #include "updater.h"
 #include "p2webserver.h"
