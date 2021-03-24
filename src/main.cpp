@@ -21,7 +21,6 @@ const char *compTime = __TIME__;
 
 WiFiSerialClient serr;
 Devices dev;
-// P2State p2state;
 
 /*
  * Status colours
@@ -225,19 +224,6 @@ void loop()
     }
     connectToWiFi();
   }
-
-  // dev.configurator.poll();
-
-/*
-  static unsigned long then = 0;
-  unsigned long now = millis();
-
-  if ((now - then) > (1 * 60 * 1000))
-  {
-    then = now;
-    dev.bmes[0].sendStatus();
-  }
-*/
 
   if (startWPS)
   {

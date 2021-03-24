@@ -129,8 +129,6 @@ void P2WebServer::rootPage()
   const String head3("");
   time_t now = timeClient.getEpochTime();
   time_t lastUpdate = persistant[persistant.updateTime_n].toInt();
-  // extern LDR ldr;
-  // extern Lamp lamp;
 
   String body2(R"!(
 <button onclick=goreset()>Reset</button>
@@ -225,9 +223,6 @@ void P2WebServer::genUpdatePage()
     }
     persistant.dump(serr);
     persistant.writeFile();
-
-    // indicator.setColour(indicate_update, true);
-
     messagePage("Configuration Updated");
   }
 }

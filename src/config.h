@@ -8,10 +8,6 @@
 #include "ntpclient.h"
 #include "devices.h"
 
-//extern void enterState(const enum AppState);
-//extern void revertState();
-//extern enum AppState appState;
-
 extern const IndicatorLed::Colour indicate_0;
 extern const IndicatorLed::Colour indicate_awake;
 extern const IndicatorLed::Colour indicate_network;
@@ -60,7 +56,6 @@ extern const unsigned int WIFI_CONNECT_ATTEMPT_INT;
 
 const int TZ = -3;
 extern NTPClient timeClient;
-// extern EventLog evLog;
 
 struct ConfigBlock : public ConfBlk
 {

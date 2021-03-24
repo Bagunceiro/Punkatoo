@@ -25,11 +25,9 @@ public:
   uint16_t serial;
   char *text;
 
-  // bool enqueue(const char *msg);
   bool enqueue(const String& msg);
   bool dequeue();
   bool queued();
-  // bool startLogger(MQTTController& c);
 
 private:
   bool onQueue;
@@ -37,6 +35,5 @@ private:
   const uint16_t setSerial();
   static QueueHandle_t queue;
   static uint16_t nextSerial;
-//  static EventLogger logger;
   static SemaphoreHandle_t serialNoMutex;
 };
