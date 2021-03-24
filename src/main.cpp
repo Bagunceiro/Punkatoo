@@ -232,38 +232,6 @@ void loop()
     connectToWiFi();
   }
 
-<<<<<<< HEAD
-  // dev.configurator.poll();
-
-  /*
-  static unsigned long then = 0;
-  unsigned long now = millis();
-
-  if ((now - then) > (1 * 60 * 1000))
-  {
-    then = now;
-    dev.bmes[0].sendStatus();
-  }
-*/
-
-  /*
-  static unsigned long then = 0;
-  unsigned long now = millis();
-
-  if ((now - then) > (1000))
-  {
-    then = now;
-    time_t s = timeClient.getUTCEpochTime();
-    unsigned long long m = timeClient.getEpochMillis();
-    time_t mm = m /1000;
-    serr.printf("%lu %llu %lu\n", s, m, mm);
-    serr.printf("%s\n", ctime(&s));
-    serr.printf("%s\n", ctime(&mm));
-  }
-*/
-
-=======
->>>>>>> configblock-removal
   if (startWPS)
   {
     wpsInit();
