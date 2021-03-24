@@ -127,10 +127,15 @@ void P2WebServer::rootPage()
 {
   const String title("Punkatoo");
   const String head3("");
+<<<<<<< HEAD
   // time_t now = timeClient.getEpochTime();
   // time_t lastUpdate = config[updateTime_n].toInt();
   // extern LDR ldr;
   // extern Lamp lamp;
+=======
+  time_t now = timeClient.getEpochTime();
+  time_t lastUpdate = persistant[persistant.updateTime_n].toInt();
+>>>>>>> configblock-removal
 
   String body2(R"!(
 <button onclick=goreset()>Reset</button>
@@ -225,11 +230,16 @@ void P2WebServer::genUpdatePage()
       else
         config[argN] = arg(i);
     }
+<<<<<<< HEAD
     config.dump(serr);
     config.writeFile();
 
     // indicator.setColour(indicate_update, true);
 
+=======
+    persistant.dump(serr);
+    persistant.writeFile();
+>>>>>>> configblock-removal
     messagePage("Configuration Updated");
   }
 }

@@ -44,7 +44,6 @@ String Lamp::mqttGetStatus()
 {
   int l = digitalRead(lpin);
   return String((l == 0 ? 1 : 0));
-  // return ((String)"{\"tostate\":\"" + (l == 0 ? "on" : "off") + "\"}");
 }
 
 const int Lamp::blip(const int t)

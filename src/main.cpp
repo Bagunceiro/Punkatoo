@@ -232,6 +232,7 @@ void loop()
     connectToWiFi();
   }
 
+<<<<<<< HEAD
   // dev.configurator.poll();
 
   /*
@@ -261,6 +262,8 @@ void loop()
   }
 */
 
+=======
+>>>>>>> configblock-removal
   if (startWPS)
   {
     wpsInit();

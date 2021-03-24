@@ -9,15 +9,6 @@ Fan::Fan(String devName, const int d1, const int d2, const int s1, const int s2)
 }
 Fan::~Fan() {}
 
-/*
-void Fan::init(const int d1, const int d2, const int s1, const int s2)
-{
-  dir.setPins(d1, d2);
-  spd.setPins(s1, s2);
-  // setSpeed(0);
-}
-*/
-
 void Fan::setSpeed(const int s)
 {
   if (s >= -3 && s <= 3)
@@ -69,23 +60,6 @@ int8_t Fan::getSpeed()
 
 String Fan::mqttGetStatus()
 {
-  /*
-  int result = 0; // Assume it's off
-
-  int dstat = dir.stat();
-
-  if (dstat != 0)
-  {
-    // Then it is on - work out the speed
-    int sstat = spd.stat();
-
-    result = posToSpeed(sstat);
-
-    // And correct for direction
-    if (dstat == 2) result = -result;
-  }
-  return String(result);
-  */
   return String(getSpeed());
 }
 

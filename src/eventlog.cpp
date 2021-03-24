@@ -6,7 +6,6 @@
 QueueHandle_t Event::queue = xQueueCreate(20, sizeof(Event));
 SemaphoreHandle_t Event::serialNoMutex = xSemaphoreCreateMutex();
 uint16_t Event::nextSerial = 1;
-// EventLogger Event::logger("event");
 
 Event::Event()
 {
@@ -25,14 +24,6 @@ Event::~Event()
         free(text);
     }
 }
-
-/*
-bool Event::startLogger(MQTTController &c)
-{
-    dev.eventlogger.registerMQTT(c);
-    return dev.eventlogger.start(0);
-}
-*/
 
 const uint16_t Event::setSerial()
 {
