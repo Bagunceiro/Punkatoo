@@ -22,7 +22,6 @@ struct Devices
     P2System        p2sys;
     MQTTController  mqtt;
     IRController*   irctlr;
-    // Configurator    configurator;
     EventLogger     eventlogger;
     Updater         updater;
     P2WebServer     webServer;
@@ -43,7 +42,7 @@ struct Devices
     }
 
     // Build the device block using a configuration file
-    bool build(const String &filename = "devices.json");
+    bool build(const char* = "devices.json");
     // Turn motors off, lights out etc.
     void toSecure();
     void start();
