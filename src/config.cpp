@@ -17,7 +17,6 @@ const char *mqttuser_n = "mqttuser";
 const char *mqttpwd_n = "mqttpwd";
 const char *mqttroot_n = "mqttroot";
 const char *mqtttopic_n = "mqtttopic";
-const char *updateTime_n = "updatetime";
 const char *indicator_n = "indicator";
 
 const String MQTT_TPC_STAT = "status";
@@ -31,26 +30,7 @@ const String MQTT_TPC_SYSTEM = "system";
 
 // GPIO pins
 
-const int LED_RED = 2;
-const int LED_GREEN = 12;
-const int LED_BLUE = 15;
-
-const int SPD_RELAY2_PIN = 33; // K1
-const int SPD_RELAY1_PIN = 25; // K2
-const int DIR_RELAY1_PIN = 26; // K3
-const int DIR_RELAY2_PIN = 27; // K4
-
-const int LIGHT_RELAY_PIN = 13; // K5
-const int LIGHT_SWITCH_PIN = 19;
-// const int LIGHT_SWITCH_PIN = 23;
-
-const int IR_DETECTOR_PIN = 34;
-const int IR_TRANSMIT_PIN = 4;
-const int LDR_PIN = 35;
-
 const int WPS_PIN = 0;
-
-const int IRLED_PIN = 4;
 
 const unsigned int MQTT_CONNECT_ATTEMPT_INT = (10 * 1000);     // Interval between attempts to reconnect MQTT (ms)
 const unsigned int WIFI_CONNECT_ATTEMPT_INT = (5 * 60 * 1000); // Interval between attempts to reconnect WiFi (ms)
@@ -92,19 +72,6 @@ const char *nowTime()
   {
     strcpy(buff, "Unknown");
   }
-  return buff;
-}
-
-const char *lastUpdateTime()
-{
-  time_t lastUpdate = config[updateTime_n].toInt();
-  static char buff[32];
-  if (lastUpdate != 0)
-  {
-    timeAndDate(buff, sizeof(buff) - 1, lastUpdate);
-  }
-  else
-    strcat(buff, "N/A");
   return buff;
 }
 

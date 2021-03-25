@@ -25,31 +25,15 @@ extern const String MQTT_TPC_SENDIRCODE; // "ir/sendcode"
 extern const String MQTT_TPC_RECDIRCODE; // "recdcode"
 extern const String MQTT_TPC_SYSTEM;     // "system"
 
-extern char compDateTime[];
-// extern const char *compTime;
+extern const char *compTime;
+extern const char *compDate;
 extern const char *gitrevision;
+
+extern char compDateTime[];
 
 // GPIO pin definitions
 
-extern const int LED_RED;
-extern const int LED_GREEN;
-extern const int LED_BLUE;
-
-extern const int DIR_RELAY1_PIN;
-extern const int DIR_RELAY2_PIN;
-extern const int SPD_RELAY1_PIN;
-extern const int SPD_RELAY2_PIN;
-
-extern const int LIGHT_RELAY_PIN;
-extern const int LIGHT_SWITCH_PIN;
-
-extern const int IR_DETECTOR_PIN;
-
-extern const int LDR_PIN;
-
 extern const int WPS_PIN;
-
-extern const int IRLED_PIN;
 
 extern const unsigned int MQTT_CONNECT_ATTEMPT_INT; // Delay between attempts to reconnect MQTT (ms)
 extern const unsigned int WIFI_CONNECT_ATTEMPT_INT;
@@ -64,7 +48,7 @@ extern const char *mqttuser_n;
 extern const char *mqttpwd_n;
 extern const char *mqttroot_n;
 extern const char *mqtttopic_n;
-extern const char *updateTime_n;
+// extern const char *updateTime_n;
 extern const char *indicator_n;
 
 extern ConfBlk config;

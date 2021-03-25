@@ -20,9 +20,11 @@ void updateCompleted()
   e.enqueue("Update complete");
   dev.p2sys.revertState();
 
+/*
   time_t now = timeClient.getEpochTime();
   config[updateTime_n] = String(now);
   config.writeFile();
+*/
 }
 
 void updateNone()

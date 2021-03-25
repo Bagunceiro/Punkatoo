@@ -141,13 +141,37 @@ void IRAM_ATTR startwps()
   startWPS = true;
 }
 
+char compDateTime[32] = "";
+
+void parseCompileDate()
+{
+  const char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+  struct tm tmstr;
+  for (int m = 0; m < 12; m++)
+  {
+    if (strncmp(compDate, months[m], 3) == 0)
+    {
+      tmstr.tm_mon = m;
+      break;
+    }
+  }
+  sscanf(compDate + 4, "%02d %04d", &tmstr.tm_mday, &tmstr.tm_year);
+  tmstr.tm_year -= 1900;
+  sscanf(compTime, "%02d:%02d:%02d", &tmstr.tm_hour, &tmstr.tm_min, &tmstr.tm_sec);
+  tmstr.tm_isdst = 0;
+  tmstr.tm_wday = 0;
+  tmstr.tm_yday = 0;
+
+  strftime(compDateTime, sizeof(compDateTime) - 1, "%H:%M:%S %d/%m/%y", &tmstr);
+}
+
 void setup()
 {
+  parseCompileDate();
+  
   WiFi.mode(WIFI_STA);
   Serial.begin(9600);
   delay(500);
-
-
 
   LITTLEFS.begin();
 
@@ -155,8 +179,7 @@ void setup()
     config.writeFile();
 
   serr.println("");
-  extern void parseCompileDate();
-  parseCompileDate();
+
 
   serr.println(gitrevision);
   serr.printf("Compiled at: %s\n", compDateTime);

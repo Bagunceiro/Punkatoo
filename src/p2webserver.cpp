@@ -144,8 +144,6 @@ void P2WebServer::rootPage()
                compDateTime + R"!(</TD></TR>
 <TR><TD>MAC Address</TD><TD colspan=3 >)!" +
                WiFi.macAddress() + R"!(</TD></TR>
-<TR><TD>Last OTA update</TD><TD colspan=3 >)!" +
-               lastUpdateTime() + R"!(</TD></TR>
 <TR><TD>Started At</TD><TD colspan=3 >)!" +
                startTime() + R"!(</TD></TR>
 <TR><TD>Uptime</TD><TD colspan=3>)!" +
