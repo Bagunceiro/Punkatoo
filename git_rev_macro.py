@@ -1,7 +1,7 @@
 import subprocess
 
 revision = (
-    subprocess.check_output(["git", "rev-parse", "HEAD"])
+    subprocess.check_output(["git", "describe", "--dirty=+"])
     .strip()
     .decode("utf-8")
 )
