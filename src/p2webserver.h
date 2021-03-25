@@ -5,6 +5,9 @@
 
 class P2WebServer : public WebServer
 {
+    /*
+     * The Punkatoo website
+     */
 public:
     P2WebServer(unsigned int port=80) : WebServer(port) { pThis = this; }
     void init();

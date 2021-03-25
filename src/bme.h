@@ -6,18 +6,19 @@
 #include <Adafruit_BME280.h>
 #include <RTClib.h>
 
-// #include "config.h"
 #include "mqtt.h"
 
 class BME : public Adafruit_BME280, public MQTTClientDev
 {
+  /*
+   * BME280 Temperature/Humidity/Pressure sensor
+   */
   public:
   BME(const String& name, int addr);
   ~BME();
   bool start(uint8_t addr, TwoWire *theWire);
   void msgRecd(const String& topic, const String& msg);
   virtual void mqttMsgRecd(const String& topic, const String& msg);
-  // virtual void doSubscriptions();
   const bool running() const { return ok; }
   virtual String mqttGetStatus();
   private:

@@ -3,7 +3,6 @@
 #include <map>
 #include <Stream.h>
 
-
 class ConfBlk: public std::map<String, String>
 {
 public:

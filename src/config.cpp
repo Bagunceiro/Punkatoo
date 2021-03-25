@@ -56,20 +56,6 @@ const unsigned int MQTT_CONNECT_ATTEMPT_INT = (10 * 1000);     // Interval betwe
 const unsigned int WIFI_CONNECT_ATTEMPT_INT = (5 * 60 * 1000); // Interval between attempts to reconnect WiFi (ms)
 
 ConfBlk config;
-// time_t startTime = time(0);
-/*
-String upTime()
-{
-  time_t now = time(0) - startTime;
-  int days = now / (60 * 60 * 24);
-  int hours = (now % (60 * 60 * 24)) / (60 * 60);
-  int mins = (now % (60 * 60)) / 60;
-  int secs = now % 60;
-  char buffer[20];
-  sprintf(buffer, "%d days, %02d:%02d:%02d", days, hours, mins, secs);
-  return buffer;
-}
-*/
 
 const char *timeAndDate(char buff[], const int maxSize, const time_t when)
 {
@@ -134,10 +120,7 @@ const char *upTime()
 {
   static char buffer[24];
 
-  // unsigned long long now = timeClient.getEpochMillis();
   unsigned long long period = upFor();
-
-  // period = millis();
 
   int days = (period / (1000 * 60 * 60 * 24));
   int hours = (period % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);

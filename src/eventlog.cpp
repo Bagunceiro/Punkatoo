@@ -42,18 +42,9 @@ const uint16_t Event::setSerial()
     else
     {
         validts = false;
-        timestamp = millis();
+        timestamp = millis(); // or upFor() ?
     }
 
-    /*
-    time_t now = time(0);
-    ts.msecs = millis() % 1000;
-    ts.secs = time(0);
-    if (ts.secs != now) // second rolled over, we may need to revise the millisecond remainder
-    {
-        ts.msecs = millis() % 1000;
-    }
-    */
     return serial;
 }
 

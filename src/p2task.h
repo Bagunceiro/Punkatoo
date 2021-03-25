@@ -4,12 +4,16 @@
 
 class P2Task
 {
+    /*
+     * Encapsulates an RTOS task
+     */
 public:
-    P2Task(const String& n, const int stack);
+    P2Task(const String &n, const int stack);
     virtual ~P2Task();
     bool start(uint8_t priority);
     virtual bool operator()() = 0;
-    static void loop(void*);
+    static void loop(void *);
+
 private:
     TaskHandle_t taskHandle;
     String name;
