@@ -55,7 +55,10 @@ void IRClientDev::irmsgRecd(const IRMessage msg)
 void IRClientDev::registerIR(IRController *c)
 {
   ctlr = c;
-  subscribeToIR();
+  if (ctlr != NULL)
+  {
+    subscribeToIR();
+  }
 }
 
 bool IRClientDev::subscribe(IRMessage m)
@@ -76,7 +79,7 @@ unsigned long irDebounce(unsigned long then, unsigned long debounceTime)
     return 0;
 }
 
-IRController::IRController(const String &name, int pin)
+IRController::IRController(const char *name, int pin)
     : IRrecv(pin, kCaptureBufferSize, kTimeout, true),
       P2Task(name, 2500),
       MQTTClientDev(name)

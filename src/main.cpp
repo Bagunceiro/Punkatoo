@@ -7,8 +7,9 @@
 #include <time.h>
 #include <esp_wps.h>
 #include <TimeLib.h>
+#include <LITTLEFS.h>
 
-const char *appVersion = "Punkatoo 0.5";
+const char *appVersion = "Punkatoo 0.6";
 const char *compDate = __DATE__;
 const char *compTime = __TIME__;
 
@@ -150,6 +151,8 @@ void setup()
   Serial.begin(9600);
   delay(500);
 
+  LITTLEFS.begin();
+
   if (config.readFile() == false)
     config.writeFile();
 
@@ -158,8 +161,8 @@ void setup()
 
   Event ev1;
   ev1.enqueue("Starting");
-
   dev.build();
+
   dev.start();
 
   dev.p2sys.enterState(P2System::STATE_0);
@@ -167,9 +170,8 @@ void setup()
   pinMode(WPS_PIN, INPUT_PULLUP);
   attachInterrupt(WPS_PIN, startwps, FALLING);
 
-  /*
-   * Ready to go (switch and IR). But network has not been initialised yet
-   */
+  // Ready to go (switch and IR). But network has not been initialised yet
+
   dev.p2sys.enterState(P2System::STATE_AWAKE);
   Event e2;
   e2.enqueue("Startup complete");
@@ -238,5 +240,8 @@ void loop()
     startWPS = false;
   }
 
-  dev.indicators[0].poll();
+  if (dev.indicators.size() > 0)
+  {
+    dev.indicators[0].poll();
+  }
 }

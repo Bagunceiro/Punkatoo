@@ -575,13 +575,11 @@ void P2WebServer::doUpdatePage()
     if (httpCode == HTTP_CODE_OK)
     {
       String payload = http.getString();
-      extern fs::LITTLEFSFS &LittleFS;
-      LittleFS.begin();
 
       int baseidx = image.lastIndexOf('/');
       String fname = image.substring(baseidx + 1);
       serr.printf("Opening %s\n", fname.c_str());
-      File configFile = LittleFS.open(String('/') + image.substring(baseidx + 1), "w+");
+      File configFile = LITTLEFS.open(String('/') + image.substring(baseidx + 1), "w+");
       if (!configFile)
       {
         perror("");
@@ -591,9 +589,8 @@ void P2WebServer::doUpdatePage()
       {
         serr.printf("writing:\n %s", payload.c_str());
         configFile.print(payload);
+        configFile.close();
       }
-      configFile.close();
-      LittleFS.end();
     }
     else
     {

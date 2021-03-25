@@ -1,7 +1,6 @@
 #include "confblk.h"
 #include <ArduinoJson.h>
 #include <LITTLEFS.h>
-fs::LITTLEFSFS& LittleFS = LITTLEFS;
 
 #include <wifiserial.h>
 
@@ -34,9 +33,7 @@ bool ConfBlk::writeFile() const
 {
     bool result = false;
 
-    LittleFS.begin();
-
-    File configFile = LittleFS.open(_fileName, "w");
+    File configFile = LITTLEFS.open(_fileName, "w");
     if (!configFile)
     {
         perror("");
@@ -46,10 +43,10 @@ bool ConfBlk::writeFile() const
     else
     {
         writeStream(configFile);
+        configFile.close();
         result = true;
     }
-    configFile.close();
-    LittleFS.end();
+
     return result;
 }
 
@@ -80,9 +77,7 @@ bool ConfBlk::readFile()
 {
     bool result = false;
 
-    LittleFS.begin();
-
-    File configFile = LittleFS.open(_fileName, "r");
+    File configFile = LITTLEFS.open(_fileName, "r");
     if (!configFile)
     {
         serr.println("Config file open for read failed");
@@ -94,6 +89,5 @@ bool ConfBlk::readFile()
         result = true;
     }
 
-    LittleFS.end();
     return result;
 }

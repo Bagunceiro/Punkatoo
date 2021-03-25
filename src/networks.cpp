@@ -9,8 +9,6 @@
 networkList configuredNets;
 networkList scannedNets;
 
-#define LittleFS LITTLEFS
-
 WiFiMulti wifimulti;
 
 networkList &scanNetworks()
@@ -49,9 +47,8 @@ networkList &scanNetworks()
 
 networkList &networkConfRead()
 {
-    LittleFS.begin();
 
-    File netsFile = LittleFS.open("/networks.json", "r");
+    File netsFile = LITTLEFS.open("/networks.json", "r");
     if (!netsFile)
     {
         perror("");
@@ -83,8 +80,8 @@ networkList &networkConfRead()
             WiFiNetworkDef network(ssid, psk);
             configuredNets.push_back(network);
         }
+        netsFile.close();
     }
-    LittleFS.end();
     return configuredNets;
 }
 
@@ -93,9 +90,7 @@ bool networkConfWrite(networkList &networks)
     StaticJsonDocument<1024> doc;
     JsonArray array = doc.to<JsonArray>();
 
-    LittleFS.begin();
-
-    File netsFile = LittleFS.open("/networks.json", "w");
+    File netsFile = LITTLEFS.open("/networks.json", "w");
     if (!netsFile)
     {
         perror("");
@@ -112,7 +107,6 @@ bool networkConfWrite(networkList &networks)
         serializeJson(doc, netsFile);
         netsFile.close();
     }
-    LittleFS.end();
     return true;
 }
 

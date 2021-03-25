@@ -42,9 +42,9 @@ void updateFail()
 Updater::Updater(const String &devName)
 {
   startCallback = updateStarted;
-  endCallback   = updateCompleted;
-  nullCallback  = updateNone;
-  failCallback  = updateFail;
+  endCallback = updateCompleted;
+  nullCallback = updateNone;
+  failCallback = updateFail;
 }
 
 Updater::~Updater()
@@ -54,16 +54,21 @@ Updater::~Updater()
 void prog(size_t completed, size_t total)
 {
   static int oldPhase = 1;
-  int progress = (completed * 100)/total;
+  int progress = (completed * 100) / total;
 
   int phase = (progress / 5) % 2; // report at 5% intervals
 
   if (phase != oldPhase)
   {
-      if (phase) dev.indicators[0].off();
-      else dev.indicators[0].setColour(indicate_update, true);
-      serr.printf("Progress: %d%% (%d/%d)\n", progress, completed, total);
-      oldPhase = phase;
+    if (dev.indicators.size() > 0)
+    {
+      if (phase)
+        dev.indicators[0].off();
+      else
+        dev.indicators[0].setColour(indicate_update, true);
+    }
+    serr.printf("Progress: %d%% (%d/%d)\n", progress, completed, total);
+    oldPhase = phase;
   }
 }
 
@@ -86,38 +91,41 @@ t_httpUpdate_return Updater::systemUpdate(const String &server, const uint16_t p
   {
   case HTTP_UPDATE_FAILED:
     serr.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-    if (failCallback != NULL) failCallback();
+    if (failCallback != NULL)
+      failCallback();
     break;
 
   case HTTP_UPDATE_NO_UPDATES:
     serr.println("HTTP_UPDATE_NO_UPDATES");
-    if (nullCallback != NULL) nullCallback();
+    if (nullCallback != NULL)
+      nullCallback();
     break;
 
   case HTTP_UPDATE_OK:
     serr.println("HTTP_UPDATE_OK");
-    if (endCallback != NULL) endCallback();
+    if (endCallback != NULL)
+      endCallback();
     break;
   }
   return ret;
 }
 
-void Updater::onStart(void(*callback)())
+void Updater::onStart(void (*callback)())
 {
   startCallback = callback;
 }
 
-void Updater::onEnd(void(*callback)())
+void Updater::onEnd(void (*callback)())
 {
   endCallback = callback;
 }
 
-void Updater::onNone(void(*callback)())
+void Updater::onNone(void (*callback)())
 {
   nullCallback = callback;
 }
 
-void Updater::onFail(void(*callback)())
+void Updater::onFail(void (*callback)())
 {
   failCallback = callback;
 }

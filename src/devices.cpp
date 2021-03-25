@@ -1,4 +1,5 @@
 #include <ArduinoJson.h>
+#include <LITTLEFS.h>
 
 #include "devices.h"
 #include "config.h"
@@ -16,6 +17,7 @@ const char *KEY_PIN_D2 = "pinDir2";
 const char *KEY_ADDR = "addr";
 const char *KEY_SWITCHED = "switched";
 
+/*
 String conf = R"!(
 {
     "irrcv":{
@@ -58,6 +60,7 @@ String conf = R"!(
     }]
 }
 )!";
+*/
 
 void Devices::buildIRController(JsonObject obj)
 {
@@ -72,8 +75,9 @@ void Devices::buildIRController(JsonObject obj)
         else
             serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
     }
-    irctlr = new IRController(id, pin);
     serr.printf("irctlr %s set pin to %d\n", id.c_str(), pin);
+
+    irctlr = new IRController(id.c_str(), pin);
 }
 
 void Devices::buildIRLed(JsonArray list)
@@ -143,7 +147,6 @@ void Devices::buildLamp(JsonArray list)
         }
         serr.printf("lamp %s on pin %d\n", id.c_str(), pin);
         Lamp *lamp = new Lamp(id, pin);
-        // lamp->sw(0);
         lamps.push_back(*lamp);
     }
 }
@@ -180,10 +183,10 @@ void Devices::buildSwitch(JsonArray list)
             else
                 serr.printf("  %s: %s", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        Switch* sw = new Switch(id, pin);
+        Switch *sw = new Switch(id, pin);
         for (String s : swdevs)
         {
-            for (Lamp& l : lamps)
+            for (Lamp &l : lamps)
             {
                 if (l.getid() == s)
                 {
@@ -275,57 +278,75 @@ void Devices::buildBME(JsonArray list)
     }
 }
 
-bool Devices::build(const String &filename)
+bool Devices::build(const char *fileName)
 {
     bool result = true;
-    StaticJsonDocument<1024> doc;
 
-    DeserializationError error = deserializeJson(doc, conf);
-    if (error)
+    File devfile = LITTLEFS.open(fileName, "r");
+    if (devfile)
     {
-        serr.printf("Config deserialization error (%d)\n", error.code());
+        StaticJsonDocument<1024> doc;
+
+        DeserializationError error = deserializeJson(doc, devfile);
+        if (error)
+        {
+            serr.printf("Device file deserialization error (%d)\n", error.code());
+        }
+        else
+        {
+            JsonObject root = doc.as<JsonObject>();
+
+            for (JsonPair kvroot : root)
+            {
+                if (kvroot.key() == "irrcv")
+                {
+                    buildIRController(kvroot.value().as<JsonObject>());
+                }
+                else if (kvroot.key() == "irled")
+                {
+                    buildIRLed(kvroot.value().as<JsonArray>());
+                }
+                else if (kvroot.key() == "indicator")
+                {
+                    buildIndicator(kvroot.value().as<JsonArray>());
+                }
+                else if (kvroot.key() == "lamp")
+                {
+                    buildLamp(kvroot.value().as<JsonArray>());
+                }
+                else if (kvroot.key() == "switch")
+                {
+                    buildSwitch(kvroot.value().as<JsonArray>());
+                }
+                else if (kvroot.key() == "fan")
+                {
+                    buildFan(kvroot.value().as<JsonArray>());
+                }
+                else if (kvroot.key() == "ldr")
+                {
+                    buildLDR(kvroot.value().as<JsonArray>());
+                }
+                else if (kvroot.key() == "bme")
+                {
+                    buildBME(kvroot.value().as<JsonArray>());
+                }
+            }
+        }
+        devfile.close();
     }
     else
     {
-        JsonObject root = doc.as<JsonObject>();
-
-        for (JsonPair kvroot : root)
-        {
-            if (kvroot.key() == "irrcv")
-            {
-                buildIRController(kvroot.value().as<JsonObject>());
-            }
-            else if (kvroot.key() == "irled")
-            {
-                buildIRLed(kvroot.value().as<JsonArray>());
-            }
-            else if (kvroot.key() == "indicator")
-            {
-                buildIndicator(kvroot.value().as<JsonArray>());
-            }
-            else if (kvroot.key() == "lamp")
-            {
-                buildLamp(kvroot.value().as<JsonArray>());
-            }
-            else if (kvroot.key() == "switch")
-            {
-                buildSwitch(kvroot.value().as<JsonArray>());
-            }
-            else if (kvroot.key() == "fan")
-            {
-                buildFan(kvroot.value().as<JsonArray>());
-            }
-            else if (kvroot.key() == "ldr")
-            {
-                buildLDR(kvroot.value().as<JsonArray>());
-            }
-            else if (kvroot.key() == "bme")
-            {
-                buildBME(kvroot.value().as<JsonArray>());
-            }
-        }
-        switchTask = new Switches(&switches);
+        perror("");
+        serr.println("Device file open for read failed");
     }
+    switchTask = new Switches(&switches);
+    /*
+    if (irctlr == NULL) // Emergency Dummy IR Controller to give things 
+    {
+        irctlr = new IRController("DummyIR", 34); 
+    }
+    */
+    
     return result;
 }
 
@@ -353,8 +374,15 @@ void Devices::start()
 
     switchTask->start(5);
 
-    irctlr->registerMQTT(mqtt);
-    irctlr->start(4);
+    if (irctlr != NULL)
+    {
+        irctlr->registerMQTT(mqtt);
+        irctlr->start(4);
+    }
+    else
+    {
+        serr.println("No IR Controller");
+    }
 
     eventlogger.registerMQTT(mqtt);
     eventlogger.start(0);
