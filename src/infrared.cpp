@@ -1,43 +1,32 @@
 #include <Arduino.h>
-// #include <IRremote.h>
 #include <ArduinoJson.h>
 
 #include "config.h"
 #include "infrared.h"
 #include "eventlog.h"
 
-DecodeList test =
-    {
-        {0x323323, {(const IRMessage) "v1"}},
-        {0x323323, {(const IRMessage) "v2", (const IRMessage) "v3"}}};
-
-const IRMessage IR_LAMP_OFF = (const IRMessage) "LMP_OFF";
-const IRMessage IR_LAMP_ON = (const IRMessage) "LMP_ON";
+const IRMessage IR_LAMP_OFF    = (const IRMessage) "LMP_OFF";
+const IRMessage IR_LAMP_ON     = (const IRMessage) "LMP_ON";
 const IRMessage IR_LAMP_TOGGLE = (const IRMessage) "LMP_TOG";
 
-const IRMessage IR_FAN_TOGGLE = (const IRMessage) "FAN_TOG";
+const IRMessage IR_FAN_TOGGLE  = (const IRMessage) "FAN_TOG";
 const IRMessage IR_FAN_REVERSE = (const IRMessage) "FAN_REV";
-const IRMessage IR_FAN_FASTER = (const IRMessage) "FAN_FST";
-const IRMessage IR_FAN_SLOWER = (const IRMessage) "FAN_SLW";
-
-const IRMessage IR_CONFIGURATOR_START = (const IRMessage) "CONF_START";
-const IRMessage IR_CONFIGURATOR_STOP = (const IRMessage) "CONF_STOP";
+const IRMessage IR_FAN_FASTER  = (const IRMessage) "FAN_FST";
+const IRMessage IR_FAN_SLOWER  = (const IRMessage) "FAN_SLW";
 
 const IRMessage IR_RESET = (const IRMessage) "RESET";
 
 DecodeList IRController::decList =
     {
         {IRREMOTE_LIGHT_ONOFF, {IR_LAMP_TOGGLE}},
-        {IRREMOTE_FAN_ONOFF, {IR_FAN_TOGGLE}},
+        {IRREMOTE_FAN_ONOFF,   {IR_FAN_TOGGLE}},
         {IRREMOTE_FAN_REVERSE, {IR_FAN_REVERSE}},
-        {IRREMOTE_FAN_FASTER, {IR_FAN_FASTER, IR_CONFIGURATOR_START}},
-        {IRREMOTE_FAN_SLOWER, {IR_FAN_SLOWER, IR_CONFIGURATOR_STOP}},
-        {IRREMOTE_LIGHT_UP, {IR_RESET}},
+        {IRREMOTE_FAN_FASTER,  {IR_FAN_FASTER}},
+        {IRREMOTE_FAN_SLOWER,  {IR_FAN_SLOWER}},
+        {IRREMOTE_LIGHT_UP,    {IR_RESET}},
 };
 
 const int IRDEBOUNCE = 200; // Number of milliseconds to leave fallow between IR messages
-
-// IRClientDev *IRClientDev::list = NULL;
 
 IRClientDev::IRClientDev(const String &n)
 {
