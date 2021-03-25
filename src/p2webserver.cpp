@@ -142,6 +142,8 @@ void P2WebServer::rootPage()
                lightLevels() + R"!(
 <TR><TD>Version</TD><TD colspan=3 >)!" +
                appVersion + " (" + compDate + " " + compTime + R"!()</TD></TR>
+<TR><TD>Git Revision</TD><TD colspan=3 >)!" +
+               gitrevision + R"!(</TD></TR>
 <TR><TD>MAC Address</TD><TD colspan=3 >)!" +
                WiFi.macAddress() + R"!(</TD></TR>
 <TR><TD>Last OTA update</TD><TD colspan=3 >)!" +

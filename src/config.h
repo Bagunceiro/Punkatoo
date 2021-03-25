@@ -28,6 +28,7 @@ extern const String MQTT_TPC_SYSTEM;     // "system"
 extern const char *appVersion;
 extern const char *compDate;
 extern const char *compTime;
+extern const char *gitrevision;
 
 // GPIO pin definitions
 

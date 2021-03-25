@@ -9,10 +9,6 @@
 #include <TimeLib.h>
 #include <LITTLEFS.h>
 
-const char *appVersion = "Punkatoo 0.6";
-const char *compDate = __DATE__;
-const char *compTime = __TIME__;
-
 #include "wifiserial.h"
 #include "config.h"
 #include "devices.h"
@@ -158,6 +154,7 @@ void setup()
 
   serr.println("");
   serr.println(appVersion);
+  serr.println(gitrevision);
 
   Event ev1;
   ev1.enqueue("Starting");
