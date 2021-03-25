@@ -136,14 +136,12 @@ void P2WebServer::rootPage()
 <BR><B>Controller: )!" +
                config[controllername_n] + R"!(</B>
 <TABLE>
-<TR><TD>Time now</TD><TD colspan=3 >)!" +
+<TR><TD>Time Now</TD><TD colspan=3 >)!" +
                nowTime() + R"!(</TD></TR>
-)!" + bmeData() +
-               lightLevels() + R"!(
-<TR><TD>Version</TD><TD colspan=3 >)!" +
-               appVersion + " (" + compDate + " " + compTime + R"!()</TD></TR>
 <TR><TD>Git Revision</TD><TD colspan=3 >)!" +
                gitrevision + R"!(</TD></TR>
+<TR><TD>Compilation Time</TD><TD colspan=3 >)!" +
+               compDateTime + R"!(</TD></TR>
 <TR><TD>MAC Address</TD><TD colspan=3 >)!" +
                WiFi.macAddress() + R"!(</TD></TR>
 <TR><TD>Last OTA update</TD><TD colspan=3 >)!" +
@@ -154,6 +152,7 @@ void P2WebServer::rootPage()
                upTime() + R"!(</TD></TR>
 <TR><TD>WiFi SSID</TD><TD colspan=3>)!" +
                WiFi.SSID() + R"!(</TD></TR>
+)!" + bmeData() + lightLevels() + R"!(
 </TABLE><BR>
 </DIV>
 </BODY>

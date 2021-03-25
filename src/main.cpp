@@ -147,17 +147,24 @@ void setup()
   Serial.begin(9600);
   delay(500);
 
+
+
   LITTLEFS.begin();
 
   if (config.readFile() == false)
     config.writeFile();
 
   serr.println("");
-  serr.println(appVersion);
+  extern void parseCompileDate();
+  parseCompileDate();
+
   serr.println(gitrevision);
+  serr.printf("Compiled at: %s\n", compDateTime);
 
   Event ev1;
-  ev1.enqueue("Starting");
+  String sm("Starting ");
+  sm += gitrevision;
+  ev1.enqueue(sm.c_str());
   dev.build();
 
   dev.start();
