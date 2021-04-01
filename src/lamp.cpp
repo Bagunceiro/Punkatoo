@@ -34,7 +34,7 @@ void Lamp::toggle()
   sw(isOn == 0 ? 1 : 0);
 }
 
-const int Lamp::getStatus()
+const int Lamp::getStatus() const
 {
   int l = digitalRead(lpin);
   return (l==0 ? 1 : 0);
