@@ -116,7 +116,7 @@ bool EventLogger::operator()()
                 localtime_r(&tssecs, &tmstr);
                 strftime(buffer, sizeof(buffer) - 1, "%Y-%m-%d %H:%M:%S", &tmstr);
                 char msbuff[4];
-                sprintf(msbuff, ".%03d", (int)ev.timestamp % 1000);
+                sprintf(msbuff, ".%03u", (uint16_t)ev.timestamp % 1000);
                 strcat(buffer, msbuff);
             }
             else
