@@ -24,12 +24,12 @@ void SPDT::pos(const int p) {
       digitalWrite(throw1, HIGH);
       digitalWrite(throw2, LOW);
       break;
-#ifdef SPDT_BOTH_ON
+// #ifdef SPDT_BOTH_ON
     case 3:
       digitalWrite(throw1, LOW);
       digitalWrite(throw2, LOW);
       break;
-#endif
+// #endif
     case 0:  // off
     default: // something has gone wrong, turn it off anyway for safety
       digitalWrite(throw1, HIGH);
