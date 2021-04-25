@@ -93,7 +93,8 @@ const char *upTime()
   int hours = (period % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
   int mins = (period % (1000 * 60 * 60)) / (1000 * 60);
   int secs = (period % (1000 * 60)) / 1000;
-  int msecs = (period % 1000);
-  sprintf(buffer, "%d days, %02d:%02d:%02d.%03d", days, hours, mins, secs, msecs);
+  // int msecs = (period % 1000);
+  // sprintf(buffer, "%d days, %02d:%02d:%02d.%03d", days, hours, mins, secs, msecs);
+  sprintf(buffer, "%d days, %02d:%02d:%02d", days, hours, mins, secs);
   return buffer;
 }

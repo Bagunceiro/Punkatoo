@@ -6,6 +6,7 @@
 #include "devices.h"
 
 P2WebServer *P2WebServer::pThis;
+AsyncEventSource events("/events");
 
 const char *P2WebServer::pageRoot = "/";
 const char *P2WebServer::pageGen = "/config.gen";
@@ -64,6 +65,13 @@ void P2WebServer::init()
     on(pageSystemUpdate, HTTP_ANY, handleSystemUpdate);
     on(pageDoUpdate, HTTP_ANY, handleDoUpdate);
 
+    events.onConnect([](AsyncEventSourceClient *client) {
+        if (client->lastId())
+        {
+            serr.println("Client reconnected");
+        }
+    });
+    addHandler(&events);
     begin();
 }
 
@@ -140,375 +148,418 @@ const String P2WebServer::body1(R"!(
 
 const String P2WebServer::bmeData()
 {
-  String data;
+    String data;
 
-  for (BME &bme : dev.bmes)
-  {
-    if (bme.running())
+    for (BME &bme : dev.bmes)
     {
-      data +=
-          R"!(<TR><TD>Ambient</TD><TD>)!" + String((bme.readTemperature() * 10) / 10) + R"!(°C</TD>
-<TD>)!" +
-          String((bme.readHumidity() * 10) / 10) + R"!(%</TD>
-<TD>)!" +
-          String((bme.readPressure() * 10) / 1000) + R"!( mBar</TD></TR>
+        if (true) // bme.running())
+        {
+            data +=
+                R"!(<TR><TD>Ambient</TD><TD><span id="temperature">)!" + String((bme.readTemperature() * 10) / 10) + R"!(</span>°C</TD>
+<TD><span id="humidity">)!" +
+                String((bme.readHumidity() * 10) / 10) + R"!(</span>%</TD>
+<TD><span id="pressure">)!" +
+                String((bme.readPressure() * 10) / 1000) + R"!(</span> mBar</TD></TR>
 )!";
+        }
     }
-  }
-  return data;
+    return data;
 }
 
 const String P2WebServer::lightLevels()
 {
-  String s;
-  for (LDR &ldr : dev.ldrs)
-  {
-    s += "<TR><TD>Light level</TD><TD colspan=3>" + ldr.mqttGetStatus() + "</TD></TR>\n";
-  }
-  return s;
+    String s;
+    for (LDR &ldr : dev.ldrs)
+    {
+        // s += "<TR><TD>Light level</TD><TD colspan=3><span id=\"light\">%LIGHT%</TD></TR>\n";
+        s += "<TR><TD>Light level</TD><TD colspan=3>" + ldr.mqttGetStatus() + "</TD></TR>\n";
+    }
+    return s;
 }
 
 void P2WebServer::rootPage(AsyncWebServerRequest *req)
 {
-  const String title("Punkatoo");
-  const String head3("");
+    const String title("Punkatoo");
+    const String head3("");
 
-  String body2(R"!(
+    String body2(R"!(
 <button onclick=goreset()>Reset</button>
 <button onclick=gosysupdate()>System Update</button>
 </div>
 <div class=content>
 <BR><B>Controller: )!" +
-               config[controllername_n] + R"!(</B>
+                 config[controllername_n] + R"!(</B>
 <TABLE>
-<TR><TD>Time Now</TD><TD colspan=3 >)!" +
-               nowTime() + R"!(</TD></TR>
+<TR><TD>Time Now</TD><TD colspan=3 ><span id="nowtime">)!" +
+                 nowTime() + R"!(</span></TD></TR>
 <TR><TD>Git Revision</TD><TD colspan=3 >)!" +
-               gitrevision + R"!(</TD></TR>
+                 gitrevision + R"!(</TD></TR>
 <TR><TD>Compilation Time</TD><TD colspan=3 >)!" +
-               compDateTime + R"!(</TD></TR>
+                 compDateTime + R"!(</TD></TR>
 <TR><TD>MAC Address</TD><TD colspan=3 >)!" +
-               WiFi.macAddress() + R"!(</TD></TR>
+                 WiFi.macAddress() + R"!(</TD></TR>
 <TR><TD>Started At</TD><TD colspan=3 >)!" +
-               startTime() + R"!(</TD></TR>
-<TR><TD>Uptime</TD><TD colspan=3>)!" +
-               upTime() + R"!(</TD></TR>
+                 startTime() + R"!(</TD></TR>
+<TR><TD>Uptime</TD><TD colspan=3><span id="uptime">)!" +
+                 upTime() + R"!(</span></TD></TR>
 <TR><TD>WiFi SSID</TD><TD colspan=3>)!" +
-               WiFi.SSID() + R"!(</TD></TR>
-)!" + bmeData() + lightLevels() + R"!(
+                 WiFi.SSID() + R"!(</TD></TR>
+)!" + bmeData() + lightLevels() +
+                 R"!(
 </TABLE><BR>
 </DIV>
+<script>
+if (!!window.EventSource) {
+ var source = new EventSource('/events');
+ 
+ source.addEventListener('open', function(e) {
+  console.log("Events Connected");
+ }, false);
+ source.addEventListener('error', function(e) {
+  if (e.target.readyState != EventSource.OPEN) {
+    console.log("Events Disconnected");
+  }
+ }, false);
+ 
+ source.addEventListener('message', function(e) {
+  console.log("message", e.data);
+ }, false);
+ 
+ source.addEventListener('nowtime', function(e) {
+  console.log("nowtime", e.data);
+  document.getElementById("nowtime").innerHTML = e.data;
+ }, false);
+ source.addEventListener('light', function(e) {
+  console.log("light", e.data);
+  document.getElementById("light").innerHTML = e.data;
+ }, false);
+  source.addEventListener('temperature', function(e) {
+  console.log("light", e.data);
+  document.getElementById("humidity").innerHTML = e.data;
+ }, false); source.addEventListener('light', function(e) {
+  console.log("light", e.data);
+  document.getElementById("pressure").innerHTML = e.data;
+ }, false); source.addEventListener('light', function(e) {
+  console.log("light", e.data);
+  document.getElementById("light").innerHTML = e.data;
+ }, false);
+  source.addEventListener('uptime', function(e) {
+  console.log("uptime", e.data);
+  document.getElementById("uptime").innerHTML = e.data;
+ }, false);
+}
+</script>
 </BODY>
 )!");
 
-  sendPage(req, 8,
-           head1.c_str(),
-           title.c_str(),
-           head2.c_str(),
-           style.c_str(),
-           head3.c_str(),
-           headEnd.c_str(),
-           body1.c_str(),
-           body2.c_str());
+    sendPage(req, 8,
+             head1.c_str(),
+             title.c_str(),
+             head2.c_str(),
+             style.c_str(),
+             head3.c_str(),
+             headEnd.c_str(),
+             body1.c_str(),
+             body2.c_str());
 }
 
 void P2WebServer::messagePage(AsyncWebServerRequest *req, const String &message)
 {
-  const String title("Punkatoo Message");
-  const String head3 = "<meta http-equiv=\"refresh\" content=\"15;url=/\" />";
-  String body2(R"!(
+    const String title("Punkatoo Message");
+    const String head3 = "<meta http-equiv=\"refresh\" content=\"15;url=/\" />";
+    String body2(R"!(
   <div class=content>
   <BODY>
   <br><B>Controller: )!" +
-               config[controllername_n] + "</B><br><br>" + message + R"!(
+                 config[controllername_n] + "</B><br><br>" + message + R"!(
   </div>
   </BODY>
   )!");
 
-  sendPage(req, 8,
-           head1.c_str(),
-           title.c_str(),
-           head2.c_str(),
-           style.c_str(),
-           head3.c_str(),
-           headEnd.c_str(),
-           body1.c_str(),
-           body2.c_str());
-  delay(1000);
+    sendPage(req, 8,
+             head1.c_str(),
+             title.c_str(),
+             head2.c_str(),
+             style.c_str(),
+             head3.c_str(),
+             headEnd.c_str(),
+             body1.c_str(),
+             body2.c_str());
+    delay(1000);
 }
 
 void P2WebServer::resetMessagePage(AsyncWebServerRequest *req, const String &reason)
 {
-  messagePage(req, reason + "<br><br>Resetting, please wait");
-  delay(1000);
-  ESP.restart();
+    messagePage(req, reason + "<br><br>Resetting, please wait");
+    delay(1000);
+    ESP.restart();
 }
 
 void P2WebServer::blankResetMessagePage(AsyncWebServerRequest *req)
 {
-  resetMessagePage(req, "");
+    resetMessagePage(req, "");
 }
 
 void P2WebServer::genUpdatePage(AsyncWebServerRequest *req)
 {
-  if (req->method() == HTTP_POST)
-  {
-    config[indicator_n] = "0";
-
-    for (uint8_t i = 0; i < req->args(); i++)
+    if (req->method() == HTTP_POST)
     {
-      const String argN = req->argName(i);
-      if (argN == indicator_n)
-      {
-        config[argN] = "1";
-      }
-      else
-        config[argN] = req->arg(i);
+        config[indicator_n] = "0";
+
+        for (uint8_t i = 0; i < req->args(); i++)
+        {
+            const String argN = req->argName(i);
+            if (argN == indicator_n)
+            {
+                config[argN] = "1";
+            }
+            else
+                config[argN] = req->arg(i);
+        }
+        config.dump(serr);
+        config.writeFile();
+
+        // indicator.setColour(indicate_update, true);
+
+        messagePage(req, "Configuration Updated");
     }
-    config.dump(serr);
-    config.writeFile();
-
-    // indicator.setColour(indicate_update, true);
-
-    messagePage(req, "Configuration Updated");
-  }
 }
 
 void P2WebServer::genConfigPage(AsyncWebServerRequest *req)
 {
-  String title("Punkatoo Configuration");
-  String head3("");
-  String body2((String) R"!(
+    String title("Punkatoo Configuration");
+    String head3("");
+    String body2((String) R"!(
 <button type=submit form=theform>Save</button>
 </div>
 <div class=content>
 <BR><B>General Configuration: )!" +
-               config[controllername_n] + R"!(</B>
+                 config[controllername_n] + R"!(</B>
 <FORM id=theform method=post action=")!" +
-               pageGenUpdate + R"!(")>
+                 pageGenUpdate + R"!(")>
 <table>
 <tr><td><label for=ctlrname>Controller Name:</label></td>
 <td><input type=text name=")!" +
-               controllername_n + "\" value=\"" + config[controllername_n] + R"!("></td></tr>
+                 controllername_n + "\" value=\"" + config[controllername_n] + R"!("></td></tr>
 <tr><td><label for=mqtthost>MQTT Broker:</label></td>
 <td><input type=text name=")!" +
-               mqtthost_n + "\" value=\"" + config[mqtthost_n] + R"!("></td></tr>
+                 mqtthost_n + "\" value=\"" + config[mqtthost_n] + R"!("></td></tr>
 <tr><td><label for=mqttport>MQTT Port:</label></td>
 <td><input type=text name=")!" +
-               mqttport_n + "\" value=\"" + config[mqttport_n] + R"!("></td></tr>
+                 mqttport_n + "\" value=\"" + config[mqttport_n] + R"!("></td></tr>
 <tr><td><label for=mqttuser>MQTT User:</label></td>
 <td><input type=text name=")!" +
-               mqttuser_n + "\" value=\"" + config[mqttuser_n] + R"!("></td></tr>
+                 mqttuser_n + "\" value=\"" + config[mqttuser_n] + R"!("></td></tr>
 <tr><td><label for=mqttuser>MQTT Password:</label></td>
 <td><input type=text name=")!" +
-               mqttpwd_n + "\" value=\"" + config[mqttpwd_n] + R"!("></td></tr>
+                 mqttpwd_n + "\" value=\"" + config[mqttpwd_n] + R"!("></td></tr>
 <tr><td><label for=mqttroot>MQTT Topic root:</label></td>
 <td><input type=text name=")!" +
-               mqttroot_n + "\" value=\"" + config[mqttroot_n] + R"!("></td></tr>
+                 mqttroot_n + "\" value=\"" + config[mqttroot_n] + R"!("></td></tr>
 <tr><td><label for=mqtttopic>MQTT Topic:</label></td>
 <td><input type=text name=")!" +
-               mqtttopic_n + "\" value=\"" + config[mqtttopic_n] + R"!("></td></tr>
+                 mqtttopic_n + "\" value=\"" + config[mqtttopic_n] + R"!("></td></tr>
 <tr><td><label for="ind">Status Indicator:</label></td>
 <td><input type=checkbox id="ind" name=")!" +
-               indicator_n + "\"" + (config[indicator_n] == "1" ? " checked" : "") + R"!(/><label for=ind>&nbsp;</label></td></tr>
+                 indicator_n + "\"" + (config[indicator_n] == "1" ? " checked" : "") + R"!(/><label for=ind>&nbsp;</label></td></tr>
 </table>
 </FORM>
 </div>
 </BODY>
 )!");
 
-  sendPage(req, 8,
-           head1.c_str(),
-           title.c_str(),
-           head2.c_str(),
-           style.c_str(),
-           head3.c_str(),
-           headEnd.c_str(),
-           body1.c_str(),
-           body2.c_str());
+    sendPage(req, 8,
+             head1.c_str(),
+             title.c_str(),
+             head2.c_str(),
+             style.c_str(),
+             head3.c_str(),
+             headEnd.c_str(),
+             body1.c_str(),
+             body2.c_str());
 }
 
 String &P2WebServer::listNetworks(String &body, networkList &networks, bool selected)
 {
-  for (unsigned int i = 0; i < networks.size(); i++)
-  {
-    body += String(R"=====(
+    for (unsigned int i = 0; i < networks.size(); i++)
+    {
+        body += String(R"=====(
 <tr>
 <td>
 <input type=checkbox)=====") +
-            String(selected ? " checked" : "") + String(" id=") + String(selected ? "cf" : "ds") + String(i) + String(" name=conf") + String(R"=====(></input>
+                String(selected ? " checked" : "") + String(" id=") + String(selected ? "cf" : "ds") + String(i) + String(" name=conf") + String(R"=====(></input>
 <label for=)=====") +
-            String(selected ? "cf" : "ds") + i + String(R"=====(>&nbsp;</label>
+                String(selected ? "cf" : "ds") + i + String(R"=====(>&nbsp;</label>
 <input type=hidden name=ssid value=")=====") +
-            networks[i].ssid + String(R"=====("/>
+                networks[i].ssid + String(R"=====("/>
 </td>
 <td>)=====") +
-            String(networks[i].openNet ? "🔓" : "🔒") +
-            (selected ? (String(" <a href=\"") +
-                         P2WebServer::pageWiFiNet + "?ssid=" +
-                         networks[i].ssid + "\">")
-                      : "") +
-            networks[i].ssid + String(selected ? "</a>" : "") + String(R"=====(
+                String(networks[i].openNet ? "🔓" : "🔒") +
+                (selected ? (String(" <a href=\"") +
+                             P2WebServer::pageWiFiNet + "?ssid=" +
+                             networks[i].ssid + "\">")
+                          : "") +
+                networks[i].ssid + String(selected ? "</a>" : "") + String(R"=====(
 </td>
 </tr>
 )=====");
-  }
-  return body;
+    }
+    return body;
 }
 
 void P2WebServer::netConfigPage(AsyncWebServerRequest *req)
 {
-  if (req->method() == HTTP_POST)
-  {
-    serr.println("Network Update");
-    networkList newlist;
-
-    bool usenext = false;
-    for (uint8_t i = 0; i < req->args(); i++)
+    if (req->method() == HTTP_POST)
     {
-      const String argN = req->argName(i);
-      const String value = req->arg(i);
+        serr.println("Network Update");
+        networkList newlist;
 
-      if (usenext && (argN == "ssid"))
-      {
-        // serr.println(value);
-        addNetwork(newlist, value);
-      }
-      // serr.println(argName.c_str());
-      if (argN == "conf")
-        usenext = true;
-      else
-      {
-        usenext = false;
-        if (argN == "newnet")
+        bool usenext = false;
+        for (uint8_t i = 0; i < req->args(); i++)
         {
-          // serr.printf("newnet, value = %s\n", value.c_str());
-          if (value.length() != 0)
-          {
-            addNetwork(newlist, value);
-          }
+            const String argN = req->argName(i);
+            const String value = req->arg(i);
+
+            if (usenext && (argN == "ssid"))
+            {
+                // serr.println(value);
+                addNetwork(newlist, value);
+            }
+            // serr.println(argName.c_str());
+            if (argN == "conf")
+                usenext = true;
+            else
+            {
+                usenext = false;
+                if (argN == "newnet")
+                {
+                    // serr.printf("newnet, value = %s\n", value.c_str());
+                    if (value.length() != 0)
+                    {
+                        addNetwork(newlist, value);
+                    }
+                }
+            }
         }
-      }
+        networkConfWrite(newlist);
     }
-    networkConfWrite(newlist);
-  }
-  networkList &cnetworks = networkConfRead();
-  String title("WiFi Networks");
-  String head3("");
-  String body2(String(R"=====(
+    networkList &cnetworks = networkConfRead();
+    String title("WiFi Networks");
+    String head3("");
+    String body2(String(R"=====(
 <button type=submit form=theform>Update</button>
 </div>
 <div class=content>
 <BR><B>WiFi Configuration: )=====") +
-               String(config[controllername_n]) + String(R"=====(</B>
+                 String(config[controllername_n]) + String(R"=====(</B>
 <FORM id=theform method=post action=/config.net>
 <TABLE>
 <TR><TH colspan=2>Configured Networks</TH></TR>
 )====="));
 
-  listNetworks(body2, cnetworks, true);
-  body2 += R"=====(
+    listNetworks(body2, cnetworks, true);
+    body2 += R"=====(
 <TR><TD>+</td><td><input name=newnet /></td></tr>
 </TABLE>
 <TABLE>
 <TR><TH colspan=2>Discovered Networks</TH></TR>
 )=====";
-  networkList &snetworks = scanNetworks();
-  //  std::sort(snetworks.begin(), snetworks.end(), sortByRSSI);
-  std::sort(snetworks.begin(), snetworks.end(), [](WiFiNetworkDef i, WiFiNetworkDef j) { return (i.rssi > j.rssi); });
-  listNetworks(body2, snetworks, false);
-  body2 += R"=====(
+    networkList &snetworks = scanNetworks();
+    //  std::sort(snetworks.begin(), snetworks.end(), sortByRSSI);
+    std::sort(snetworks.begin(), snetworks.end(), [](WiFiNetworkDef i, WiFiNetworkDef j) { return (i.rssi > j.rssi); });
+    listNetworks(body2, snetworks, false);
+    body2 += R"=====(
   </TABLE></FORM></DIV>
   </BODY>
   )=====";
 
-  sendPage(req, 8,
-           head1.c_str(),
-           title.c_str(),
-           head2.c_str(),
-           style.c_str(),
-           head3.c_str(),
-           headEnd.c_str(),
-           body1.c_str(),
-           body2.c_str());
+    sendPage(req, 8,
+             head1.c_str(),
+             title.c_str(),
+             head2.c_str(),
+             style.c_str(),
+             head3.c_str(),
+             headEnd.c_str(),
+             body1.c_str(),
+             body2.c_str());
 }
 
 void P2WebServer::newNetPage(AsyncWebServerRequest *req)
 {
-  WiFiNetworkDef net("");
-  net.openNet = true;
+    WiFiNetworkDef net("");
+    net.openNet = true;
 
-  if (req->method() == HTTP_POST)
-  {
-
-    for (uint8_t i = 0; i < req->args(); i++)
+    if (req->method() == HTTP_POST)
     {
-      const String argN = req->argName(i);
 
-      if (argN == "ssid")
-      {
-        net.ssid = req->arg(i);
-      }
-      else if (argN == "psk")
-      {
-        net.psk = req->arg(i);
-        net.openNet = false;
-      }
+        for (uint8_t i = 0; i < req->args(); i++)
+        {
+            const String argN = req->argName(i);
+
+            if (argN == "ssid")
+            {
+                net.ssid = req->arg(i);
+            }
+            else if (argN == "psk")
+            {
+                net.psk = req->arg(i);
+                net.openNet = false;
+            }
+        }
     }
-  }
-  serr.printf("Edited network %s\n", net.ssid.c_str());
-  updateWiFiDef(net);
-  String title("WiFi Network");
-  String head3("");
-  String body2(R"====(
+    serr.printf("Edited network %s\n", net.ssid.c_str());
+    updateWiFiDef(net);
+    String title("WiFi Network");
+    String head3("");
+    String body2(R"====(
 </div>
 <div class=content>
 <br><B>WiFi Network Edit: )====" +
-               config[controllername_n] + R"====(</B><br><br>
+                 config[controllername_n] + R"====(</B><br><br>
 )====" + net.ssid +
-               R"====( Updated
+                 R"====( Updated
 </div>
 </BODY>
 )====");
 
-  sendPage(req, 8,
-           head1.c_str(),
-           title.c_str(),
-           head2.c_str(),
-           style.c_str(),
-           head3.c_str(),
-           headEnd.c_str(),
-           body1.c_str(),
-           body2.c_str());
+    sendPage(req, 8,
+             head1.c_str(),
+             title.c_str(),
+             head2.c_str(),
+             style.c_str(),
+             head3.c_str(),
+             headEnd.c_str(),
+             body1.c_str(),
+             body2.c_str());
 }
 
 void P2WebServer::netEditPage(AsyncWebServerRequest *req)
 {
-  String ssid;
-  for (int i = 0; i < req->args(); i++)
-  {
-    if (req->argName(i) == "ssid")
+    String ssid;
+    for (int i = 0; i < req->args(); i++)
     {
-      ssid = req->arg(i);
-      break;
+        if (req->argName(i) == "ssid")
+        {
+            ssid = req->arg(i);
+            break;
+        }
     }
-  }
-  String title("WiFi Network");
-  String head3("");
-  String body2;
-  body2 = (String) R"=====(
+    String title("WiFi Network");
+    String head3("");
+    String body2;
+    body2 = (String) R"=====(
 <button type=submit form=theform>Update</button>
 </div>
 <div class=content>
 <BR><B>WiFi Network Edit: ")=====" +
-          config[controllername_n] + R"=====("</B>
+            config[controllername_n] + R"=====("</B>
 <FORM id=theform method=post action=)=====" +
-          pageWiFiNetAdd + R"=====(>
+            pageWiFiNetAdd + R"=====(>
 <table>
 <tr>
 <td>SSID:</td>
 <td><INPUT name=ssid value=")=====" +
-          ssid + R"====("/></td>
+            ssid + R"====("/></td>
 </tr>
 <tr>
 <td>PSK:</td>
@@ -520,33 +571,33 @@ void P2WebServer::netEditPage(AsyncWebServerRequest *req)
 </BODY>
 )====";
 
-  sendPage(req, 8,
-           head1.c_str(),
-           title.c_str(),
-           head2.c_str(),
-           style.c_str(),
-           head3.c_str(),
-           headEnd.c_str(),
-           body1.c_str(),
-           body2.c_str());
+    sendPage(req, 8,
+             head1.c_str(),
+             title.c_str(),
+             head2.c_str(),
+             style.c_str(),
+             head3.c_str(),
+             headEnd.c_str(),
+             body1.c_str(),
+             body2.c_str());
 }
 
 void P2WebServer::systemUpdatePage(AsyncWebServerRequest *req)
 {
-  String title("Punkatoo System Update");
-  String head3("");
-  String body2((String) R"=====(
+    String title("Punkatoo System Update");
+    String head3("");
+    String body2((String) R"=====(
 <button type=submit form=theform>Update</button>
 </div>
 <div class=content>
 <BR><B>System Update: )=====" +
-               config[controllername_n] + R"=====(</B>
+                 config[controllername_n] + R"=====(</B>
 <FORM id=theform method=post action=")=====" +
-               pageDoUpdate + R"=====(")>
+                 pageDoUpdate + R"=====(")>
 <table>
 <tr><td><label for=server>Update server:</label></td>
 <td><input type=text name=server value=")=====" +
-               config[mqtthost_n] + R"=====("></td></tr>
+                 config[mqtthost_n] + R"=====("></td></tr>
 <tr><td><label for=port>Port:</label></td>
 <td><input type=text name=port value=80></td></tr>
 <tr><td><label for=image>Update image file:</label></td>
@@ -556,92 +607,92 @@ void P2WebServer::systemUpdatePage(AsyncWebServerRequest *req)
 </div>
 </BODY>
 )=====");
-  sendPage(req, 8,
-           head1.c_str(),
-           title.c_str(),
-           head2.c_str(),
-           style.c_str(),
-           head3.c_str(),
-           headEnd.c_str(),
-           body1.c_str(),
-           body2.c_str());
+    sendPage(req, 8,
+             head1.c_str(),
+             title.c_str(),
+             head2.c_str(),
+             style.c_str(),
+             head3.c_str(),
+             headEnd.c_str(),
+             body1.c_str(),
+             body2.c_str());
 }
 
 void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
 {
-  const String title("Punkatoo");
-  String server;
-  String port;
-  String image;
+    const String title("Punkatoo");
+    String server;
+    String port;
+    String image;
 
-  for (int i = 0; i < req->args(); i++)
-  {
-    const String argN = req->argName(i);
-    if (argN == "server")
-      server = req->arg(i);
-    else if (argN == "port")
-      port = req->arg(i);
-    else if (argN == "image")
-      image = req->arg(i);
-  }
-
-  String ext;
-  int extidx = image.lastIndexOf('.');
-  if (extidx >= 0)
-    ext = image.substring(extidx + 1);
-
-  if (ext == "bin")
-  {
-    t_httpUpdate_return ret = dev.updater.systemUpdate(server, port.toInt(), image);
-
-    switch (ret)
+    for (int i = 0; i < req->args(); i++)
     {
-    case HTTP_UPDATE_FAILED:
-      messagePage(req, "Update Failed");
-      break;
-    case HTTP_UPDATE_NO_UPDATES:
-      messagePage(req, "No Update Available");
-      break;
-    case HTTP_UPDATE_OK:
-      resetMessagePage(req, "Update Successful");
-      break;
-    default:
-      messagePage(req, "Default case");
+        const String argN = req->argName(i);
+        if (argN == "server")
+            server = req->arg(i);
+        else if (argN == "port")
+            port = req->arg(i);
+        else if (argN == "image")
+            image = req->arg(i);
     }
-  }
-  else if (ext == "json")
-  {
-    HTTPClient http;
-    String url = "http://" + server + ":" + port + "/" + image;
-    serr.printf("getting %s\n", url.c_str());
-    http.begin(url);
-    int httpCode = http.GET();
-    if (httpCode == HTTP_CODE_OK)
-    {
-      String payload = http.getString();
 
-      int baseidx = image.lastIndexOf('/');
-      String fname = image.substring(baseidx + 1);
-      serr.printf("Opening %s\n", fname.c_str());
-      File configFile = LITTLEFS.open(String('/') + image.substring(baseidx + 1), "w+");
-      if (!configFile)
-      {
-        perror("");
-        serr.println("Config file open for write failed");
-      }
-      else
-      {
-        serr.printf("writing:\n %s", payload.c_str());
-        configFile.print(payload);
-        configFile.close();
-      }
+    String ext;
+    int extidx = image.lastIndexOf('.');
+    if (extidx >= 0)
+        ext = image.substring(extidx + 1);
+
+    if (ext == "bin")
+    {
+        t_httpUpdate_return ret = dev.updater.systemUpdate(server, port.toInt(), image);
+
+        switch (ret)
+        {
+        case HTTP_UPDATE_FAILED:
+            messagePage(req, "Update Failed");
+            break;
+        case HTTP_UPDATE_NO_UPDATES:
+            messagePage(req, "No Update Available");
+            break;
+        case HTTP_UPDATE_OK:
+            resetMessagePage(req, "Update Successful");
+            break;
+        default:
+            messagePage(req, "Default case");
+        }
+    }
+    else if (ext == "json")
+    {
+        HTTPClient http;
+        String url = "http://" + server + ":" + port + "/" + image;
+        serr.printf("getting %s\n", url.c_str());
+        http.begin(url);
+        int httpCode = http.GET();
+        if (httpCode == HTTP_CODE_OK)
+        {
+            String payload = http.getString();
+
+            int baseidx = image.lastIndexOf('/');
+            String fname = image.substring(baseidx + 1);
+            serr.printf("Opening %s\n", fname.c_str());
+            File configFile = LITTLEFS.open(String('/') + image.substring(baseidx + 1), "w+");
+            if (!configFile)
+            {
+                perror("");
+                serr.println("Config file open for write failed");
+            }
+            else
+            {
+                serr.printf("writing:\n %s", payload.c_str());
+                configFile.print(payload);
+                configFile.close();
+            }
+        }
+        else
+        {
+            serr.printf("[HTTP] GET failed, error: %s\n", http.errorToString(httpCode).c_str());
+        }
+        messagePage(req, "Configuration file");
     }
     else
-    {
-      serr.printf("[HTTP] GET failed, error: %s\n", http.errorToString(httpCode).c_str());
-    }
-    messagePage(req, "Configuration file");
-  }
-  else
-    messagePage(req, "Unknown file type");
+        messagePage(req, "Unknown file type");
 }

@@ -168,7 +168,7 @@ void parseCompileDate()
 void setup()
 {
   parseCompileDate();
-  
+
   WiFi.mode(WIFI_STA);
   Serial.begin(9600);
   delay(500);
@@ -179,7 +179,6 @@ void setup()
     config.writeFile();
 
   serr.println("");
-
 
   serr.println(gitrevision);
   serr.printf("Compiled at: %s\n", compDateTime);
@@ -270,5 +269,25 @@ void loop()
   if (dev.indicators.size() > 0)
   {
     dev.indicators[0].poll();
+  }
+
+  static unsigned long then = 0;
+  unsigned long now = millis();
+  if ((now - then) >= 1000)
+  {
+    extern AsyncEventSource events;
+    then = now;
+    for (LDR &ldr : dev.ldrs)
+    {
+      events.send(ldr.mqttGetStatus().c_str(), "light", millis());
+    }
+    for (BME &bme : dev.bmes)
+    {
+      events.send(String((bme.readTemperature() * 10) / 10).c_str(), "temperature", now);
+      events.send(String((bme.readHumidity() * 10) / 10).c_str(), "humidity", now);
+      events.send(String((bme.readPressure() * 10) / 1000).c_str(), "pressure", now);
+    }
+    events.send(upTime(), "uptime", millis());
+    events.send(nowTime(), "nowtime", millis());
   }
 }
