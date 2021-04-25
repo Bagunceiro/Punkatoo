@@ -248,7 +248,7 @@ void loop()
     // if (!timeClient.update()) serr.println("NTP failure");
     timeClient.update();
 
-    dev.webServer.handleClient();
+    // dev.webServer.handleClient();
     serr.loop();
   }
   else
