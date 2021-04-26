@@ -287,7 +287,7 @@ void loop()
       dev.webServer.event("temperature", buffer);
       snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readHumidity() * 10) / 10);
       dev.webServer.event("humidity", buffer);
-      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readPressure() * 10) / 10);
+      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readPressure() * 10) / 1000);
       dev.webServer.event("pressure", buffer);
     }
     dev.webServer.event("uptime", upTime());
