@@ -1,0 +1,17 @@
+body {font-family:Arial, Sans-Serif; font-size: 4vw; background-color: lavender;}
+table {font-family: arial, sans-serif; border-collapse: collapse; margin-left: 5%; width: 100%;}
+th, td, input {font-size: 4vw; border: 1px solid #dddddd;white-space:nowrap; text-align: left; padding: 8px; }
+tr:nth-child(even) { background-color: thistle;}
+button {font-size: 3vw; background: indigo; color: white; }
+input[type=checkbox] {display:none;}
+input[type=checkbox] + label:before {content:"☐  ";}
+input:checked + label:before {content:"☑  ";}
+.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;}

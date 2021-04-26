@@ -18,39 +18,6 @@ const char *P2WebServer::pageReset = "/reset";
 const char *P2WebServer::pageSystemUpdate = "/system.update";
 const char *P2WebServer::pageDoUpdate = "/system.update.do";
 
-const String P2WebServer::style = R"!(
-<script>
-function gohome()      {location.assign(")!" +
-                                  String(P2WebServer::pageRoot) + R"!(");}
-function gogenconf()   {location.assign(")!" +
-                                  P2WebServer::pageGen + R"!(");}
-function gowificonf()  {location.assign(")!" +
-                                  P2WebServer::pageWiFi + R"!(");}
-function goreset()     {location.assign(")!" +
-                                  P2WebServer::pageReset + R"!(");}
-function gosysupdate() {location.assign(")!" +
-                                  P2WebServer::pageSystemUpdate + R"!(");}
-</script>
-<style>
-body {font-family:Arial, Sans-Serif; font-size: 4vw; background-color: lavender;}
-table {font-family: arial, sans-serif; border-collapse: collapse; margin-left: 5%%; width: 100%%;}
-th, td, input {font-size: 4vw; border: 1px solid #dddddd;white-space:nowrap; text-align: left; padding: 8px; }
-tr:nth-child(even) { background-color: thistle;}
-button {font-size: 3vw; background: indigo; color: white; }
-input[type=checkbox] {display:none;}
-input[type=checkbox] + label:before {content:"☐  ";}
-input:checked + label:before {content:"☑  ";}
-.sticky {
-  position: fixed;
-  top: 0;
-  width: 100%;
-}
-.header {
-  position: fixed;
-  top: 0;
-  width: 100%;}
-</style>
-)!";
 
 void P2WebServer::init()
 {
@@ -64,6 +31,15 @@ void P2WebServer::init()
     on(pageReset, HTTP_ANY, blankResetMessage);
     on(pageSystemUpdate, HTTP_ANY, handleSystemUpdate);
     on(pageDoUpdate, HTTP_ANY, handleDoUpdate);
+    on("/punkatoo.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LITTLEFS, "/punkatoo.css", "text/css");
+    });
+    on("/navfuncs.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LITTLEFS, "/navfuncs.js", "application/javascript");
+    });
+    on("/eventlstnrs.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LITTLEFS, "/eventlstnrs.js", "application/javascript");
+    });
 
     events->onConnect([](AsyncEventSourceClient *client) {
         if (client->lastId())
@@ -92,49 +68,28 @@ void P2WebServer::sendPage(AsyncWebServerRequest *req, const int noItems, ...)
     req->send(response);
 }
 
-/*
-const String P2WebServer::style = R"!(
-<script>
-function gohome()      {location.assign(")!" +
-                                  String(P2WebServer::pageRoot) + R"!(");}
-function gogenconf()   {location.assign(")!" +
-                                  P2WebServer::pageGen + R"!(");}
-function gowificonf()  {location.assign(")!" +
-                                  P2WebServer::pageWiFi + R"!(");}
-function goreset()     {location.assign(")!" +
-                                  P2WebServer::pageReset + R"!(");}
-function gosysupdate() {location.assign(")!" +
-                                  P2WebServer::pageSystemUpdate + R"!(");}
-</script>
-<style>
-body {font-family:Arial, Sans-Serif; font-size: 4vw; background-color: lavender;}
-table {font-family: arial, sans-serif; border-collapse: collapse; margin-left: 5%%; width: 100%%;}
-th, td, input {font-size: 4vw; border: 1px solid #dddddd;white-space:nowrap; text-align: left; padding: 8px; }
-tr:nth-child(even) { background-color: thistle;}
-button {font-size: 3vw; background: indigo; color: white; }
-input[type=checkbox] {display:none;}
-input[type=checkbox] + label:before {content:"☐  ";}
-input:checked + label:before {content:"☑  ";}
-.sticky {
-  position: fixed;
-  top: 0;
-  width: 100%;
-}
-.header {
-  position: fixed;
-  top: 0;
-  width: 100%;}
-</style>
-)!";
-*/
-
-const String P2WebServer::head1(R"!(
+const String P2WebServer::head1 = R"!(
 <HEAD><meta http-equiv="content-type" charset="UTF-8"
 content="text/html, width=device-width, initial-scale=1">
 <TITLE>
-)!");
+)!";
 
+const String P2WebServer::head2 = R"!(
+</TITLE>
+<script src="/navfuncs.js"></script>
+<link rel="stylesheet" href="/punkatoo.css">
+)!";
+
+
+/*
 const String P2WebServer::head2("</TITLE>");
+
+const String P2WebServer::style = R"!(
+<script src="/navfuncs.js"></script>
+<link rel="stylesheet" href="/punkatoo.css">
+)!";
+*/
+
 const String P2WebServer::headEnd(R"!(
 </HEAD>
 )!");
@@ -180,57 +135,13 @@ void P2WebServer::rootPage(AsyncWebServerRequest *req)
 <TR><TD>Light level</TD><TD colspan=3><span id="light"></TD></TR>
 </TABLE><BR>
 </DIV>
-<script>
-if (!!window.EventSource) {
- var source = new EventSource('/events');
- 
- source.addEventListener('open', function(e) {
-  console.log("Events Connected");
- }, false);
- source.addEventListener('error', function(e) {
-  if (e.target.readyState != EventSource.OPEN) {
-    console.log("Events Disconnected");
-  }
- }, false);
- 
- source.addEventListener('message', function(e) {
-  console.log("message", e.data);
- }, false);
- 
- source.addEventListener('nowtime', function(e) {
-  console.log("nowtime", e.data);
-  document.getElementById("nowtime").innerHTML = e.data;
- }, false);
- source.addEventListener('light', function(e) {
-  console.log("light", e.data);
-  document.getElementById("light").innerHTML = e.data;
- }, false);
-  source.addEventListener('temperature', function(e) {
-  console.log("temperature", e.data);
-  document.getElementById("temperature").innerHTML = e.data;
- }, false);
- source.addEventListener('humidity', function(e) {
-  console.log("humidity", e.data);
-  document.getElementById("humidity").innerHTML = e.data;
- }, false);
- source.addEventListener('pressure', function(e) {
-  console.log("pressure", e.data);
-  document.getElementById("pressure").innerHTML = e.data;
- }, false);
-  source.addEventListener('uptime', function(e) {
-  console.log("uptime", e.data);
-  document.getElementById("uptime").innerHTML = e.data;
- }, false);
-}
-</script>
+<script src="/eventlstnrs.js"></script>
 </BODY>
 )!");
-
-    sendPage(req, 8,
+    sendPage(req, 7,
              head1.c_str(),
              title.c_str(),
              head2.c_str(),
-             style.c_str(),
              head3.c_str(),
              headEnd.c_str(),
              body1.c_str(),
@@ -250,11 +161,10 @@ void P2WebServer::messagePage(AsyncWebServerRequest *req, const String &message)
   </BODY>
   )!");
 
-    sendPage(req, 8,
+    sendPage(req, 7,
              head1.c_str(),
              title.c_str(),
              head2.c_str(),
-             style.c_str(),
              head3.c_str(),
              headEnd.c_str(),
              body1.c_str(),
@@ -342,11 +252,10 @@ void P2WebServer::genConfigPage(AsyncWebServerRequest *req)
 </BODY>
 )!");
 
-    sendPage(req, 8,
+    sendPage(req, 7,
              head1.c_str(),
              title.c_str(),
              head2.c_str(),
-             style.c_str(),
              head3.c_str(),
              headEnd.c_str(),
              body1.c_str(),
@@ -447,11 +356,10 @@ void P2WebServer::netConfigPage(AsyncWebServerRequest *req)
   </BODY>
   )=====";
 
-    sendPage(req, 8,
+    sendPage(req, 7,
              head1.c_str(),
              title.c_str(),
              head2.c_str(),
-             style.c_str(),
              head3.c_str(),
              headEnd.c_str(),
              body1.c_str(),
@@ -496,11 +404,10 @@ void P2WebServer::newNetPage(AsyncWebServerRequest *req)
 </BODY>
 )====");
 
-    sendPage(req, 8,
+    sendPage(req, 7,
              head1.c_str(),
              title.c_str(),
              head2.c_str(),
-             style.c_str(),
              head3.c_str(),
              headEnd.c_str(),
              body1.c_str(),
@@ -545,11 +452,10 @@ void P2WebServer::netEditPage(AsyncWebServerRequest *req)
 </BODY>
 )====";
 
-    sendPage(req, 8,
+    sendPage(req, 7,
              head1.c_str(),
              title.c_str(),
              head2.c_str(),
-             style.c_str(),
              head3.c_str(),
              headEnd.c_str(),
              body1.c_str(),
@@ -581,18 +487,17 @@ void P2WebServer::systemUpdatePage(AsyncWebServerRequest *req)
 </div>
 </BODY>
 )=====");
-    sendPage(req, 8,
+    sendPage(req, 7,
              head1.c_str(),
              title.c_str(),
              head2.c_str(),
-             style.c_str(),
              head3.c_str(),
              headEnd.c_str(),
              body1.c_str(),
              body2.c_str());
 }
 
-void P2WebServer::updateCompleted(void*)
+void P2WebServer::updateCompleted(void *)
 {
     Serial.println("updateCompleted called");
     pThis->event("progress", "Complete. Reset device to load");
@@ -616,7 +521,7 @@ void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
             image = req->arg(i);
     }
 
-/*
+    /*
     String ext;
     int extidx = image.lastIndexOf('.');
     if (extidx >= 0)
@@ -630,9 +535,9 @@ void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
     String body2((String) R"=====(
 </div>
 <div class=content>
-<BR><B>System Updating: )=====" +
+<BR><BR><B>System Updating: )=====" +
                  config[controllername_n] + R"=====(</B>
-<BR><BR><BR>
+<BR><BR>
 Progress: <span id="progress"></span>
 <script>
 if (!!window.EventSource) {
@@ -661,11 +566,10 @@ if (!!window.EventSource) {
 )=====");
     String head3("");
 
-    sendPage(req, 8,
+    sendPage(req, 7,
              head1.c_str(),
              title.c_str(),
              head2.c_str(),
-             style.c_str(),
              head3.c_str(),
              headEnd.c_str(),
              body1.c_str(),
