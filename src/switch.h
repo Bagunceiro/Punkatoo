@@ -35,6 +35,7 @@ class Switch
   int spin;
   int switchState;
   int debounce;
+  unsigned long changeAt; // When the switch changed state
   std::vector<SwitchedDev*> switched;
 };
 

@@ -6,7 +6,7 @@
 #include "devices.h"
 
 P2WebServer *P2WebServer::pThis;
-AsyncEventSource events("/events");
+// AsyncEventSource events("/events");
 
 const char *P2WebServer::pageRoot = "/";
 const char *P2WebServer::pageGen = "/config.gen";
@@ -65,13 +65,14 @@ void P2WebServer::init()
     on(pageSystemUpdate, HTTP_ANY, handleSystemUpdate);
     on(pageDoUpdate, HTTP_ANY, handleDoUpdate);
 
-    events.onConnect([](AsyncEventSourceClient *client) {
+    events->onConnect([](AsyncEventSourceClient *client) {
         if (client->lastId())
         {
             serr.println("Client reconnected");
         }
     });
-    addHandler(&events);
+    addHandler(events);
+
     begin();
 }
 
@@ -169,11 +170,11 @@ const String P2WebServer::bmeData()
 const String P2WebServer::lightLevels()
 {
     String s;
-    for (LDR &ldr : dev.ldrs)
-    {
-        // s += "<TR><TD>Light level</TD><TD colspan=3><span id=\"light\">%LIGHT%</TD></TR>\n";
-        s += "<TR><TD>Light level</TD><TD colspan=3>" + ldr.mqttGetStatus() + "</TD></TR>\n";
-    }
+//    for (LDR &ldr : dev.ldrs)
+//    {
+        s += "<TR><TD>Light level</TD><TD colspan=3><span id=\"light\">%LIGHT%</TD></TR>\n";
+        // s += "<TR><TD>Light level</TD><TD colspan=3>" + ldr.mqttGetStatus() + "</TD></TR>\n";
+//    }
     return s;
 }
 
@@ -234,14 +235,16 @@ if (!!window.EventSource) {
   document.getElementById("light").innerHTML = e.data;
  }, false);
   source.addEventListener('temperature', function(e) {
-  console.log("light", e.data);
+  console.log("temperature", e.data);
+  document.getElementById("temperature").innerHTML = e.data;
+ }, false);
+ source.addEventListener('humidity', function(e) {
+  console.log("humidity", e.data);
   document.getElementById("humidity").innerHTML = e.data;
- }, false); source.addEventListener('light', function(e) {
-  console.log("light", e.data);
+ }, false);
+ source.addEventListener('pressure', function(e) {
+  console.log("pressure", e.data);
   document.getElementById("pressure").innerHTML = e.data;
- }, false); source.addEventListener('light', function(e) {
-  console.log("light", e.data);
-  document.getElementById("light").innerHTML = e.data;
  }, false);
   source.addEventListener('uptime', function(e) {
   console.log("uptime", e.data);
@@ -641,10 +644,57 @@ void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
     if (extidx >= 0)
         ext = image.substring(extidx + 1);
 
+    serr.printf("Update(%s) %s, %ld, %s\n", ext.c_str(), server.c_str(), port.toInt(), image.c_str());
+
     if (ext == "bin")
     {
-        t_httpUpdate_return ret = dev.updater.systemUpdate(server, port.toInt(), image);
+        dev.updater.setRemote(server, port.toInt(), image, true);
+    }
+String body2((String) R"=====(
+</div>
+<div class=content>
+<BR><B>System Updating: )=====" + config[controllername_n] + R"=====(</B>
+<BR><BR>
+Progress: <span id="progress">0</span>
+<script>
+if (!!window.EventSource) {
+ var source = new EventSource('/events');
+ 
+ source.addEventListener('open', function(e) {
+  console.log("Events Connected");
+ }, false);
+ source.addEventListener('error', function(e) {
+  if (e.target.readyState != EventSource.OPEN) {
+    console.log("Events Disconnected");
+  }
+ }, false);
+ 
+ source.addEventListener('message', function(e) {
+  console.log("message", e.data);
+ }, false);
 
+ source.addEventListener('progress', function(e) {
+  console.log("progress", e.data);
+  document.getElementById("progress").innerHTML = e.data;
+ }, false);
+}
+ </script>
+</BODY>
+)=====");
+String head3("");
+
+sendPage(req, 8,
+         head1.c_str(),
+         title.c_str(),
+         head2.c_str(),
+         style.c_str(),
+         head3.c_str(),
+         headEnd.c_str(),
+         body1.c_str(),
+         body2.c_str());
+
+/*   t_httpUpdate_return ret = dev.updater.systemUpdate(server, port.toInt(), image);
+    begin();
         switch (ret)
         {
         case HTTP_UPDATE_FAILED:
@@ -695,4 +745,25 @@ void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
     }
     else
         messagePage(req, "Unknown file type");
+        */
+}
+
+void P2WebServer::event(const char* name, const char* content)
+{
+    events->send(content, name, eventid++);
+
+}
+
+void P2WebServer::event(const char* name, const long content)
+{
+    char buffer[16];
+    snprintf(buffer, sizeof(buffer) -1, "%ld", content);
+    event(name, buffer);
+}
+
+void P2WebServer::event(const char* name, const double content)
+{
+    char buffer[16];
+    snprintf(buffer, sizeof(buffer) -1, "%.2lf", content);
+    event(name, buffer);    
 }

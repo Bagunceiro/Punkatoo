@@ -275,19 +275,35 @@ void loop()
   unsigned long now = millis();
   if ((now - then) >= 1000)
   {
-    extern AsyncEventSource events;
+    dev.updater.systemUpdate();
+
+    // extern AsyncEventSource events;
     then = now;
     for (LDR &ldr : dev.ldrs)
     {
-      events.send(ldr.mqttGetStatus().c_str(), "light", millis());
+      dev.webServer.event("light", ldr.mqttGetStatus().c_str());
+      // events.send(ldr.mqttGetStatus().c_str(), "light", millis());
     }
-    for (BME &bme : dev.bmes)
+    if (!dev.bmes.empty())
     {
-      events.send(String((bme.readTemperature() * 10) / 10).c_str(), "temperature", now);
-      events.send(String((bme.readHumidity() * 10) / 10).c_str(), "humidity", now);
-      events.send(String((bme.readPressure() * 10) / 1000).c_str(), "pressure", now);
+      BME& bme = dev.bmes[0];
+      dev.webServer.event("temperature", round(bme.readTemperature() * 10) / 10);
+      dev.webServer.event("humidity", round(bme.readHumidity() * 10) / 10);
+      dev.webServer.event("pressure", round(bme.readPressure() * 10) / 1000);
+      // events.send(String((bme.readTemperature() * 10) / 10).c_str(), "temperature", now);
+      // events.send(String((bme.readHumidity() * 10) / 10).c_str(), "humidity", now);
+      // events.send(String((bme.readPressure() * 10) / 1000).c_str(), "pressure", now);
     }
-    events.send(upTime(), "uptime", millis());
-    events.send(nowTime(), "nowtime", millis());
+    dev.webServer.event("uptime", upTime());
+    dev.webServer.event("nowtime", nowTime());
   }
+/*  
+   static unsigned long then = 0;
+  unsigned long now = millis();
+  if ((now - then) >= 2000)
+  {
+    then = now;
+    dev.updater.systemUpdate();
+  }
+  */
 }

@@ -20,7 +20,7 @@ void updateCompleted()
   e.enqueue("Update complete");
   dev.p2sys.revertState();
 
-/*
+  /*
   time_t now = timeClient.getEpochTime();
   config[updateTime_n] = String(now);
   config.writeFile();
@@ -47,6 +47,7 @@ Updater::Updater(const String &devName)
   endCallback = updateCompleted;
   nullCallback = updateNone;
   failCallback = updateFail;
+  ready = false;
 }
 
 Updater::~Updater()
@@ -55,6 +56,7 @@ Updater::~Updater()
 
 void prog(size_t completed, size_t total)
 {
+  extern AsyncEventSource events;
   static int oldPhase = 1;
   int progress = (completed * 100) / total;
 
@@ -70,44 +72,57 @@ void prog(size_t completed, size_t total)
         dev.indicators[0].setColour(indicate_update, true);
     }
     serr.printf("Progress: %d%% (%d/%d)\n", progress, completed, total);
+    dev.webServer.event("progress", (String(progress) + "%").c_str());
     oldPhase = phase;
   }
 }
 
-t_httpUpdate_return Updater::systemUpdate(const String &server, const uint16_t port, const String &image)
+t_httpUpdate_return Updater::systemUpdate(const String &s, const uint16_t p, const String &i, bool r)
 {
-  WiFiClient client;
+  setRemote(s, p, i, r);
+  return systemUpdate();
+}
 
-  if (startCallback != NULL)
+t_httpUpdate_return Updater::systemUpdate()
+{
+  t_httpUpdate_return ret = HTTP_UPDATE_NO_UPDATES;
+  if (ready)
   {
-    startCallback();
-  }
+    ready = false;
+    WiFiClient client;
 
-  httpUpdate.rebootOnUpdate(false);
+    if (startCallback != NULL)
+    {
+      startCallback();
+    }
 
-  Update.onProgress(prog);
+    httpUpdate.rebootOnUpdate(false);
 
-  t_httpUpdate_return ret = httpUpdate.update(client, server, port, image);
+    Update.onProgress(prog);
 
-  switch (ret)
-  {
-  case HTTP_UPDATE_FAILED:
-    serr.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-    if (failCallback != NULL)
-      failCallback();
-    break;
+    t_httpUpdate_return ret = httpUpdate.update(client, server, port, image);
 
-  case HTTP_UPDATE_NO_UPDATES:
-    serr.println("HTTP_UPDATE_NO_UPDATES");
-    if (nullCallback != NULL)
-      nullCallback();
-    break;
+    switch (ret)
+    {
+    case HTTP_UPDATE_FAILED:
+      serr.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+      if (failCallback != NULL)
+        failCallback();
+      break;
 
-  case HTTP_UPDATE_OK:
-    serr.println("HTTP_UPDATE_OK");
-    if (endCallback != NULL)
-      endCallback();
-    break;
+    case HTTP_UPDATE_NO_UPDATES:
+      serr.println("HTTP_UPDATE_NO_UPDATES");
+      if (nullCallback != NULL)
+        nullCallback();
+      break;
+
+    case HTTP_UPDATE_OK:
+      serr.println("HTTP_UPDATE_OK");
+      if (endCallback != NULL)
+        endCallback();
+      dev.webServer.event("progress", "Complete, reset device to install");
+      break;
+    }
   }
   return ret;
 }
