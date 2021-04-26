@@ -48,11 +48,10 @@ private:
     void doUpdatePage(AsyncWebServerRequest *r);
     void messagePage(AsyncWebServerRequest *r, const String &message);
     void sendPage(AsyncWebServerRequest *r, const int noItems, ...);
+    static void updateCompleted(void*);
 
     String &listNetworks(String &body, networkList &networks, bool selected);
-    const String bmeData();
-    const String lightLevels();
-
+  
     static const char *pageRoot;
     static const char *pageGen;
     static const char *pageGenUpdate;

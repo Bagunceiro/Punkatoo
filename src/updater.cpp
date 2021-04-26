@@ -6,7 +6,7 @@
 
 extern IndicatorLed::Colour indicateUpdate;
 
-void updateStarted()
+void updateStarted(void*)
 {
   Event e;
   e.enqueue("Update started");
@@ -14,7 +14,7 @@ void updateStarted()
   dev.toSecure();
 }
 
-void updateCompleted()
+void updateCompleted(void*)
 {
   Event e;
   e.enqueue("Update complete");
@@ -27,14 +27,14 @@ void updateCompleted()
 */
 }
 
-void updateNone()
+void updateNone(void*)
 {
   Event e;
   e.enqueue("No update available");
   dev.p2sys.revertState();
 }
 
-void updateFail()
+void updateFail(void*)
 {
   Event e;
   e.enqueue("Update failed");
@@ -48,13 +48,17 @@ Updater::Updater(const String &devName)
   nullCallback = updateNone;
   failCallback = updateFail;
   ready = false;
+  startcbdata = NULL;
+  endcbdata = NULL;
+  nullcbdata = NULL;
+  failcbdata = NULL;
 }
 
 Updater::~Updater()
 {
 }
 
-void prog(size_t completed, size_t total)
+void progcb(size_t completed, size_t total)
 {
   extern AsyncEventSource events;
   static int oldPhase = 1;
@@ -77,6 +81,13 @@ void prog(size_t completed, size_t total)
   }
 }
 
+void endcb(void*)
+{
+  dev.webServer.event("progress", "Complete. Reseting, please wait");
+  delay(1000);
+  ESP.restart();
+}
+
 t_httpUpdate_return Updater::systemUpdate(const String &s, const uint16_t p, const String &i, bool r)
 {
   setRemote(s, p, i, r);
@@ -93,12 +104,13 @@ t_httpUpdate_return Updater::systemUpdate()
 
     if (startCallback != NULL)
     {
-      startCallback();
+      startCallback(startcbdata);
     }
 
     httpUpdate.rebootOnUpdate(false);
 
-    Update.onProgress(prog);
+    Update.onProgress(progcb);
+    // onEnd(endcb);
 
     t_httpUpdate_return ret = httpUpdate.update(client, server, port, image);
 
@@ -107,42 +119,48 @@ t_httpUpdate_return Updater::systemUpdate()
     case HTTP_UPDATE_FAILED:
       serr.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
       if (failCallback != NULL)
-        failCallback();
+        failCallback(failcbdata);
       break;
 
     case HTTP_UPDATE_NO_UPDATES:
       serr.println("HTTP_UPDATE_NO_UPDATES");
       if (nullCallback != NULL)
-        nullCallback();
+        nullCallback(nullcbdata);
       break;
 
     case HTTP_UPDATE_OK:
       serr.println("HTTP_UPDATE_OK");
       if (endCallback != NULL)
-        endCallback();
-      dev.webServer.event("progress", "Complete, reset device to install");
+        endCallback(endcbdata);
+      // dev.webServer.event("progress", "Complete. Reseting, please wait");
+      // delay(1000);
+      // ESP.restart();
       break;
     }
   }
   return ret;
 }
 
-void Updater::onStart(void (*callback)())
+void Updater::onStart(void (*callback)(void*), void* d)
 {
   startCallback = callback;
+  startcbdata = d;
 }
 
-void Updater::onEnd(void (*callback)())
+void Updater::onEnd(void (*callback)(void*), void* d)
 {
   endCallback = callback;
+  endcbdata = d;
 }
 
-void Updater::onNone(void (*callback)())
+void Updater::onNone(void (*callback)(void*), void* d)
 {
   nullCallback = callback;
+  nullcbdata = d;
 }
 
-void Updater::onFail(void (*callback)())
+void Updater::onFail(void (*callback)(void*), void* d)
 {
   failCallback = callback;
+  failcbdata = d;
 }

@@ -240,14 +240,12 @@ void loop()
       timeClient.setUpdateInterval(3600000);
       timeClient.setTimeOffset(TZ * 60 * 60);
       ntpstarted = true;
-      // timeClient.update();
     }
     // in NTPClient_Generic false return is not (necessarily) a failure - it just means
     // not updated, which happens most spins of the loop becasue no attempt is made.
     // if (!timeClient.update()) serr.println("NTP failure");
     timeClient.update();
 
-    // dev.webServer.handleClient();
     serr.loop();
   }
   else
@@ -276,34 +274,23 @@ void loop()
   if ((now - then) >= 1000)
   {
     dev.updater.systemUpdate();
-
-    // extern AsyncEventSource events;
     then = now;
     for (LDR &ldr : dev.ldrs)
     {
       dev.webServer.event("light", ldr.mqttGetStatus().c_str());
-      // events.send(ldr.mqttGetStatus().c_str(), "light", millis());
     }
     if (!dev.bmes.empty())
     {
-      BME& bme = dev.bmes[0];
-      dev.webServer.event("temperature", round(bme.readTemperature() * 10) / 10);
-      dev.webServer.event("humidity", round(bme.readHumidity() * 10) / 10);
-      dev.webServer.event("pressure", round(bme.readPressure() * 10) / 1000);
-      // events.send(String((bme.readTemperature() * 10) / 10).c_str(), "temperature", now);
-      // events.send(String((bme.readHumidity() * 10) / 10).c_str(), "humidity", now);
-      // events.send(String((bme.readPressure() * 10) / 1000).c_str(), "pressure", now);
+      BME &bme = dev.bmes[0];
+      char buffer[16];
+      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readTemperature() * 10) / 10);
+      dev.webServer.event("temperature", buffer);
+      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readHumidity() * 10) / 10);
+      dev.webServer.event("humidity", buffer);
+      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readPressure() * 10) / 10);
+      dev.webServer.event("pressure", buffer);
     }
     dev.webServer.event("uptime", upTime());
     dev.webServer.event("nowtime", nowTime());
   }
-/*  
-   static unsigned long then = 0;
-  unsigned long now = millis();
-  if ((now - then) >= 2000)
-  {
-    then = now;
-    dev.updater.systemUpdate();
-  }
-  */
 }

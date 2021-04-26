@@ -147,37 +147,6 @@ const String P2WebServer::body1(R"!(
 <button onclick=gowificonf()>WiFi</button>
 -)!");
 
-const String P2WebServer::bmeData()
-{
-    String data;
-
-    for (BME &bme : dev.bmes)
-    {
-        if (true) // bme.running())
-        {
-            data +=
-                R"!(<TR><TD>Ambient</TD><TD><span id="temperature">)!" + String((bme.readTemperature() * 10) / 10) + R"!(</span>°C</TD>
-<TD><span id="humidity">)!" +
-                String((bme.readHumidity() * 10) / 10) + R"!(</span>%</TD>
-<TD><span id="pressure">)!" +
-                String((bme.readPressure() * 10) / 1000) + R"!(</span> mBar</TD></TR>
-)!";
-        }
-    }
-    return data;
-}
-
-const String P2WebServer::lightLevels()
-{
-    String s;
-//    for (LDR &ldr : dev.ldrs)
-//    {
-        s += "<TR><TD>Light level</TD><TD colspan=3><span id=\"light\">%LIGHT%</TD></TR>\n";
-        // s += "<TR><TD>Light level</TD><TD colspan=3>" + ldr.mqttGetStatus() + "</TD></TR>\n";
-//    }
-    return s;
-}
-
 void P2WebServer::rootPage(AsyncWebServerRequest *req)
 {
     const String title("Punkatoo");
@@ -195,7 +164,7 @@ void P2WebServer::rootPage(AsyncWebServerRequest *req)
                  nowTime() + R"!(</span></TD></TR>
 <TR><TD>Git Revision</TD><TD colspan=3 >)!" +
                  gitrevision + R"!(</TD></TR>
-<TR><TD>Compilation Time</TD><TD colspan=3 >)!" +
+<TR><TD>Compilation</TD><TD colspan=3 >)!" +
                  compDateTime + R"!(</TD></TR>
 <TR><TD>MAC Address</TD><TD colspan=3 >)!" +
                  WiFi.macAddress() + R"!(</TD></TR>
@@ -205,8 +174,10 @@ void P2WebServer::rootPage(AsyncWebServerRequest *req)
                  upTime() + R"!(</span></TD></TR>
 <TR><TD>WiFi SSID</TD><TD colspan=3>)!" +
                  WiFi.SSID() + R"!(</TD></TR>
-)!" + bmeData() + lightLevels() +
-                 R"!(
+<TR><TD>Ambient</TD><TD><span id="temperature"></span>°C</TD>
+<TD><span id="humidity"></span>%</TD>
+<TD><span id="pressure"></span> mBar</TD></TR>
+<TR><TD>Light level</TD><TD colspan=3><span id="light"></TD></TR>
 </TABLE><BR>
 </DIV>
 <script>
@@ -621,6 +592,12 @@ void P2WebServer::systemUpdatePage(AsyncWebServerRequest *req)
              body2.c_str());
 }
 
+void P2WebServer::updateCompleted(void*)
+{
+    Serial.println("updateCompleted called");
+    pThis->event("progress", "Complete. Reset device to load");
+}
+
 void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
 {
     const String title("Punkatoo");
@@ -639,23 +616,24 @@ void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
             image = req->arg(i);
     }
 
+/*
     String ext;
     int extidx = image.lastIndexOf('.');
     if (extidx >= 0)
         ext = image.substring(extidx + 1);
+*/
+    serr.printf("Update %s, %ld, %s\n", server.c_str(), port.toInt(), image.c_str());
 
-    serr.printf("Update(%s) %s, %ld, %s\n", ext.c_str(), server.c_str(), port.toInt(), image.c_str());
+    dev.updater.onEnd(updateCompleted);
+    dev.updater.setRemote(server, port.toInt(), image, true);
 
-    if (ext == "bin")
-    {
-        dev.updater.setRemote(server, port.toInt(), image, true);
-    }
-String body2((String) R"=====(
+    String body2((String) R"=====(
 </div>
 <div class=content>
-<BR><B>System Updating: )=====" + config[controllername_n] + R"=====(</B>
-<BR><BR>
-Progress: <span id="progress">0</span>
+<BR><B>System Updating: )=====" +
+                 config[controllername_n] + R"=====(</B>
+<BR><BR><BR>
+Progress: <span id="progress"></span>
 <script>
 if (!!window.EventSource) {
  var source = new EventSource('/events');
@@ -681,89 +659,34 @@ if (!!window.EventSource) {
  </script>
 </BODY>
 )=====");
-String head3("");
+    String head3("");
 
-sendPage(req, 8,
-         head1.c_str(),
-         title.c_str(),
-         head2.c_str(),
-         style.c_str(),
-         head3.c_str(),
-         headEnd.c_str(),
-         body1.c_str(),
-         body2.c_str());
-
-/*   t_httpUpdate_return ret = dev.updater.systemUpdate(server, port.toInt(), image);
-    begin();
-        switch (ret)
-        {
-        case HTTP_UPDATE_FAILED:
-            messagePage(req, "Update Failed");
-            break;
-        case HTTP_UPDATE_NO_UPDATES:
-            messagePage(req, "No Update Available");
-            break;
-        case HTTP_UPDATE_OK:
-            resetMessagePage(req, "Update Successful");
-            break;
-        default:
-            messagePage(req, "Default case");
-        }
-    }
-    else if (ext == "json")
-    {
-        HTTPClient http;
-        String url = "http://" + server + ":" + port + "/" + image;
-        serr.printf("getting %s\n", url.c_str());
-        http.begin(url);
-        int httpCode = http.GET();
-        if (httpCode == HTTP_CODE_OK)
-        {
-            String payload = http.getString();
-
-            int baseidx = image.lastIndexOf('/');
-            String fname = image.substring(baseidx + 1);
-            serr.printf("Opening %s\n", fname.c_str());
-            File configFile = LITTLEFS.open(String('/') + image.substring(baseidx + 1), "w+");
-            if (!configFile)
-            {
-                perror("");
-                serr.println("Config file open for write failed");
-            }
-            else
-            {
-                serr.printf("writing:\n %s", payload.c_str());
-                configFile.print(payload);
-                configFile.close();
-            }
-        }
-        else
-        {
-            serr.printf("[HTTP] GET failed, error: %s\n", http.errorToString(httpCode).c_str());
-        }
-        messagePage(req, "Configuration file");
-    }
-    else
-        messagePage(req, "Unknown file type");
-        */
+    sendPage(req, 8,
+             head1.c_str(),
+             title.c_str(),
+             head2.c_str(),
+             style.c_str(),
+             head3.c_str(),
+             headEnd.c_str(),
+             body1.c_str(),
+             body2.c_str());
 }
 
-void P2WebServer::event(const char* name, const char* content)
+void P2WebServer::event(const char *name, const char *content)
 {
     events->send(content, name, eventid++);
-
 }
 
-void P2WebServer::event(const char* name, const long content)
+void P2WebServer::event(const char *name, const long content)
 {
     char buffer[16];
-    snprintf(buffer, sizeof(buffer) -1, "%ld", content);
+    snprintf(buffer, sizeof(buffer) - 1, "%ld", content);
     event(name, buffer);
 }
 
-void P2WebServer::event(const char* name, const double content)
+void P2WebServer::event(const char *name, const double content)
 {
     char buffer[16];
-    snprintf(buffer, sizeof(buffer) -1, "%.2lf", content);
-    event(name, buffer);    
+    snprintf(buffer, sizeof(buffer) - 1, "%.2lf", content);
+    event(name, buffer);
 }
