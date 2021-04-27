@@ -496,6 +496,29 @@ void P2WebServer::systemUpdatePage(AsyncWebServerRequest *req)
              body2.c_str());
 }
 
+void P2WebServer::progressCB(size_t completed, size_t total, void * data)
+{
+  extern AsyncEventSource events;
+  static int oldPhase = 1;
+  int progress = (completed * 100) / total;
+
+  int phase = (progress / 5) % 2; // report at 5% intervals
+
+  if (phase != oldPhase)
+  {
+    if (dev.indicators.size() > 0)
+    {
+      if (phase)
+        dev.indicators[0].off();
+      else
+        dev.indicators[0].setColour(indicate_update, true);
+    }
+    serr.printf("Progress: %d%% (%d/%d)\n", progress, completed, total);
+    pThis->event("progress", (String(progress) + "%").c_str());
+    oldPhase = phase;
+  }
+}
+
 void P2WebServer::updateCompleted(void *)
 {
     Serial.println("updateCompleted called");
@@ -529,7 +552,8 @@ void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
     serr.printf("Update %s, %ld, %s\n", server.c_str(), port.toInt(), image.c_str());
 
     dev.updater.onEnd(updateCompleted);
-    dev.updater.setRemote(server, port.toInt(), image, true);
+    dev.updater.onProgress(progressCB);
+    dev.updater.setRemote(server, port.toInt(), image, Updater::UPD_SYS);
 
     String body2((String) R"=====(
 </div>

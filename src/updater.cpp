@@ -5,8 +5,9 @@
 #include "p2system.h"
 
 extern IndicatorLed::Colour indicateUpdate;
+Updater* Updater::pThis = NULL;
 
-void updateStarted(void*)
+void updateStarted(void *)
 {
   Event e;
   e.enqueue("Update started");
@@ -14,7 +15,7 @@ void updateStarted(void*)
   dev.toSecure();
 }
 
-void updateCompleted(void*)
+void updateCompleted(void *)
 {
   Event e;
   e.enqueue("Update complete");
@@ -27,14 +28,14 @@ void updateCompleted(void*)
 */
 }
 
-void updateNone(void*)
+void updateNone(void *)
 {
   Event e;
   e.enqueue("No update available");
   dev.p2sys.revertState();
 }
 
-void updateFail(void*)
+void updateFail(void *)
 {
   Event e;
   e.enqueue("Update failed");
@@ -47,59 +48,45 @@ Updater::Updater(const String &devName)
   endCallback = updateCompleted;
   nullCallback = updateNone;
   failCallback = updateFail;
-  ready = false;
+  progCallback = NULL;
+  uType = UPD_NONE;
   startcbdata = NULL;
   endcbdata = NULL;
   nullcbdata = NULL;
   failcbdata = NULL;
+  pThis = this;
 }
 
 Updater::~Updater()
 {
 }
 
-void progcb(size_t completed, size_t total)
+void Updater::progcb(size_t completed, size_t total)
 {
-  extern AsyncEventSource events;
-  static int oldPhase = 1;
-  int progress = (completed * 100) / total;
-
-  int phase = (progress / 5) % 2; // report at 5% intervals
-
-  if (phase != oldPhase)
+  if (pThis->progCallback != NULL)
   {
-    if (dev.indicators.size() > 0)
-    {
-      if (phase)
-        dev.indicators[0].off();
-      else
-        dev.indicators[0].setColour(indicate_update, true);
-    }
-    serr.printf("Progress: %d%% (%d/%d)\n", progress, completed, total);
-    dev.webServer.event("progress", (String(progress) + "%").c_str());
-    oldPhase = phase;
+    pThis->progCallback(completed, total, pThis->progcbdata);
   }
 }
 
-void endcb(void*)
+void endcb(void *)
 {
   dev.webServer.event("progress", "Complete. Reseting, please wait");
   delay(1000);
   ESP.restart();
 }
 
-t_httpUpdate_return Updater::systemUpdate(const String &s, const uint16_t p, const String &i, bool r)
+void Updater::systemUpdate(const String &s, const uint16_t p, const String &i, updateType t)
 {
-  setRemote(s, p, i, r);
-  return systemUpdate();
+  setRemote(s, p, i, t);
+  systemUpdate();
 }
 
-t_httpUpdate_return Updater::systemUpdate()
+void Updater::systemUpdate()
 {
-  t_httpUpdate_return ret = HTTP_UPDATE_NO_UPDATES;
-  if (ready)
+  if (uType == UPD_SYS)
   {
-    ready = false;
+    uType = UPD_NONE;
     WiFiClient client;
 
     if (startCallback != NULL)
@@ -110,7 +97,6 @@ t_httpUpdate_return Updater::systemUpdate()
     httpUpdate.rebootOnUpdate(false);
 
     Update.onProgress(progcb);
-    // onEnd(endcb);
 
     t_httpUpdate_return ret = httpUpdate.update(client, server, port, image);
 
@@ -138,29 +124,34 @@ t_httpUpdate_return Updater::systemUpdate()
       break;
     }
   }
-  return ret;
 }
 
-void Updater::onStart(void (*callback)(void*), void* d)
+void Updater::onStart(void (*callback)(void *), void *d)
 {
   startCallback = callback;
   startcbdata = d;
 }
 
-void Updater::onEnd(void (*callback)(void*), void* d)
+void Updater::onEnd(void (*callback)(void *), void *d)
 {
   endCallback = callback;
   endcbdata = d;
 }
 
-void Updater::onNone(void (*callback)(void*), void* d)
+void Updater::onNone(void (*callback)(void *), void *d)
 {
   nullCallback = callback;
   nullcbdata = d;
 }
 
-void Updater::onFail(void (*callback)(void*), void* d)
+void Updater::onFail(void (*callback)(void *), void *d)
 {
   failCallback = callback;
   failcbdata = d;
+}
+
+void Updater::onProgress(void (*callback)(size_t completed, size_t total, void *), void *d)
+{
+  progCallback = callback;
+  progcbdata = d;
 }

@@ -7,29 +7,45 @@
 class Updater
 {
 public:
+    enum updateType
+    {
+        UPD_NONE,
+        UPD_SYS,
+        UPD_CONF
+    };
     Updater(const String &devName = "updater");
     virtual ~Updater();
-    t_httpUpdate_return systemUpdate(const String &server, const uint16_t port, const String &image, bool ready);
-    t_httpUpdate_return systemUpdate();
-    void onStart(void (*callback)(void*), void* = NULL);
-    void onEnd(void (*callback)(void*), void* = NULL);
-    void onNone(void (*callback)(void*), void* = NULL);
-    void onFail(void (*callback)(void*), void* = NULL);
-    void setRemote(const String &s, const uint16_t p, const String &i, bool r)
-    {server = s; port = p; image = i; ready = r; }
+    void systemUpdate(const String &s, const uint16_t p, const String &i, updateType t);
+    void systemUpdate();
+    void onStart(void (*callback)(void *), void * = NULL);
+    void onEnd(void (*callback)(void *), void * = NULL);
+    void onNone(void (*callback)(void *), void * = NULL);
+    void onFail(void (*callback)(void *), void * = NULL);
+    void onProgress(void (*callback)(size_t completed, size_t total, void *), void* = NULL);
+    void setRemote(const String &s, const uint16_t p, const String &i, updateType t)
+    {
+        server = s;
+        port = p;
+        image = i;
+        uType = t;
+    }
+    static void progcb(size_t completed, size_t total);
 
 private:
-    void (*startCallback)(void*);
-    void (*endCallback)(void*);
-    void (*nullCallback)(void*);
-    void (*failCallback)(void*);
-    void* startcbdata;
-    void* endcbdata;
-    void* nullcbdata;
-    void* failcbdata;
+    void (*startCallback)(void *);
+    void (*endCallback)(void *);
+    void (*nullCallback)(void *);
+    void (*failCallback)(void *);
+    void (*progCallback)(size_t completed, size_t total, void *);
+    void *startcbdata;
+    void *endcbdata;
+    void *nullcbdata;
+    void *failcbdata;
+    void *progcbdata;
 
     String server;
     int port;
     String image;
-    bool ready;
+    updateType uType;
+    static Updater* pThis;
 };

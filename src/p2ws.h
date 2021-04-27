@@ -33,6 +33,8 @@ public:
     static void handleSystemUpdate(AsyncWebServerRequest *r) { pThis->systemUpdatePage(r); }
     static void handleDoUpdate(AsyncWebServerRequest *r) { pThis->doUpdatePage(r); }
 
+    static void progressCB(size_t completed, size_t total, void * data);
+
 private:
     static P2WebServer *pThis;
 
