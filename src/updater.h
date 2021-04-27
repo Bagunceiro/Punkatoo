@@ -28,8 +28,6 @@ private:
     void* nullcbdata;
     void* failcbdata;
 
-
-private:
     String server;
     int port;
     String image;

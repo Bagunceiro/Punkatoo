@@ -100,7 +100,7 @@ const String P2WebServer::body1(R"!(
 <button onclick="gohome()">Home</button>
 <button onclick=gogenconf()>General</button>
 <button onclick=gowificonf()>WiFi</button>
--)!");
+)!");
 
 void P2WebServer::rootPage(AsyncWebServerRequest *req)
 {
@@ -153,8 +153,8 @@ void P2WebServer::messagePage(AsyncWebServerRequest *req, const String &message)
     const String title("Punkatoo Message");
     const String head3 = "<meta http-equiv=\"refresh\" content=\"15;url=/\" />";
     String body2(R"!(
+</div>
   <div class=content>
-  <BODY>
   <br><B>Controller: )!" +
                  config[controllername_n] + "</B><br><br>" + message + R"!(
   </div>
@@ -175,8 +175,7 @@ void P2WebServer::messagePage(AsyncWebServerRequest *req, const String &message)
 void P2WebServer::resetMessagePage(AsyncWebServerRequest *req, const String &reason)
 {
     messagePage(req, reason + "<br><br>Resetting, please wait");
-    delay(1000);
-    ESP.restart();
+    dev.p2sys.reset();
 }
 
 void P2WebServer::blankResetMessagePage(AsyncWebServerRequest *req)
