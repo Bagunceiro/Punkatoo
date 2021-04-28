@@ -1,12 +1,10 @@
-
 #include <LITTLEFS.h>
 #include <HTTPClient.h>
 #include "config.h"
-#include "p2ws.h"
+#include "p2webserver.h"
 #include "devices.h"
 
 P2WebServer *P2WebServer::pThis;
-// AsyncEventSource events("/events");
 
 const char *P2WebServer::pageRoot = "/";
 const char *P2WebServer::pageGen = "/config.gen";
@@ -20,7 +18,7 @@ const char *P2WebServer::pageDoUpdate = "/system.update.do";
 
 void P2WebServer::init()
 {
-    // HTTP_ANY for now. should be HTTP_GET etc
+    // HTTP_ANY for now. should be HTTP_GET etc?
     on(pageRoot, HTTP_ANY, handleRoot);
     on(pageGen, HTTP_ANY, handleGenConfig);
     on(pageGenUpdate, HTTP_ANY, handleGenUpdate);
@@ -38,6 +36,9 @@ void P2WebServer::init()
     });
     on("/eventlstnrs.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, "/eventlstnrs.js", "application/javascript");
+    });
+    on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LITTLEFS, "/favicon.ico", "text/css");
     });
 
     events->onConnect([](AsyncEventSourceClient *client) {
@@ -66,14 +67,6 @@ void P2WebServer::sendPage(AsyncWebServerRequest *req, ...)
     req->send(response);
 }
 
-/*
-const String P2WebServer::head1 = R"!(
-<HEAD><meta http-equiv="content-type" charset="UTF-8"
-content="text/html, width=device-width, initial-scale=1">
-<TITLE>
-)!";
-*/
-
 const char *HEAD = R"!(<HEAD><meta http-equiv="content-type" charset="UTF-8"
 content="text/html, width=device-width, initial-scale=1">)!";
 const char *TITLE = "<TITLE>";
@@ -85,52 +78,32 @@ const char *BODY = "<BODY>";
 const char *END_BODY = "</BODY>";
 const char *DIV_HEADER = R"!(<div class="header" id="myHeader">)!";
 const char *END_DIV = "</div>";
-const char *BUTTONS = R"!(
-<button onclick="gohome()">Home</button>
-<button onclick=gogenconf()>General</button>
-<button onclick=gowificonf()>WiFi</button>
-<button onclick=goreset()>Reset</button>
-<button onclick=gosysupdate()>System Update</button>)!";
+const char *BUTTON_HOME = "<button onclick=gohome()>Home</button>";
+const char *BUTTON_GENERAL = "<button onclick=gogenconf()>General</button>";
+const char *BUTTON_WIFI = "<button onclick=gowificonf()>WiFi</button>";
+const char *BUTTON_RESET = "<button onclick=goreset()>Reset</button>";
+const char *BUTTON_SYSUPDATE = "<button onclick=gosysupdate()>System Update</button>";
+const char* BUTTON_UPDATE = "<button type=submit form=theform>Update</button>";
+
+// const char *BUTTONS = R"!(
+//<button onclick="gohome()">Home</button>
+//<button onclick=gogenconf()>General</button>
+//<button onclick=gowificonf()>WiFi</button>
+//<button onclick=goreset()>Reset</button>
+//<button onclick=gosysupdate()>System Update</button>)!";
 const char *DIV_CONTENT = "<div class=content>";
 const char *TABLE = "<TABLE>";
 const char *END_TABLE = "</TABLE>";
 
-/*
-const String P2WebServer::head2 = R"!(
-</TITLE>
-<script src="/navfuncs.js"></script>
-<link rel="stylesheet" href="/punkatoo.css">
-)!";
-*/
-/*
-const String P2WebServer::head2("</TITLE>");
-
-const String P2WebServer::style = R"!(
-<script src="/navfuncs.js"></script>
-<link rel="stylesheet" href="/punkatoo.css">
-)!";
-*/
-/*
-const String P2WebServer::headEnd(R"!(
-</HEAD>
-)!");
-
-const String P2WebServer::body1(R"!(
-<BODY>
-<div class="header" id="myHeader">
-<button onclick="gohome()">Home</button>
-<button onclick=gogenconf()>General</button>
-<button onclick=gowificonf()>WiFi</button>
-)!");
-*/
 void P2WebServer::rootPage(AsyncWebServerRequest *req)
 {
     sendPage(req, HEAD, TITLE, "Punkatoo", END_TITLE, STYLES, END_HEAD,
              BODY,
-             DIV_HEADER, BUTTONS, END_DIV,
+             DIV_HEADER,
+             BUTTON_HOME, BUTTON_GENERAL, BUTTON_WIFI, BUTTON_SYSUPDATE, BUTTON_RESET,
+             END_DIV,
              DIV_CONTENT,
-             "<BR><B>Controller: ",
-             config[controllername_n].c_str(),
+             "<BR><B>Controller: ", config[controllername_n].c_str(),
              TABLE,
              R"!(<TR><TD>Time Now</TD><TD colspan=3 ><span id="nowtime"></span></TD></TR>
 <TR><TD>Git Revision</TD><TD colspan=3>)!",
@@ -168,24 +141,11 @@ document.getElementById("lux").innerHTML = obj.lux;
 
 void P2WebServer::messagePage(AsyncWebServerRequest *req, const char *message)
 {
-    /*
-    const String title("Punkatoo Message");
-    const String head3 = "<meta http-equiv=\"refresh\" content=\"15;url=/\" />";
-    String body2(R"!(
-</div>
-  <div class=content>
-  <br><B>Controller: )!" +
-                 config[controllername_n] + "</B><br><br>" + message + R"!(
-  </div>
-  </BODY>
-  )!");
-  */
-
     sendPage(req, HEAD, TITLE, "Punkatoo Message", END_TITLE, STYLES,
              "<meta http-equiv=\"refresh\" content=\"15;url=/\" />",
              END_HEAD,
              BODY,
-             DIV_HEADER, BUTTONS, END_DIV,
+             DIV_HEADER, BUTTON_HOME, BUTTON_RESET, END_DIV,
              DIV_CONTENT,
              "<BR><B>Controller: ",
              config[controllername_n].c_str(),
@@ -194,19 +154,6 @@ void P2WebServer::messagePage(AsyncWebServerRequest *req, const char *message)
              END_DIV,
              END_BODY,
              NULL);
-    // delay(1000);
-    /*
-    sendPage(req,
-             head1.c_str(),
-             title.c_str(),
-             head2.c_str(),
-             head3.c_str(),
-             headEnd.c_str(),
-             body1.c_str(),
-             body2.c_str(),
-             NULL);
-    delay(1000);
-    */
 }
 
 void P2WebServer::resetMessagePage(AsyncWebServerRequest *req, const char *reason)
@@ -239,8 +186,6 @@ void P2WebServer::genUpdatePage(AsyncWebServerRequest *req)
         config.dump(serr);
         config.writeFile();
 
-        // indicator.setColour(indicate_update, true);
-
         messagePage(req, "Configuration Updated");
     }
 }
@@ -250,7 +195,7 @@ void P2WebServer::genConfigPage(AsyncWebServerRequest *req)
     sendPage(req, HEAD, TITLE, "Punkatoo Message", END_TITLE, STYLES,
              END_HEAD,
              BODY,
-             DIV_HEADER, BUTTONS, " <button type=submit form=theform>Save</button>", END_DIV,
+             DIV_HEADER, BUTTON_HOME, BUTTON_RESET, BUTTON_UPDATE, END_DIV,
              DIV_CONTENT,
 
              "<BR><B>General Configuration: ", config[controllername_n].c_str(),
@@ -333,7 +278,6 @@ void P2WebServer::netConfigPage(AsyncWebServerRequest *req)
                 usenext = false;
                 if (argN == "newnet")
                 {
-                    // serr.printf("newnet, value = %s\n", value.c_str());
                     if (value.length() != 0)
                     {
                         addNetwork(newlist, value);
@@ -356,7 +300,7 @@ void P2WebServer::netConfigPage(AsyncWebServerRequest *req)
     sendPage(req, HEAD, TITLE, "WiFi Networks", END_TITLE, STYLES,
              END_HEAD,
              BODY,
-             DIV_HEADER, BUTTONS, " <button type=submit form=theform>Save</button>", END_DIV,
+             DIV_HEADER, BUTTON_HOME, BUTTON_RESET, BUTTON_UPDATE, END_DIV,
              DIV_CONTENT,
              "<BR><B>WiFi Configuration: ", config[controllername_n].c_str(),
              "</B>",
@@ -405,7 +349,7 @@ void P2WebServer::newNetPage(AsyncWebServerRequest *req)
     sendPage(req, HEAD, TITLE, "WiFi Network", END_TITLE, STYLES,
              END_HEAD,
              BODY,
-             DIV_HEADER, BUTTONS, END_DIV,
+             DIV_HEADER, BUTTON_HOME, BUTTON_WIFI, BUTTON_RESET, END_DIV,
              DIV_CONTENT,
              "<br><B>WiFi Network Edit: ",
              config[controllername_n].c_str(),
@@ -426,49 +370,11 @@ void P2WebServer::netEditPage(AsyncWebServerRequest *req)
             break;
         }
     }
-    /*
-    String title("WiFi Network");
-    String head3("");
-    String body2;
-    body2 = (String) R"=====(
-<button type=submit form=theform>Update</button>
-</div>
-<div class=content>
-<BR><B>WiFi Network Edit: ")=====" +
-            config[controllername_n] + R"=====("</B>
-<FORM id=theform method=post action=)=====" +
-            pageWiFiNetAdd + R"=====(>
-<table>
-<tr>
-<td>SSID:</td>
-<td><INPUT name=ssid value=")=====" +
-            ssid + R"====("/></td>
-</tr>
-<tr>
-<td>PSK:</td>
-<td><INPUT type=password name=psk value=""/></td>
-</tr>
-</table>
-</FORM>
-</div>
-</BODY>
-)====";
-
-    sendPage(req,
-             head1.c_str(),
-             title.c_str(),
-             head2.c_str(),
-             head3.c_str(),
-             headEnd.c_str(),
-             body1.c_str(),
-             body2.c_str(),
-             NULL);
-             */
 
     sendPage(req, HEAD, TITLE, "WiFi Network", END_TITLE, STYLES,
              END_HEAD,
              BODY,
-             DIV_HEADER, BUTTONS, "<button type=submit form=theform>Update</button>", END_DIV,
+             DIV_HEADER, BUTTON_HOME, BUTTON_WIFI, BUTTON_RESET, BUTTON_UPDATE, END_DIV,
              DIV_CONTENT,
              "<br><B>WiFi Network Edit: ", config[controllername_n].c_str(), "</B>",
              "<FORM id=theform method=post action=", pageWiFiNetAdd, ">",
@@ -484,52 +390,18 @@ void P2WebServer::netEditPage(AsyncWebServerRequest *req)
 
 void P2WebServer::systemUpdatePage(AsyncWebServerRequest *req)
 {
-    /*
-    String title("Punkatoo System Update");
-    String head3("");
-    String body2((String) R"=====(
-<button type=submit form=theform>Update</button>
-</div>
-<div class=content>
-<BR><B>System Update: )=====" +
-                 config[controllername_n] + R"=====(</B>
-<FORM id=theform method=post action=")=====" +
-                 pageDoUpdate + R"=====(")>
-<table>
-<tr><td><label for=server>Update server:</label></td>
-<td><input type=text name=server value=")=====" +
-                 config[mqtthost_n] + R"=====("></td></tr>
-<tr><td><label for=port>Port:</label></td>
-<td><input type=text name=port value=80></td></tr>
-<tr><td><label for=image>Update image file:</label></td>
-<td><input type=text name=image value="/bin/punkatoo.bin"></td></tr>
-</table>
-</FORM>
-</div>
-</BODY>
-)=====");
-    sendPage(req,
-             head1.c_str(),
-             title.c_str(),
-             head2.c_str(),
-             head3.c_str(),
-             headEnd.c_str(),
-             body1.c_str(),
-             body2.c_str(),
-             NULL);
-             */
-
     sendPage(req, HEAD, TITLE, "Punkatoo System Update", END_TITLE, STYLES,
              END_HEAD,
              BODY,
-             DIV_HEADER, BUTTONS, " <button type=submit form=theform>Update</button>", END_DIV,
+             DIV_HEADER, BUTTON_HOME, BUTTON_RESET, BUTTON_UPDATE, END_DIV,
              DIV_CONTENT,
              "<br><B>System Update: ", config[controllername_n].c_str(), "</B>",
              "<FORM id=theform method=post action=", pageDoUpdate, ">",
              TABLE,
              "<tr><td><label for=server>Update server:</label></td><td><input type=text name=server value=\"", config[mqtthost_n].c_str(), "\"></td></tr>",
              "<tr><td><label for=port>Port:</label></td><td><input type=text name=port value=80></td></tr>",
-             "<tr><td><label for=image>Update image file:</label></td><td><input type=text name=image value=\"/bin/punkatoo.bin\"></td></tr>",
+             "<tr><td><label for=image>Source file:</label></td><td><input type=text name=image value=\"/bin/punkatoo.bin\"></td></tr>",
+             "<tr><td><label for=target>Target file:</label></td><td><input type=text name=target value=\"\"></td></tr>",
              END_TABLE,
              "</FORM>",
              END_DIV,
@@ -578,6 +450,7 @@ void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
     String server;
     String port;
     String image;
+    String target;
 
     for (int i = 0; i < req->args(); i++)
     {
@@ -588,6 +461,8 @@ void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
             port = req->arg(i);
         else if (argN == "image")
             image = req->arg(i);
+        else if (argN == "target")
+            target = req->arg(i);
     }
 
     String ext;
@@ -601,60 +476,14 @@ void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
     {
         doUpdateSysPage(req, server.c_str(), port.toInt(), image.c_str());
     }
+    else
+    {
+        doUpdateConfPage(req, server.c_str(), port.toInt(), image.c_str(), target.c_str());
+    }
 }
 
 void P2WebServer::doUpdateSysPage(AsyncWebServerRequest *req, const char *server, const int port, const char *image)
 {
-    /*
-    const String title("Punkatoo");
-    dev.updater.onEnd(updateInfo);
-    dev.updater.onFail(updateInfo);
-    dev.updater.onProgress(progressCB);
-    dev.updater.setRemote(Updater::UPD_SYS, server, port, image, image);
-
-    String body2((String) R"=====(
-</div>
-<div class=content>
-<BR><BR><B>System Updating: )=====" +
-                 config[controllername_n] + R"=====(</B>
-<BR><BR>
-Progress: <span id="progress"></span>
-<script>
-if (!!window.EventSource) {
- var source = new EventSource('/events');
- 
- source.addEventListener('open', function(e) {
-  console.log("Events Connected");
- }, false);
- source.addEventListener('error', function(e) {
-  if (e.target.readyState != EventSource.OPEN) {
-    console.log("Events Disconnected");
-  }
- }, false);
- 
- source.addEventListener('message', function(e) {
-  console.log("message", e.data);
- }, false);
-
- source.addEventListener('progress', function(e) {
-  console.log("progress", e.data);
-  document.getElementById("progress").innerHTML = e.data;
- }, false);
-}
- </script>
-</BODY>
-)=====");
-
-    sendPage(req,
-             head1.c_str(),
-             title.c_str(),
-             head2.c_str(),
-             headEnd.c_str(),
-             body1.c_str(),
-             body2.c_str(),
-             NULL);
-             */
-
     dev.updater.onEnd(updateInfo);
     dev.updater.onFail(updateInfo);
     dev.updater.onProgress(progressCB);
@@ -688,7 +517,9 @@ if (!!window.EventSource) {
  source.addEventListener('progress', function(e) {
   console.log("progress", e.data);
   if (e.data == "OK") {
-  document.getElementById("buttons").innerHTML ="<button onclick=gohome()>Home</button> <button onclick=goreset()>Reset</button>";
+  document.getElementById("buttons").innerHTML = ")+++",
+             BUTTON_HOME, BUTTON_RESET,
+             R"+++(";
   document.getElementById("progress").innerHTML = "Update Available, reset device to load";
   }
   else {
@@ -704,56 +535,6 @@ if (!!window.EventSource) {
 
 void P2WebServer::doUpdateConfPage(AsyncWebServerRequest *req, const char *server, const int port, const char *src, const char *target)
 {
-    /*
-    const String title("Punkatoo");
-    dev.updater.onEnd(updateInfo);
-    dev.updater.onFail(updateInfo);
-    dev.updater.onProgress(progressCB);
-    dev.updater.setRemote(Updater::UPD_CONF, server, port, src, target);
-    String body2((String) R"=====(
-</div>
-<div class=content>
-<BR><BR><B>Updating: )=====" +
-                 config[controllername_n] + R"=====(</B>
-<BR><BR>File: )=====" +
-                 target + R"=====(
-<BR>
-Progress: <span id="progress"></span>
-<script>
-if (!!window.EventSource) {
- var source = new EventSource('/events');
- 
- source.addEventListener('open', function(e) {
-  console.log("Events Connected");
- }, false);
- source.addEventListener('error', function(e) {
-  if (e.target.readyState != EventSource.OPEN) {
-    console.log("Events Disconnected");
-  }
- }, false);
- 
- source.addEventListener('message', function(e) {
-  console.log("message", e.data);
- }, false);
-
- source.addEventListener('progress', function(e) {
-  console.log("progress", e.data);
-  document.getElementById("progress").innerHTML = e.data;
- }, false);
-}
- </script>
-</BODY>
-)=====");
-    sendPage(req,
-             head1.c_str(),
-             title.c_str(),
-             head2.c_str(),
-             headEnd.c_str(),
-             body1.c_str(),
-             body2.c_str(),
-             NULL);
-             */
-
     dev.updater.onEnd(updateInfo);
     dev.updater.onFail(updateInfo);
     dev.updater.onProgress(progressCB);
@@ -762,33 +543,17 @@ if (!!window.EventSource) {
     sendPage(req, HEAD, TITLE, "Punkatoo", END_TITLE, STYLES,
              END_HEAD,
              BODY,
-             DIV_HEADER, BUTTONS, "<button type=submit form=theform>Update</button>", END_DIV,
+             DIV_HEADER, BUTTON_HOME, BUTTON_RESET, BUTTON_UPDATE, END_DIV,
              DIV_CONTENT,
              "<br><B>System Updating: ", config[controllername_n].c_str(), "</B>",
              "<BR><BR>File: ", target, "<BR>Progress: <span id=\"progress\"></span>",
-             R"+++(<script>
-if (!!window.EventSource) {
- var source = new EventSource('/events');
- 
- source.addEventListener('open', function(e) {
-  console.log("Events Connected");
- }, false);
- source.addEventListener('error', function(e) {
-  if (e.target.readyState != EventSource.OPEN) {
-    console.log("Events Disconnected");
-  }
- }, false);
- 
- source.addEventListener('message', function(e) {
-  console.log("message", e.data);
- }, false);
-
+             R"!(<script src="/eventlstnrs.js"></script>)!",
+             R"+++(<script>{
  source.addEventListener('progress', function(e) {
   console.log("progress", e.data);
   document.getElementById("progress").innerHTML = e.data;
  }, false);
-}
- </script>)+++",
+}</script>)+++",
              END_DIV,
              END_BODY,
              NULL);

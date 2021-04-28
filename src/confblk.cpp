@@ -4,7 +4,8 @@
 
 #include <wifiserial.h>
 
-ConfBlk::ConfBlk(const String& fileName)
+// ConfBlk::ConfBlk(const String& fileName)
+ConfBlk::ConfBlk(const char* fileName)
 {
     _fileName = fileName;
 }

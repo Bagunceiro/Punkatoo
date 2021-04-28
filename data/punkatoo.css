@@ -1,8 +1,14 @@
 body {font-family:Arial, Sans-Serif; font-size: 4vw; background-color: lavender;}
-table {font-family: arial, sans-serif; border-collapse: collapse; margin-left: 5%; width: 100%;}
+table {
+  font-family: arial, sans-serif; border-collapse: collapse; margin-left: 5%; width: 90%;
+  box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5);
+}
 th, td, input {font-size: 4vw; border: 1px solid #dddddd;white-space:nowrap; text-align: left; padding: 8px; }
 tr:nth-child(even) { background-color: thistle;}
-button {font-size: 3vw; background: indigo; color: white; }
+button {
+  font-size: 3vw; background: indigo; color: white;
+  box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5);
+}
 input[type=checkbox] {display:none;}
 input[type=checkbox] + label:before {content:"☐  ";}
 input:checked + label:before {content:"☑  ";}

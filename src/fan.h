@@ -10,7 +10,7 @@ class Fan: public MQTTClientDev, public IRClientDev
 
     */
   public:
-    Fan(String devName, const int dirRly1, const int dirRly2, const int speedRly1, const int speedRly2);
+    Fan(const char* devName, const int dirRly1, const int dirRly2, const int speedRly1, const int speedRly2);
     virtual ~Fan();
     /*
       initialise the fan with GPIO pins for the relays

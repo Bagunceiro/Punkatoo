@@ -1,0 +1,64 @@
+<head>
+  <meta
+    http-equiv="content-type"
+    charset="UTF-8"
+    content="text/html, width=device-width, initial-scale=1"
+  />
+  <title>Punkatoo</title>
+  <script src="/navfuncs.js"></script>
+  <link rel="stylesheet" href="/punkatoo.css" />
+</head>
+
+<body>
+  <div class="header" id="myHeader">
+    <button onclick="gohome()">Home</button>
+    <button onclick="gogenconf()">General</button>
+    <button onclick="gowificonf()">WiFi</button>
+    <button onclick="goreset()">Reset</button>
+    <button onclick="gosysupdate()">System Update</button
+    ><button type="submit" form="theform">Update</button>
+  </div>
+  <div class="content">
+    <br /><b>System Updating: test</b><br /><br />File: /punkatoo.css<br />Progress:
+    <span id="progress"></span>
+    <script>
+      if (!!window.EventSource) {
+        var source = new EventSource("/events");
+
+        source.addEventListener(
+          "open",
+          function(e) {
+            console.log("Events Connected");
+          },
+          false
+        );
+        source.addEventListener(
+          "error",
+          function(e) {
+            if (e.target.readyState != EventSource.OPEN) {
+              console.log("Events Disconnected");
+            }
+          },
+          false
+        );
+
+        source.addEventListener(
+          "message",
+          function(e) {
+            console.log("message", e.data);
+          },
+          false
+        );
+
+        source.addEventListener(
+          "progress",
+          function(e) {
+            console.log("progress", e.data);
+            document.getElementById("progress").innerHTML = e.data;
+          },
+          false
+        );
+      }
+    </script>
+  </div>
+</body>

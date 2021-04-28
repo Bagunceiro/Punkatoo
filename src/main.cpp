@@ -100,7 +100,8 @@ void wpsInit()
   strcpy(wpsconfig.factory_info.model_number, "1");
   strcpy(wpsconfig.factory_info.model_name, "Punkatoo");
   strcpy(wpsconfig.factory_info.device_name, config[controllername_n].c_str());
-  esp_wifi_wps_enable(&wpsconfig);
+  // strcpy(wpsconfig.factory_info.device_name, config[controllername_n]);
+esp_wifi_wps_enable(&wpsconfig);
   esp_wifi_wps_start(0);
   serr.println("WPS started");
   dev.p2sys.enterState(P2System::STATE_WPS);
@@ -178,7 +179,7 @@ void setup()
   if (config.readFile() == false)
     config.writeFile();
 
-  serr.println("");
+  serr.println();
 
   serr.println(gitrevision);
   serr.printf("Compiled at: %s\n", compDateTime);
@@ -219,6 +220,7 @@ void heartbeat()
   StaticJsonDocument<512> doc;
   String data;
 
+  doc["ctlr"] = config[controllername_n];
   doc["nowtime"] = nowTime();
   doc["uptime"] = upTime();
 
@@ -320,7 +322,6 @@ void loop()
     dev.indicators[0].poll();
   }
 
-
   static unsigned long then = 0;
   unsigned long now = millis();
   if ((now - then) >= 1000)
@@ -329,4 +330,3 @@ void loop()
     then = now;
   }
 }
-

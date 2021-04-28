@@ -17,13 +17,6 @@ public:
   Event();
   virtual ~Event();
 
-/*
-  struct Timestamp
-  {
-    time_t secs;
-    uint16_t msecs;
-   } ts;
-   */
   bool validts;
   unsigned long long timestamp;
   uint16_t serial;

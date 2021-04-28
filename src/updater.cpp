@@ -8,6 +8,7 @@
 extern IndicatorLed::Colour indicateUpdate;
 Updater *Updater::pThis = NULL;
 
+/*
 void updateStarted(void *)
 {
   Event e;
@@ -20,27 +21,6 @@ void updateCompleted(void *)
 {
   Event e;
   e.enqueue("Update complete");
-  dev.p2sys.revertState();
-
-  /*
-  time_t now = timeClient.getEpochTime();
-  config[updateTime_n] = String(now);
-  config.writeFile();
-*/
-}
-
-/*
-void updateNone(void *)
-{
-  Event e;
-  e.enqueue("No update available");
-  dev.p2sys.revertState();
-}
-
-void updateFail(void *)
-{
-  Event e;
-  e.enqueue("Update failed");
   dev.p2sys.revertState();
 }
 */
@@ -73,22 +53,6 @@ void Updater::doprogcb(size_t completed, size_t total)
   }
 }
 
-/*
-void endcb(void *)
-{
-  dev.webServer.event("progress", "Complete. Reseting, please wait");
-  delay(1000);
-  ESP.restart();
-}
-*/
-
-/*
-void Updater::systemUpdate(const String &s, const uint16_t p, const String &i, updateType t)
-{
-  setRemote(s, p, i, t);
-  ();
-}
-*/
 bool Updater::operator()()
 {
   switch (uType)
@@ -119,28 +83,37 @@ void Updater::systemUpdate()
 
   Update.onProgress(progcb);
 
+  Event e;
+  e.enqueue("Update started");
+  dev.p2sys.enterState(P2System::STATE_UPDATE);
+  dev.toSecure();
+
   t_httpUpdate_return ret = httpUpdate.update(client, server, port, source);
 
   switch (ret)
   {
   case HTTP_UPDATE_FAILED:
-    snprintf(messageBuffer, sizeof(messageBuffer)-1, "HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+    snprintf(messageBuffer, sizeof(messageBuffer) - 1, "Update failed (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+    e.enqueue(messageBuffer);
     if (failCallback != NULL)
       failCallback(messageBuffer, failcbdata);
     break;
 
   case HTTP_UPDATE_NO_UPDATES:
     serr.println("HTTP_UPDATE_NO_UPDATES");
+    e.enqueue("No updates available");
     if (nullCallback != NULL)
       nullCallback("No Updates Available", nullcbdata);
     break;
 
   case HTTP_UPDATE_OK:
     serr.println("HTTP_UPDATE_OK");
+    e.enqueue("Update complete");
     if (endCallback != NULL)
       endCallback("OK", endcbdata);
     break;
   }
+  dev.p2sys.revertState();
 }
 
 void Updater::configUpdate()
@@ -153,56 +126,74 @@ void Updater::configUpdate()
   {
     if (httpCode == HTTP_CODE_OK)
     {
-      File f = LITTLEFS.open(target, "w+");
+      File f = LITTLEFS.open("/upload.tmp", "w+");
       if (f)
       {
         Stream &s = http.getStream();
         uint8_t buffer[32];
+        size_t total = http.getSize();
+        size_t sofar = 0;
         size_t l;
+        unsigned long then = 0;
+        doprogcb(sofar, total);
+        delay(1000);
         while ((l = s.readBytes(buffer, sizeof(buffer) - 1)))
         {
+          unsigned long now = millis();
+          if ((now - then) > 1000)
+          {
+            then = now;
+            doprogcb(sofar, total);
+          }
+          sofar += l;
           f.write(buffer, l);
         }
         f.close();
-        snprintf(messageBuffer, sizeof(messageBuffer) -1, "File uploaded");
-        if (endCallback != NULL) endCallback(messageBuffer, endcbdata);
+        if (LITTLEFS.rename("/upload.tmp", target))
+        {
+          if (endCallback != NULL)
+            endCallback("Complete", endcbdata);
+        }
+        else if (failCallback != NULL)
+          failCallback("Could not create file", failcbdata);
       }
-      else
-        snprintf(messageBuffer, sizeof(messageBuffer) -1, "Could not open file");
-        if (failCallback != NULL) failCallback(messageBuffer, failcbdata);
+      else if (failCallback != NULL)
+        failCallback("Could not open temporary file", failcbdata);
     }
     else
     {
-      snprintf(messageBuffer, sizeof(messageBuffer) -1, "Upload failed (%d)", httpCode);
-      if (failCallback != NULL) failCallback(messageBuffer, failcbdata);
+      snprintf(messageBuffer, sizeof(messageBuffer) - 1, "Upload failed (%d)", httpCode);
+      if (failCallback != NULL)
+        failCallback(messageBuffer, failcbdata);
     }
   }
   else
   {
-    snprintf(messageBuffer, sizeof(messageBuffer) -1, "GET failed, error: %s", http.errorToString(httpCode).c_str());
-    if (failCallback != NULL) failCallback(messageBuffer, failcbdata);
+    snprintf(messageBuffer, sizeof(messageBuffer) - 1, "GET failed, error: %s", http.errorToString(httpCode).c_str());
+    if (failCallback != NULL)
+      failCallback(messageBuffer, failcbdata);
   }
 }
 
-void Updater::onStart(void (*callback)(const char*, void *), void *d)
+void Updater::onStart(void (*callback)(const char *, void *), void *d)
 {
   startCallback = callback;
   startcbdata = d;
 }
 
-void Updater::onEnd(void (*callback)(const char*, void *), void *d)
+void Updater::onEnd(void (*callback)(const char *, void *), void *d)
 {
   endCallback = callback;
   endcbdata = d;
 }
 
-void Updater::onNone(void (*callback)(const char*, void *), void *d)
+void Updater::onNone(void (*callback)(const char *, void *), void *d)
 {
   nullCallback = callback;
   nullcbdata = d;
 }
 
-void Updater::onFail(void (*callback)(const char*, void *), void *d)
+void Updater::onFail(void (*callback)(const char *, void *), void *d)
 {
   failCallback = callback;
   failcbdata = d;

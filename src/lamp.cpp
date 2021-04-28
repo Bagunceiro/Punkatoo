@@ -4,7 +4,7 @@
 #include "indicator.h"
 #include "eventlog.h"
 
-Lamp::Lamp(String devName, const int relayPin) : MQTTClientDev(devName), IRClientDev(devName), SwitchedDev(devName)
+Lamp::Lamp(const char* devName, const int relayPin) : MQTTClientDev(devName), IRClientDev(devName), SwitchedDev(devName)
 {
   lpin = relayPin;
   pinMode(lpin, OUTPUT);

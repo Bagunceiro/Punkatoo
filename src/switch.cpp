@@ -36,10 +36,6 @@ bool Switch::poll()
       char buffer [24];
       snprintf(buffer, sizeof(buffer) -1, "Switch %s (%d)", (newState == 1 ? "Open" : "Closed"), debounce);
       e.enqueue(buffer);
-      // String msg("Switch ");
-      // msg += (newState == 1 ? "Open" : "Closed");
-      // msg += " (" + String(debounce) + ")";
-      // e.enqueue(msg.c_str());
       for (SwitchedDev *d : switched)
       {
         d->switchTo(newState);

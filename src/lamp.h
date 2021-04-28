@@ -10,7 +10,7 @@
 class Lamp: public MQTTClientDev, public IRClientDev, public SwitchedDev
 {
   public:
-    Lamp(String devName, const int relayPin);
+    Lamp(const char* devName, const int relayPin);
 
     const int getStatus() const;
     void sw(int toState);

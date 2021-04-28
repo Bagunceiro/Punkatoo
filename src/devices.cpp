@@ -146,7 +146,7 @@ void Devices::buildLamp(JsonArray list)
                 serr.printf("  %s: %s\n", kvl.key().c_str(), kvl.value().as<String>().c_str());
         }
         serr.printf("lamp %s on pin %d\n", id.c_str(), pin);
-        Lamp *lamp = new Lamp(id, pin);
+        Lamp *lamp = new Lamp(id.c_str(), pin);
         lamps.push_back(*lamp);
     }
 }
@@ -225,7 +225,7 @@ void Devices::buildFan(JsonArray list)
                 serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
         serr.printf("Fan %s on pins %d, %d, %d, %d\n", id.c_str(), pinD1, pinD2, pinS1, pinS2);
-        Fan *fan = new Fan(id, pinD1, pinD2, pinS1, pinS2);
+        Fan *fan = new Fan(id.c_str(), pinD1, pinD2, pinS1, pinS2);
         fans.push_back(*fan);
     }
 }
@@ -273,7 +273,7 @@ void Devices::buildBME(JsonArray list)
         }
         serr.printf("BME %s on address %x\n", id.c_str(), addr);
 
-        BME *bme = new BME(id, addr);
+        BME *bme = new BME(id.c_str(), addr);
         bmes.push_back(*bme);
     }
 }
