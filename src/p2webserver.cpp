@@ -16,14 +16,6 @@ const char *P2WebServer::pageReset = "/reset";
 const char *P2WebServer::pageSystemUpdate = "/system.update";
 const char *P2WebServer::pageDoUpdate = "/system.update.do";
 
-void serveJS(AsyncWebServerRequest *request) {
-    request->send(LITTLEFS, request->url(), "application/javascript");
-}
-
-void serveCSS(AsyncWebServerRequest *request) {
-    request->send(LITTLEFS, request->url(), "text/css");
-}
-
 void P2WebServer::init()
 {
     // HTTP_ANY for now. should be HTTP_GET etc?
@@ -36,9 +28,16 @@ void P2WebServer::init()
     on(pageReset, HTTP_ANY, handleReset);
     on(pageSystemUpdate, HTTP_ANY, handleSystemUpdate);
     on(pageDoUpdate, HTTP_ANY, handleDoUpdate);
+    on("/punkatoo.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LITTLEFS, "/punkatoo.css", "text/css");
+    });
+    on("/navfuncs.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LITTLEFS, "/navfuncs.js", "application/javascript");
+    });
+    on("/eventlstnrs.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LITTLEFS, "/eventlstnrs.js", "application/javascript");
+    });
 
-    on ("^.*\\.js$", HTTP_GET, serveJS);
-    on ("^.*\\.css$", HTTP_GET, serveCSS);
     on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, "/favicon.ico", "text/css");
     });
