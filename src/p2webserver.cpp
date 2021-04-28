@@ -16,6 +16,20 @@ const char *P2WebServer::pageReset = "/reset";
 const char *P2WebServer::pageSystemUpdate = "/system.update";
 const char *P2WebServer::pageDoUpdate = "/system.update.do";
 
+void serveFile(AsyncWebServerRequest *request)
+{
+    String file = request->url();
+    const char *mimetype;
+    if (file.endsWith(".js"))
+        mimetype = "application/javascript";
+    else if (file.endsWith(".css"))
+        mimetype = "text/css";
+    else
+        mimetype = "application/octet-stream";
+    Serial.printf("File %s requested\n", file.c_str());
+    request->send(LITTLEFS, file, mimetype);
+}
+
 void P2WebServer::init()
 {
     // HTTP_ANY for now. should be HTTP_GET etc?
@@ -28,19 +42,23 @@ void P2WebServer::init()
     on(pageReset, HTTP_ANY, handleReset);
     on(pageSystemUpdate, HTTP_ANY, handleSystemUpdate);
     on(pageDoUpdate, HTTP_ANY, handleDoUpdate);
+    /*
     on("/punkatoo.css", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, "/punkatoo.css", "text/css");
     });
     on("/navfuncs.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, "/navfuncs.js", "application/javascript");
     });
+    /*
     on("/eventlstnrs.js", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, "/eventlstnrs.js", "application/javascript");
     });
+    */
 
     on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, "/favicon.ico", "text/css");
     });
+    onNotFound(serveFile);
 
     events->onConnect([](AsyncEventSourceClient *client) {
         if (client->lastId())
@@ -84,7 +102,7 @@ const char *BUTTON_GENERAL = "<button onclick=gogenconf()>General</button>";
 const char *BUTTON_WIFI = "<button onclick=gowificonf()>WiFi</button>";
 const char *BUTTON_RESET = "<button onclick=goreset()>Reset</button>";
 const char *BUTTON_SYSUPDATE = "<button onclick=gosysupdate()>System Update</button>";
-const char* BUTTON_UPDATE = "<button type=submit form=theform>Update</button>";
+const char *BUTTON_UPDATE = "<button type=submit form=theform>Update</button>";
 
 // const char *BUTTONS = R"!(
 //<button onclick="gohome()">Home</button>
