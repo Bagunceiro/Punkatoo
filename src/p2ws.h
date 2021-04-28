@@ -20,8 +20,6 @@ public:
     }
     void init();
     void event(const char *name, const char *content);
-    void event(const char *name, const long content);
-    void event(const char *name, const double content);
 
     static void handleRoot(AsyncWebServerRequest *r) { pThis->rootPage(r); }
     static void handleGenConfig(AsyncWebServerRequest *r) { pThis->genConfigPage(r); }
@@ -29,7 +27,7 @@ public:
     static void handleNetConfig(AsyncWebServerRequest *r) { pThis->netConfigPage(r); }
     static void handleNetEdit(AsyncWebServerRequest *r) { pThis->netEditPage(r); }
     static void handleNewNet(AsyncWebServerRequest *r) { pThis->newNetPage(r); }
-    static void blankResetMessage(AsyncWebServerRequest *r) { pThis->blankResetMessagePage(r); }
+    static void handleReset(AsyncWebServerRequest *r) { pThis->blankResetMessagePage(r); }
     static void handleSystemUpdate(AsyncWebServerRequest *r) { pThis->systemUpdatePage(r); }
     static void handleDoUpdate(AsyncWebServerRequest *r) { pThis->doUpdatePage(r); }
 
@@ -44,13 +42,18 @@ private:
     void netConfigPage(AsyncWebServerRequest *r);
     void netEditPage(AsyncWebServerRequest *r);
     void newNetPage(AsyncWebServerRequest *r);
-    void resetMessagePage(AsyncWebServerRequest *r, const String &reason);
+    void resetMessagePage(AsyncWebServerRequest *r, const char* reason = "");
     void blankResetMessagePage(AsyncWebServerRequest *r);
     void systemUpdatePage(AsyncWebServerRequest *r);
     void doUpdatePage(AsyncWebServerRequest *r);
-    void messagePage(AsyncWebServerRequest *r, const String &message);
-    void sendPage(AsyncWebServerRequest *r, const int noItems, ...);
-    static void updateCompleted(void*);
+    void doUpdateSysPage(AsyncWebServerRequest *r, const char* srv, const int port, const char* src);
+    void doUpdateConfPage(AsyncWebServerRequest *r,  const char* srv, const int port, const char* src, const char* target);
+    void messagePage(AsyncWebServerRequest *r, const char* message);
+    void sendPage(AsyncWebServerRequest *r, ...);
+    // static void updateCompleted(void*);
+    // static void updateFailed(void*);
+    static void updateInfo(const char*, void*);
+
 
     String &listNetworks(String &body, networkList &networks, bool selected);
   
@@ -64,12 +67,12 @@ private:
     static const char *pageSystemUpdate;
     static const char *pageDoUpdate;
 
-    static const String style;
+    // static const String style;
 
-    static const String head1;
-    static const String head2;
-    static const String headEnd;
-    static const String body1;
+    //static const String head1;
+    //static const String head2;
+    //static const String headEnd;
+    //static const String body1;
     AsyncEventSource *events;
     unsigned long eventid;
 };

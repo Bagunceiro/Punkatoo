@@ -113,7 +113,7 @@ public:
     Called by registerIR to allow derived class to subscribe to messages of interest
   */
   virtual void subscribeToIR() = 0;
-  String getName() { return name; }
+  const char* getName() { return name.c_str(); }
 
 protected:
   bool subscribe(IRMessage m);

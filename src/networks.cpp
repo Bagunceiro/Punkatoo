@@ -21,8 +21,8 @@ networkList &scanNetworks()
     }
     else
     {
-        serr.print(n);
-        serr.println(" networks found");
+        // serr.print(n);
+        // serr.println(" networks found");
         scannedNets.clear();
         for (int i = 0; i < n; ++i)
         {
@@ -32,6 +32,7 @@ networkList &scanNetworks()
             network.rssi = WiFi.RSSI(i);
             scannedNets.push_back(network);
 
+/*
             serr.print(i + 1);
             serr.print(": ");
             serr.print(WiFi.SSID(i));
@@ -39,6 +40,7 @@ networkList &scanNetworks()
             serr.print(WiFi.RSSI(i));
             serr.print(")");
             serr.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
+*/
         }
     }
     serr.println("");
@@ -53,10 +55,6 @@ networkList &networkConfRead()
     {
         perror("");
         serr.println("Config file open for read failed");
-        // TEMPORARY !!!!
-        //   WiFiNetworkDef network("asgard_2g", "enaLkraP");
-        //    configuredNets.push_back(network);
-        //    networkConfWrite(configuredNets);
     }
     else
     {
@@ -75,7 +73,7 @@ networkList &networkConfRead()
         {
             const char *ssid = (const char *)net["ssid"];
             const char *psk = (const char *)net["psk"];
-            serr.printf("Configured network: %s/%s\n", ssid, psk);
+            // serr.printf("Configured network: %s/%s\n", ssid, psk);
 
             WiFiNetworkDef network(ssid, psk);
             configuredNets.push_back(network);

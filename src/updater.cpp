@@ -1,11 +1,12 @@
 #include <ArduinoJson.h>
+#include <LITTLEFS.h>
 
 #include "config.h"
 #include "devices.h"
 #include "p2system.h"
 
 extern IndicatorLed::Colour indicateUpdate;
-Updater* Updater::pThis = NULL;
+Updater *Updater::pThis = NULL;
 
 void updateStarted(void *)
 {
@@ -28,6 +29,7 @@ void updateCompleted(void *)
 */
 }
 
+/*
 void updateNone(void *)
 {
   Event e;
@@ -41,13 +43,14 @@ void updateFail(void *)
   e.enqueue("Update failed");
   dev.p2sys.revertState();
 }
+*/
 
-Updater::Updater(const String &devName)
+Updater::Updater(const String &devName) : P2Task(devName, 8000)
 {
-  startCallback = updateStarted;
-  endCallback = updateCompleted;
-  nullCallback = updateNone;
-  failCallback = updateFail;
+  startCallback = NULL;
+  endCallback = NULL;
+  nullCallback = NULL;
+  failCallback = NULL;
   progCallback = NULL;
   uType = UPD_NONE;
   startcbdata = NULL;
@@ -55,96 +58,151 @@ Updater::Updater(const String &devName)
   nullcbdata = NULL;
   failcbdata = NULL;
   pThis = this;
+  messageBuffer[0] = '\0';
 }
 
 Updater::~Updater()
 {
 }
 
-void Updater::progcb(size_t completed, size_t total)
+void Updater::doprogcb(size_t completed, size_t total)
 {
-  if (pThis->progCallback != NULL)
+  if (progCallback != NULL)
   {
-    pThis->progCallback(completed, total, pThis->progcbdata);
+    progCallback(completed, total, progcbdata);
   }
 }
 
+/*
 void endcb(void *)
 {
   dev.webServer.event("progress", "Complete. Reseting, please wait");
   delay(1000);
   ESP.restart();
 }
+*/
 
+/*
 void Updater::systemUpdate(const String &s, const uint16_t p, const String &i, updateType t)
 {
   setRemote(s, p, i, t);
-  systemUpdate();
+  ();
+}
+*/
+bool Updater::operator()()
+{
+  switch (uType)
+  {
+  case UPD_SYS:
+    systemUpdate();
+    break;
+  case UPD_CONF:
+    configUpdate();
+    break;
+  default:
+    break;
+  }
+  uType = UPD_NONE;
+  return true;
 }
 
 void Updater::systemUpdate()
 {
-  if (uType == UPD_SYS)
+  WiFiClient client;
+
+  if (startCallback != NULL)
   {
-    uType = UPD_NONE;
-    WiFiClient client;
+    startCallback("", startcbdata);
+  }
 
-    if (startCallback != NULL)
-    {
-      startCallback(startcbdata);
-    }
+  httpUpdate.rebootOnUpdate(false);
 
-    httpUpdate.rebootOnUpdate(false);
+  Update.onProgress(progcb);
 
-    Update.onProgress(progcb);
+  t_httpUpdate_return ret = httpUpdate.update(client, server, port, source);
 
-    t_httpUpdate_return ret = httpUpdate.update(client, server, port, image);
+  switch (ret)
+  {
+  case HTTP_UPDATE_FAILED:
+    snprintf(messageBuffer, sizeof(messageBuffer)-1, "HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+    if (failCallback != NULL)
+      failCallback(messageBuffer, failcbdata);
+    break;
 
-    switch (ret)
-    {
-    case HTTP_UPDATE_FAILED:
-      serr.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-      if (failCallback != NULL)
-        failCallback(failcbdata);
-      break;
+  case HTTP_UPDATE_NO_UPDATES:
+    serr.println("HTTP_UPDATE_NO_UPDATES");
+    if (nullCallback != NULL)
+      nullCallback("No Updates Available", nullcbdata);
+    break;
 
-    case HTTP_UPDATE_NO_UPDATES:
-      serr.println("HTTP_UPDATE_NO_UPDATES");
-      if (nullCallback != NULL)
-        nullCallback(nullcbdata);
-      break;
-
-    case HTTP_UPDATE_OK:
-      serr.println("HTTP_UPDATE_OK");
-      if (endCallback != NULL)
-        endCallback(endcbdata);
-      // dev.webServer.event("progress", "Complete. Reseting, please wait");
-      // delay(1000);
-      // ESP.restart();
-      break;
-    }
+  case HTTP_UPDATE_OK:
+    serr.println("HTTP_UPDATE_OK");
+    if (endCallback != NULL)
+      endCallback("OK", endcbdata);
+    break;
   }
 }
 
-void Updater::onStart(void (*callback)(void *), void *d)
+void Updater::configUpdate()
+{
+  HTTPClient http;
+  http.begin(server, port, source);
+  int httpCode = http.GET();
+
+  if (httpCode > 0)
+  {
+    if (httpCode == HTTP_CODE_OK)
+    {
+      File f = LITTLEFS.open(target, "w+");
+      if (f)
+      {
+        Stream &s = http.getStream();
+        uint8_t buffer[32];
+        size_t l;
+        while ((l = s.readBytes(buffer, sizeof(buffer) - 1)))
+        {
+          f.write(buffer, l);
+        }
+        f.close();
+        snprintf(messageBuffer, sizeof(messageBuffer) -1, "File uploaded");
+        if (endCallback != NULL) endCallback(messageBuffer, endcbdata);
+      }
+      else
+        snprintf(messageBuffer, sizeof(messageBuffer) -1, "Could not open file");
+        if (failCallback != NULL) failCallback(messageBuffer, failcbdata);
+    }
+    else
+    {
+      snprintf(messageBuffer, sizeof(messageBuffer) -1, "Upload failed (%d)", httpCode);
+      if (failCallback != NULL) failCallback(messageBuffer, failcbdata);
+    }
+  }
+  else
+  {
+    snprintf(messageBuffer, sizeof(messageBuffer) -1, "GET failed, error: %s", http.errorToString(httpCode).c_str());
+    if (failCallback != NULL) failCallback(messageBuffer, failcbdata);
+  }
+}
+
+void Updater::onStart(void (*callback)(const char*, void *), void *d)
 {
   startCallback = callback;
   startcbdata = d;
 }
 
-void Updater::onEnd(void (*callback)(void *), void *d)
+void Updater::onEnd(void (*callback)(const char*, void *), void *d)
 {
   endCallback = callback;
   endcbdata = d;
 }
 
-void Updater::onNone(void (*callback)(void *), void *d)
+void Updater::onNone(void (*callback)(const char*, void *), void *d)
 {
   nullCallback = callback;
   nullcbdata = d;
 }
 
-void Updater::onFail(void (*callback)(void *), void *d)
+void Updater::onFail(void (*callback)(const char*, void *), void *d)
 {
   failCallback = callback;
   failcbdata = d;

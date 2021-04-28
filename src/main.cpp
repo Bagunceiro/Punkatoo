@@ -214,6 +214,57 @@ void ntpUpdated(NTPClient *c)
   c->setUpdateCallback(NULL);
 }
 
+void heartbeat()
+{
+  StaticJsonDocument<512> doc;
+  String data;
+
+  doc["nowtime"] = nowTime();
+  doc["uptime"] = upTime();
+
+  StaticJsonDocument<100> dfans;
+  JsonArray fans = dfans.to<JsonArray>();
+  for (int i = 0; i < dev.fans.size(); i++)
+  {
+    Fan &fan = dev.fans[i];
+    StaticJsonDocument<20> docf;
+    JsonObject f = docf.to<JsonObject>();
+    f[fan.getName()] = fan.getSpeed();
+    fans.add(docf);
+  }
+  doc["fans"] = dfans;
+
+  StaticJsonDocument<100> dlamps;
+  JsonArray lmps = dlamps.to<JsonArray>();
+  for (int i = 0; i < dev.fans.size(); i++)
+  {
+    StaticJsonDocument<20> docl;
+    Lamp &lmp = dev.lamps[i];
+    docl[lmp.getName()] = lmp.getStatus();
+    lmps.add(docl);
+  }
+  doc["lamps"] = dlamps;
+
+  if (!dev.bmes.empty())
+  {
+    BME &bme = dev.bmes[0];
+    char buffer[16];
+    snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readTemperature() * 10) / 10);
+    doc["temperature"] = buffer;
+    snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readHumidity() * 10) / 10);
+    doc["humidity"] = buffer;
+    snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readPressure() * 10) / 1000);
+    doc["pressure"] = buffer;
+  }
+  for (LDR &ldr : dev.ldrs)
+  {
+    doc["lux"] = ldr.read();
+  }
+
+  serializeJson(doc, data);
+  dev.webServer.event("heartbeat", data.c_str());
+}
+
 void loop()
 {
   static bool wifiWasConnected = false;
@@ -269,28 +320,13 @@ void loop()
     dev.indicators[0].poll();
   }
 
+
   static unsigned long then = 0;
   unsigned long now = millis();
   if ((now - then) >= 1000)
   {
-    dev.updater.systemUpdate();
+    heartbeat();
     then = now;
-    for (LDR &ldr : dev.ldrs)
-    {
-      dev.webServer.event("light", ldr.mqttGetStatus().c_str());
-    }
-    if (!dev.bmes.empty())
-    {
-      BME &bme = dev.bmes[0];
-      char buffer[16];
-      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readTemperature() * 10) / 10);
-      dev.webServer.event("temperature", buffer);
-      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readHumidity() * 10) / 10);
-      dev.webServer.event("humidity", buffer);
-      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readPressure() * 10) / 1000);
-      dev.webServer.event("pressure", buffer);
-    }
-    dev.webServer.event("uptime", upTime());
-    dev.webServer.event("nowtime", nowTime());
   }
 }
+

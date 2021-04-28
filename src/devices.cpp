@@ -414,5 +414,6 @@ void Devices::start()
         }
     }
     // configurator.registerIR(irctlr);
+    updater.start(1);
     webServer.init();
 }
