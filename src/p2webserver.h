@@ -55,9 +55,11 @@ private:
 
     void rootData(AsyncWebServerRequest *r);
     void genData(AsyncWebServerRequest *r);
+    void wifiData(AsyncWebServerRequest *r);
 
     static void getRootData(AsyncWebServerRequest *r) { pThis->rootData(r);}
     static void getGenData(AsyncWebServerRequest *r) { pThis->genData(r);}
+    static void getWifiData(AsyncWebServerRequest *r) { pThis->wifiData(r);}
 
     String &listNetworks(String &body, networkList &networks, bool selected);
   

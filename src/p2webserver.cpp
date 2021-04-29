@@ -7,7 +7,7 @@
 P2WebServer *P2WebServer::pThis;
 
 // const char *P2WebServer::pageRoot = "/";
-const char *P2WebServer::pageGen = "/config.gen";
+// const char *P2WebServer::pageGen = "/config.gen";
 const char *P2WebServer::pageGenUpdate = "/config.update";
 const char *P2WebServer::pageWiFi = "/config.net";
 const char *P2WebServer::pageWiFiNet = "/config.netedit";
@@ -76,6 +76,36 @@ void P2WebServer::genData(AsyncWebServerRequest *request)
     request->send(response);
 }
 
+
+void P2WebServer::wifiData(AsyncWebServerRequest *request)
+{
+
+    String confnets;
+    String discnets;
+    networkList &cnetworks = networkConfRead();
+    networkList &snetworks = scanNetworks();
+    std::sort(snetworks.begin(), snetworks.end(), [](WiFiNetworkDef i, WiFiNetworkDef j) { return (i.rssi > j.rssi); });
+
+    listNetworks(confnets, cnetworks, true);
+    listNetworks(discnets, snetworks, false);
+    
+    StaticJsonDocument<1024> doc;
+
+    // doc["ctlr"] = config[controllername_n];
+    doc["controllername"] = config[controllername_n];
+    doc["discnets"] = discnets;
+    doc["confnets"] = confnets;
+
+
+    String data();
+    AsyncResponseStream *response = request->beginResponseStream("text/html");
+    response = request->beginResponseStream("text/html");
+    serializeJson(doc, *response);
+    // response->print(data);
+    Serial.printf("Root data requested\n");
+    request->send(response);
+}
+
 void P2WebServer::init()
 {
     // HTTP_ANY for now. should be HTTP_GET etc?
@@ -90,6 +120,7 @@ void P2WebServer::init()
 
     on("/rootdata.json", HTTP_GET, getRootData);
     on("/gendata.json", HTTP_GET, getGenData);
+    on("/wifidata.json", HTTP_GET, getWifiData);
     on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, wwwpath + "/index.html", "text/html");
     });

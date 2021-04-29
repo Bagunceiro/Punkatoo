@@ -1,0 +1,22 @@
+{
+  "controllername": "test",
+  "confnets": [
+    {
+      "ssid": "asgard_2g",
+      "rssi": 67,
+      "open": false
+    }
+  ],
+  "discnets": [
+    {
+      "ssid": "a network",
+      "rssi": 67,
+      "open": false
+    },
+    {
+      "ssid": "another network",
+      "rssi": 34,
+      "open": false
+    }
+  ]
+}

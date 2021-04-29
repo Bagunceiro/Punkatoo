@@ -1,0 +1,35 @@
+<HTML>
+<HEAD>
+    <meta http-equiv="content-type" charset="UTF-8"
+    content="text/html, width=device-width, initial-scale=1">
+    <TITLE>WiFi Networks</TITLE>
+    <script src="/navfuncs.js"></script>
+    <script src="/netdata.js"></script>
+    <link rel="stylesheet" href="/punkatoo.css">
+</HEAD>
+<BODY>
+    <div class="header" id="myHeader">
+        <button onclick=gohome()>Home</button>
+        <button onclick=goreset()>Reset</button>
+        <button type=submit form=theform>Update</button>
+    </div>
+    <div class=content>
+        <BR><B>WiFi Configuration: test</B>
+        <FORM id=theform method=post action=/config.net>
+            <TABLE id="conftable">
+                <TR><TH colspan=2>Configured Networks</TH></TR>
+                <TR><TD>+</td><td><input name=newnet /></td></tr>
+            </TABLE>
+            <TABLE id=disctable>
+                <TR><TH colspan=2>Discovered Networks</TH></TR>
+            </TABLE>
+        </FORM>
+    </div>
+    <script>
+    var dataFile = new XMLHttpRequest();
+    dataFile.onreadystatechange = orsc;
+    dataFile.open("GET", "/netconf.json", true);
+    dataFile.send(null);
+    </script>
+</BODY>
+</HTML>
