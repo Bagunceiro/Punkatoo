@@ -21,8 +21,8 @@ public:
     void init();
     void event(const char *name, const char *content);
 
-    static void handleRoot(AsyncWebServerRequest *r) { pThis->rootPage(r); }
-    static void handleGenConfig(AsyncWebServerRequest *r) { pThis->genConfigPage(r); }
+    //static void handleRoot(AsyncWebServerRequest *r) { pThis->rootPage(r); }
+    // static void handleGenConfig(AsyncWebServerRequest *r) { pThis->genConfigPage(r); }
     static void handleGenUpdate(AsyncWebServerRequest *r) { pThis->genUpdatePage(r); }
     static void handleNetConfig(AsyncWebServerRequest *r) { pThis->netConfigPage(r); }
     static void handleNetEdit(AsyncWebServerRequest *r) { pThis->netEditPage(r); }
@@ -36,8 +36,8 @@ public:
 private:
     static P2WebServer *pThis;
 
-    void rootPage(AsyncWebServerRequest *r);
-    void genConfigPage(AsyncWebServerRequest *r);
+    // void rootPage(AsyncWebServerRequest *r);
+    // void genConfigPage(AsyncWebServerRequest *r);
     void genUpdatePage(AsyncWebServerRequest *r);
     void netConfigPage(AsyncWebServerRequest *r);
     void netEditPage(AsyncWebServerRequest *r);
@@ -53,6 +53,11 @@ private:
     
     static void updateInfo(const char*, void*);
 
+    void rootData(AsyncWebServerRequest *r);
+    void genData(AsyncWebServerRequest *r);
+
+    static void getRootData(AsyncWebServerRequest *r) { pThis->rootData(r);}
+    static void getGenData(AsyncWebServerRequest *r) { pThis->genData(r);}
 
     String &listNetworks(String &body, networkList &networks, bool selected);
   

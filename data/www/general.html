@@ -1,0 +1,55 @@
+<HTML>
+<HEAD>
+    <meta http-equiv="content-type" charset="UTF-8" content="text/html, width=device-width, initial-scale=1">
+    <TITLE>Punkatoo Message</TITLE>
+    <script src="/navfuncs.js"></script>
+    <script src="/fillfromjson.js"></script>
+    <link rel="stylesheet" href="/punkatoo.css">
+</HEAD>
+<BODY>
+    <div class="header" id="myHeader">
+        <button onclick=gohome()>Home</button>
+        <button onclick=goreset()>Reset</button>
+        <button type=submit form=theform>Update</button>
+    </div>
+    <div class=content>
+        <BR>
+            <B>General Configuration: <span name="controllername"></span><span></B>
+        </BR>
+        <FORM id=theform method=post action="/config.update">
+        <TABLE>
+            <tr><td><label for=ctlrname>Controller Name:</label></td>
+                <td><input type=text name="controllername" id="controllername"></td>
+            </tr>
+            <tr><td><label for=mqtthost>MQTT Broker:</label></td>
+                <td><input type=text name="mqtthost" id="mqtthost"></td>
+            </tr>
+            <tr><td><label for=mqttport>MQTT Port:</label></td>
+                <td><input type=text name="mqttport" id="mqttport"></td>
+            </tr>
+            <tr><td><label for=mqttuser>MQTT User:</label></td>
+                <td><input type=text name="mqttuser" id="mqttuser"></td>
+            </tr>
+            <tr><td><label for=mqttuser>MQTT Password:</label></td>
+                <td><input type=text name="mqttpwd" id="mqttpwd"></td>
+            </tr>
+            <tr><td><label for=mqttroot>MQTT Topic root:</label></td>
+                <td><input type=text name="mqttroot" id="mqttroot"></td>
+            </tr>
+            <tr><td><label for=mqtttopic>MQTT Topic:</label></td>
+                <td><input type=text name="mqtttopic" id="mqtttopic"></td>
+            </tr>
+            <tr><td><label for="ind">Status Indicator:</label></td>
+                <td><input type=checkbox id="ind" name="indicator" id=indicator/><label for=ind>&nbsp;</label></td>
+            </tr>
+        </TABLE>
+        </FORM>
+    </div>
+    <script>
+        var dataFile = new XMLHttpRequest();
+        dataFile.onreadystatechange = orsc;
+        dataFile.open("GET", "/gendata.json", true);
+        dataFile.send(null);
+    </script>
+</BODY>
+</HTML>

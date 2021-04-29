@@ -6,7 +6,7 @@
 
 P2WebServer *P2WebServer::pThis;
 
-const char *P2WebServer::pageRoot = "/";
+// const char *P2WebServer::pageRoot = "/";
 const char *P2WebServer::pageGen = "/config.gen";
 const char *P2WebServer::pageGenUpdate = "/config.update";
 const char *P2WebServer::pageWiFi = "/config.net";
@@ -15,6 +15,7 @@ const char *P2WebServer::pageWiFiNetAdd = "/config.addnet";
 const char *P2WebServer::pageReset = "/reset";
 const char *P2WebServer::pageSystemUpdate = "/system.update";
 const char *P2WebServer::pageDoUpdate = "/system.update.do";
+const String wwwpath = "/www";
 
 void serveFile(AsyncWebServerRequest *request)
 {
@@ -24,17 +25,61 @@ void serveFile(AsyncWebServerRequest *request)
         mimetype = "application/javascript";
     else if (file.endsWith(".css"))
         mimetype = "text/css";
+    else if (file.endsWith(".html") || (file.endsWith(".htm")))
+        mimetype = "text/html";
     else
         mimetype = "application/octet-stream";
     Serial.printf("File %s requested\n", file.c_str());
-    request->send(LITTLEFS, file, mimetype);
+    request->send(LITTLEFS, wwwpath + file, mimetype);
+}
+
+void P2WebServer::rootData(AsyncWebServerRequest *request)
+{
+    StaticJsonDocument<512> doc;
+
+    doc["ctlr"] = config[controllername_n];
+    doc["revision"] = gitrevision;
+    doc["comptime"] = compDateTime;
+    doc["mac"] = WiFi.macAddress();
+    doc["ssid"] = WiFi.macAddress();
+    doc["starttime"] = WiFi.macAddress();
+
+    String data();
+    AsyncResponseStream *response = request->beginResponseStream("text/html");
+    response = request->beginResponseStream("text/html");
+    serializeJson(doc, *response);
+    // response->print(data);
+    Serial.printf("Root data requested\n");
+    request->send(response);
+}
+
+void P2WebServer::genData(AsyncWebServerRequest *request)
+{
+    StaticJsonDocument<512> doc;
+
+    // doc["ctlr"] = config[controllername_n];
+    doc["controllername"] = config[controllername_n];
+    doc["mqtthost"] = config[mqtthost_n];
+    doc["mqttport"] = config[mqttport_n];
+    doc["mqttuser"] = config[mqttuser_n];
+    doc["mqttpwd"] = config[mqttpwd_n];
+    doc["mqttroot"] = config[mqttroot_n];
+    doc["mqtttopic"] = config[mqtttopic_n];
+    doc["ind"] = "1";
+
+    String data();
+    AsyncResponseStream *response = request->beginResponseStream("text/html");
+    response = request->beginResponseStream("text/html");
+    serializeJson(doc, *response);
+    // response->print(data);
+    Serial.printf("Root data requested\n");
+    request->send(response);
 }
 
 void P2WebServer::init()
 {
     // HTTP_ANY for now. should be HTTP_GET etc?
-    on(pageRoot, HTTP_ANY, handleRoot);
-    on(pageGen, HTTP_ANY, handleGenConfig);
+    // on(pageGen, HTTP_ANY, handleGenConfig);
     on(pageGenUpdate, HTTP_ANY, handleGenUpdate);
     on(pageWiFi, HTTP_ANY, handleNetConfig);
     on(pageWiFiNet, HTTP_ANY, handleNetEdit);
@@ -42,22 +87,13 @@ void P2WebServer::init()
     on(pageReset, HTTP_ANY, handleReset);
     on(pageSystemUpdate, HTTP_ANY, handleSystemUpdate);
     on(pageDoUpdate, HTTP_ANY, handleDoUpdate);
-    /*
-    on("/punkatoo.css", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LITTLEFS, "/punkatoo.css", "text/css");
-    });
-    on("/navfuncs.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LITTLEFS, "/navfuncs.js", "application/javascript");
-    });
-    /*
-    on("/eventlstnrs.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LITTLEFS, "/eventlstnrs.js", "application/javascript");
-    });
-    */
 
-    on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LITTLEFS, "/favicon.ico", "text/css");
+    on("/rootdata.json", HTTP_GET, getRootData);
+    on("/gendata.json", HTTP_GET, getGenData);
+    on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LITTLEFS, wwwpath + "/index.html", "text/html");
     });
+
     onNotFound(serveFile);
 
     events->onConnect([](AsyncEventSourceClient *client) {
@@ -104,59 +140,9 @@ const char *BUTTON_RESET = "<button onclick=goreset()>Reset</button>";
 const char *BUTTON_SYSUPDATE = "<button onclick=gosysupdate()>System Update</button>";
 const char *BUTTON_UPDATE = "<button type=submit form=theform>Update</button>";
 
-// const char *BUTTONS = R"!(
-//<button onclick="gohome()">Home</button>
-//<button onclick=gogenconf()>General</button>
-//<button onclick=gowificonf()>WiFi</button>
-//<button onclick=goreset()>Reset</button>
-//<button onclick=gosysupdate()>System Update</button>)!";
 const char *DIV_CONTENT = "<div class=content>";
 const char *TABLE = "<TABLE>";
 const char *END_TABLE = "</TABLE>";
-
-void P2WebServer::rootPage(AsyncWebServerRequest *req)
-{
-    sendPage(req, HEAD, TITLE, "Punkatoo", END_TITLE, STYLES, END_HEAD,
-             BODY,
-             DIV_HEADER,
-             BUTTON_HOME, BUTTON_GENERAL, BUTTON_WIFI, BUTTON_SYSUPDATE, BUTTON_RESET,
-             END_DIV,
-             DIV_CONTENT,
-             "<BR><B>Controller: ", config[controllername_n].c_str(),
-             TABLE,
-             R"!(<TR><TD>Time Now</TD><TD colspan=3 ><span id="nowtime"></span></TD></TR>
-<TR><TD>Git Revision</TD><TD colspan=3>)!",
-             gitrevision,
-             R"!(</TD></TR><TR><TD>Compilation</TD><TD colspan=3 >)!",
-             compDateTime,
-             R"!(</TD></TR><TR><TD>MAC</TD><TD colspan=3 >)!",
-             WiFi.macAddress().c_str(),
-             R"!(</TD></TR><TR><TD>Started At</TD><TD colspan=3 >)!",
-             startTime(),
-             R"!(<TR><TD>Uptime</TD><TD colspan=3><span id="uptime"></span></TD></TR><TR><TD>WiFi SSID</TD><TD colspan=3>)!",
-             WiFi.SSID().c_str(),
-             R"!(</TD></TR><TR><TD>Ambient</TD><TD><span id="temperature"></span>°C</TD>
-<TD><span id="humidity"></span>%</TD>
-<TD><span id="pressure"></span> mBar</TD></TR>
-<TR><TD>Light level</TD><TD colspan=3><span id="lux"></TD></TR>)!",
-             END_TABLE,
-             END_DIV,
-             R"!(<script src="/eventlstnrs.js"></script>)!",
-             R"!(<script>
-source.addEventListener('heartbeat', function(e) {
-console.log("heartbeat", e.data);
-var obj = JSON.parse(e.data);
-document.getElementById("nowtime").innerHTML = obj.nowtime;
-document.getElementById("uptime").innerHTML = obj.uptime;
-document.getElementById("temperature").innerHTML = obj.temperature;
-document.getElementById("humidity").innerHTML = obj.humidity;
-document.getElementById("pressure").innerHTML = obj.pressure;
-document.getElementById("lux").innerHTML = obj.lux;
-}, false);
-</script>)!",
-             END_BODY,
-             NULL);
-}
 
 void P2WebServer::messagePage(AsyncWebServerRequest *req, const char *message)
 {
@@ -209,6 +195,7 @@ void P2WebServer::genUpdatePage(AsyncWebServerRequest *req)
     }
 }
 
+/*
 void P2WebServer::genConfigPage(AsyncWebServerRequest *req)
 {
     sendPage(req, HEAD, TITLE, "Punkatoo Message", END_TITLE, STYLES,
@@ -242,6 +229,7 @@ void P2WebServer::genConfigPage(AsyncWebServerRequest *req)
              END_BODY,
              NULL);
 }
+*/
 
 String &P2WebServer::listNetworks(String &body, networkList &networks, bool selected)
 {
