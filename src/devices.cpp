@@ -17,51 +17,6 @@ const char *KEY_PIN_D2 = "pinDir2";
 const char *KEY_ADDR = "addr";
 const char *KEY_SWITCHED = "switched";
 
-/*
-String conf = R"!(
-{
-    "irrcv":{
-        "id":"irctlr",
-        "pin":34
-    },
-    "irled":[{
-        "id":"irled",
-        "pin":4
-    }],
-    "indicator":[{
-        "id":"indicator",
-        "pinR":2,
-        "pinG":12,
-        "pinB":15
-    }],
-    "lamp":[{
-        "id":"lamp",
-        "pin":13
-    }],
-    "switch":[{
-        "id":"sw1",
-        "pin":19,
-        "switched":[{"id":"lamp"}]
-    }],
-    "fan":[{
-        "id":"fan",
-        "pinSpd1":25,
-        "pinSpd2":33,
-        "pinDir1":26,
-        "pinDir2":27
-    }],
-    "ldr":[{
-        "id":"ldr",
-        "pin":35
-    }],
-    "bme":[{
-        "id":"bme",
-        "addr":"0x76"
-    }]
-}
-)!";
-*/
-
 void Devices::buildIRController(JsonObject obj)
 {
     String id;

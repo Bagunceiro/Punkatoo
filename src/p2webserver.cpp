@@ -8,13 +8,13 @@ P2WebServer *P2WebServer::pThis;
 
 // const char *P2WebServer::pageRoot = "/";
 // const char *P2WebServer::pageGen = "/config.gen";
-const char *P2WebServer::pageGenUpdate = "/config.update";
-const char *P2WebServer::pageWiFi = "/config.net";
-const char *P2WebServer::pageWiFiNet = "/config.netedit";
-const char *P2WebServer::pageWiFiNetAdd = "/config.addnet";
-const char *P2WebServer::pageReset = "/reset";
-const char *P2WebServer::pageSystemUpdate = "/system.update";
-const char *P2WebServer::pageDoUpdate = "/system.update.do";
+// const char *P2WebServer::pageGenUpdate = "/config.update";
+// const char *P2WebServer::pageWiFi = "/config.net";
+// const char *P2WebServer::pageWiFiNet = "/config.netedit";
+// const char *P2WebServer::pageWiFiNetAdd = "/config.addnet";
+// const char *P2WebServer::pageReset = "/reset";
+// const char *P2WebServer::pageSystemUpdate = "/system.update";
+// const char *P2WebServer::pageDoUpdate = "/system.update.do";
 const String wwwpath = "/www";
 
 void serveFile(AsyncWebServerRequest *request)
@@ -103,7 +103,6 @@ void P2WebServer::addNetworks(JsonArray &array, networkList &list)
         JsonObject obj = doc.to<JsonObject>();
         obj["ssid"] = list[i].ssid;
         obj["open"] = list[i].openNet;
-        Serial.printf("Network %s\n", list[i].ssid.c_str());
         array.add(doc);
     }
 }
@@ -125,16 +124,6 @@ void P2WebServer::sysupdData(AsyncWebServerRequest *request)
 
 void P2WebServer::init()
 {
-    // HTTP_ANY for now. should be HTTP_GET etc?
-    // on(pageGen, HTTP_ANY, handleGenConfig);
-    // on(pageGenUpdate, HTTP_ANY, handleGenUpdate);
-    // on(pageWiFi, HTTP_ANY, handleNetConfig);
-    // on(pageWiFiNet, HTTP_ANY, handleNetEdit);
-    // on(pageWiFiNetAdd, HTTP_ANY, handleNewNet);
-    on(pageReset, HTTP_ANY, handleReset);
-    // on(pageSystemUpdate, HTTP_ANY, handleSystemUpdate);
-    // on(pageDoUpdate, HTTP_ANY, handleDoUpdate);
-
     on("/rootdata.json", HTTP_GET, getRootData);
     on("/gendata.json", HTTP_GET, getGenData);
     on("/wificonfdata.json", HTTP_GET, getWifiConfData);
@@ -146,6 +135,7 @@ void P2WebServer::init()
     on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, wwwpath + "/index.html", "text/html");
     });
+    on("/reset.html", HTTP_ANY, doSysReset);
 
     onNotFound(serveFile);
 
@@ -160,6 +150,7 @@ void P2WebServer::init()
     begin();
 }
 
+/*
 void P2WebServer::sendPage(AsyncWebServerRequest *req, ...)
 {
     va_list args;
@@ -174,7 +165,8 @@ void P2WebServer::sendPage(AsyncWebServerRequest *req, ...)
     va_end(args);
     req->send(response);
 }
-
+*/
+/*
 const char *HEAD = R"!(<HEAD><meta http-equiv="content-type" charset="UTF-8"
 content="text/html, width=device-width, initial-scale=1">)!";
 const char *TITLE = "<TITLE>";
@@ -196,7 +188,8 @@ const char *BUTTON_UPDATE = "<button type=submit form=theform>Update</button>";
 const char *DIV_CONTENT = "<div class=content>";
 const char *TABLE = "<TABLE>";
 const char *END_TABLE = "</TABLE>";
-
+*/
+/*
 void P2WebServer::messagePage(AsyncWebServerRequest *req, const char *message)
 {
     sendPage(req, HEAD, TITLE, "Punkatoo Message", END_TITLE, STYLES,
@@ -213,39 +206,12 @@ void P2WebServer::messagePage(AsyncWebServerRequest *req, const char *message)
              END_BODY,
              NULL);
 }
+*/
 
-void P2WebServer::resetMessagePage(AsyncWebServerRequest *req, const char *reason)
+void P2WebServer::sysReset(AsyncWebServerRequest *req)
 {
-    messagePage(req, reason);
     dev.p2sys.reset();
-}
-
-void P2WebServer::blankResetMessagePage(AsyncWebServerRequest *req)
-{
-    resetMessagePage(req, "Reseting, please wait");
-}
-
-void P2WebServer::genUpdatePage(AsyncWebServerRequest *req)
-{
-    if (req->method() == HTTP_POST)
-    {
-        config[indicator_n] = "0";
-
-        for (uint8_t i = 0; i < req->args(); i++)
-        {
-            const String argN = req->argName(i);
-            if (argN == indicator_n)
-            {
-                config[argN] = "1";
-            }
-            else
-                config[argN] = req->arg(i);
-        }
-        config.dump(serr);
-        config.writeFile();
-
-        messagePage(req, "Configuration Updated");
-    }
+    serveFile(req);
 }
 
 void P2WebServer::wifiDataRecd(AsyncWebServerRequest *req)
@@ -265,10 +231,8 @@ void P2WebServer::wifiDataRecd(AsyncWebServerRequest *req)
 
         if (usenext && (argN == "ssid"))
         {
-            // serr.println(value);
             addNetwork(newlist, value);
         }
-        // serr.println(argName.c_str());
         if (argN == "conf")
             usenext = true;
         else
@@ -333,7 +297,6 @@ void P2WebServer::progressCB(size_t completed, size_t total, void *data)
         snprintf(buff, sizeof(buff) - 1, "Progress: %d%% (%u/%u)", progress, completed, total);
         updateInfo(buff, NULL);
 
-        //pThis->event("progress", (String(progress) + "%").c_str());
         oldPhase = phase;
     }
 }
@@ -355,7 +318,6 @@ void P2WebServer::updateInfo(const char *message, void *)
     pThis->event("updprog", jmsg.c_str());
 }
 
-// void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
 void P2WebServer::sysupdRecd(AsyncWebServerRequest *req)
 {
     String server;
@@ -401,50 +363,6 @@ void P2WebServer::doUpdateSysPage(AsyncWebServerRequest *req, const char *server
     dev.updater.onProgress(progressCB);
     dev.updater.setRemote(Updater::UPD_SYS, server, port, image, "");
     serveFile(req);
-    /*
-    sendPage(req, HEAD, TITLE, "Punkatoo", END_TITLE, STYLES,
-             END_HEAD,
-             BODY,
-             DIV_HEADER, "<span id=buttons></span>", END_DIV,
-             DIV_CONTENT,
-             "<br><B>System Updating: ", config[controllername_n].c_str(), "</B>",
-             R"+++(<BR><BR>
-Progress: <span id="progress"></span>
-<script>
-if (!!window.EventSource) {
- var source = new EventSource('/events');
- 
- source.addEventListener('open', function(e) {
-  console.log("Events Connected");
- }, false);
- source.addEventListener('error', function(e) {
-  if (e.target.readyState != EventSource.OPEN) {
-    console.log("Events Disconnected");
-  }
- }, false);
- 
- source.addEventListener('message', function(e) {
-  console.log("message", e.data);
- }, false);
-
- source.addEventListener('progress', function(e) {
-  console.log("progress", e.data);
-  if (e.data == "OK") {
-  document.getElementById("buttons").innerHTML = ")+++",
-             BUTTON_HOME, BUTTON_RESET,
-             R"+++(";
-  document.getElementById("progress").innerHTML = "Update Available, reset device to load";
-  }
-  else {
-    document.getElementById("progress").innerHTML = e.data;
-  }
- }, false);
-}
- </script>)+++",
-             END_DIV,
-             END_BODY,
-             NULL);
-             */
 }
 
 void P2WebServer::doUpdateConfPage(AsyncWebServerRequest *req, const char *server, const int port, const char *src, const char *target)
@@ -454,25 +372,6 @@ void P2WebServer::doUpdateConfPage(AsyncWebServerRequest *req, const char *serve
     dev.updater.onProgress(progressCB);
     dev.updater.setRemote(Updater::UPD_CONF, server, port, src, target);
     serveFile(req);
-    /*
-    sendPage(req, HEAD, TITLE, "Punkatoo", END_TITLE, STYLES,
-             END_HEAD,
-             BODY,
-             DIV_HEADER, BUTTON_HOME, BUTTON_RESET, BUTTON_UPDATE, END_DIV,
-             DIV_CONTENT,
-             "<br><B>System Updating: ", config[controllername_n].c_str(), "</B>",
-             "<BR><BR>File: ", target, "<BR>Progress: <span id=\"progress\"></span>",
-             R"!(<script src="/eventlstnrs.js"></script>)!",
-             R"+++(<script>{
- source.addEventListener('progress', function(e) {
-  console.log("progress", e.data);
-  document.getElementById("progress").innerHTML = e.data;
- }, false);
-}</script>)+++",
-             END_DIV,
-             END_BODY,
-             NULL);
-             */
 }
 
 void P2WebServer::event(const char *name, const char *content)

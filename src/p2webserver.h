@@ -23,11 +23,11 @@ public:
 
     //static void handleRoot(AsyncWebServerRequest *r) { pThis->rootPage(r); }
     // static void handleGenConfig(AsyncWebServerRequest *r) { pThis->genConfigPage(r); }
-    static void handleGenUpdate(AsyncWebServerRequest *r) { pThis->genUpdatePage(r); }
+    // static void handleGenUpdate(AsyncWebServerRequest *r) { pThis->genUpdatePage(r); }
     // static void handleNetConfig(AsyncWebServerRequest *r) { pThis->netConfigPage(r); }
     // static void handleNetEdit(AsyncWebServerRequest *r) { pThis->netEditPage(r); }
     // static void handleNewNet(AsyncWebServerRequest *r) { pThis->newNetPage(r); }
-    static void handleReset(AsyncWebServerRequest *r) { pThis->blankResetMessagePage(r); }
+    // static void handleReset(AsyncWebServerRequest *r) { pThis->blankResetMessagePage(r); }
     // static void handleSystemUpdate(AsyncWebServerRequest *r) { pThis->systemUpdatePage(r); }
     // static void handleDoUpdate(AsyncWebServerRequest *r) { pThis->doUpdatePage(r); }
 
@@ -38,18 +38,18 @@ private:
 
     // void rootPage(AsyncWebServerRequest *r);
     // void genConfigPage(AsyncWebServerRequest *r);
-    void genUpdatePage(AsyncWebServerRequest *r);
+    // void genUpdatePage(AsyncWebServerRequest *r);
     // void netConfigPage(AsyncWebServerRequest *r);
     // void netEditPage(AsyncWebServerRequest *r);
     
-    void resetMessagePage(AsyncWebServerRequest *r, const char* reason = "");
-    void blankResetMessagePage(AsyncWebServerRequest *r);
+    // void resetMessagePage(AsyncWebServerRequest *r, const char* reason = "");
+    // void blankResetMessagePage(AsyncWebServerRequest *r);
     // void systemUpdatePage(AsyncWebServerRequest *r);
     // void doUpdatePage(AsyncWebServerRequest *r);
     void doUpdateSysPage(AsyncWebServerRequest *r, const char* srv, const int port, const char* src);
     void doUpdateConfPage(AsyncWebServerRequest *r,  const char* srv, const int port, const char* src, const char* target);
-    void messagePage(AsyncWebServerRequest *r, const char* message);
-    void sendPage(AsyncWebServerRequest *r, ...);
+    // void messagePage(AsyncWebServerRequest *r, const char* message);
+    // void sendPage(AsyncWebServerRequest *r, ...);
     
     static void updateInfo(const char*, void*);
 
@@ -62,7 +62,7 @@ private:
     void netEditRecd(AsyncWebServerRequest *r);
     void sysupdData(AsyncWebServerRequest *r);
     void sysupdRecd(AsyncWebServerRequest *r);
-
+    void sysReset(AsyncWebServerRequest *r);
 
     static void getRootData(AsyncWebServerRequest *r) { pThis->rootData(r);}
     static void getGenData(AsyncWebServerRequest *r) { pThis->genData(r);}
@@ -72,13 +72,12 @@ private:
     static void postNetEdit(AsyncWebServerRequest *r) { pThis->netEditRecd(r);}
     static void getSysupdData(AsyncWebServerRequest *r) { pThis->sysupdData(r);}
     static void postSysupd(AsyncWebServerRequest *r) { pThis->sysupdRecd(r);}
-    
+    static void doSysReset(AsyncWebServerRequest *r) { pThis->sysReset(r);}
 
-    
-
-    String &listNetworks(String &body, networkList &networks, bool selected);
+    // String &listNetworks(String &body, networkList &networks, bool selected);
     void addNetworks(JsonArray& array, networkList& list);
   
+/*
     static const char *pageRoot;
     static const char *pageGen;
     static const char *pageGenUpdate;
@@ -88,6 +87,7 @@ private:
     static const char *pageReset;
     static const char *pageSystemUpdate;
     static const char *pageDoUpdate;
+*/
 
     AsyncEventSource *events;
     unsigned long eventid;

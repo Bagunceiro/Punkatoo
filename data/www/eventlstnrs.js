@@ -1,6 +1,6 @@
 if (!!window.EventSource) {
     var source = new EventSource('/events');
-    
+
     source.addEventListener('open', function(e) {
      console.log("Events Connected");
     }, false);

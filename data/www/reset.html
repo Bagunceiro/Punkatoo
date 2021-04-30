@@ -1,0 +1,31 @@
+<HTML>
+<HEAD>
+    <meta http-equiv="content-type" charset="UTF-8"
+    content="text/html, width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="60;url=/" />
+    <TITLE>Punkatoo</TITLE>
+    <script src="/navfuncs.js"></script>
+    <script src="/fillfromjson.js"></script>
+    <link rel="stylesheet" href="/punkatoo.css">
+</HEAD>
+<BODY>
+    <div class="header" id="myHeader">
+        <button onclick=gohome()>Home</button>
+        <button onclick=gogenconf()>General</button>
+        <button onclick=gowificonf()>WiFi</button>
+        <button onclick=gosysupdate()>System Update</button>
+    </div>
+    <div class=content>
+        <BR><B>Controller: <span name="ctlr"></span>
+        <BR>Resetting. Please Wait
+        <span name="uptime"></span>
+    </div>
+    <script src="/eventlstnrs.js"></script>
+    <script>
+    source.addEventListener('heartbeat', function(e) {
+    var obj = JSON.parse(e.data);
+    fillFromJson(obj);
+    }, false);
+    </script>
+    </BODY>
+</HTML>

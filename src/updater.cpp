@@ -8,23 +8,6 @@
 extern IndicatorLed::Colour indicateUpdate;
 Updater *Updater::pThis = NULL;
 
-/*
-void updateStarted(void *)
-{
-  Event e;
-  e.enqueue("Update started");
-  dev.p2sys.enterState(P2System::STATE_UPDATE);
-  dev.toSecure();
-}
-
-void updateCompleted(void *)
-{
-  Event e;
-  e.enqueue("Update complete");
-  dev.p2sys.revertState();
-}
-*/
-
 Updater::Updater(const String &devName) : P2Task(devName, 8000)
 {
   startCallback = NULL;
@@ -39,9 +22,6 @@ Updater::Updater(const String &devName) : P2Task(devName, 8000)
   failcbdata = NULL;
   pThis = this;
   messageBuffer[0] = '\0';
- // server = config[mqtthost_n];
- // port = 80;
- //  source = "/bin/punkatoo.bin";
 }
 
 Updater::~Updater()
