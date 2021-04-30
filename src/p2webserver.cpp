@@ -67,10 +67,8 @@ void P2WebServer::genData(AsyncWebServerRequest *request)
     request->send(response);
 }
 
-void P2WebServer::wifiData(AsyncWebServerRequest *request, const char* name, networkList& n)
+void P2WebServer::wifiData(AsyncWebServerRequest *request, const char *name, networkList &n)
 {
-    // std::sort(n.begin(), n.end(), [](WiFiNetworkDef i, WiFiNetworkDef j) { return (i.rssi > j.rssi); });
-
     StaticJsonDocument<1024> doc;
     StaticJsonDocument<1024> doca;
 
@@ -116,8 +114,8 @@ void P2WebServer::init()
     // on(pageGen, HTTP_ANY, handleGenConfig);
     // on(pageGenUpdate, HTTP_ANY, handleGenUpdate);
     // on(pageWiFi, HTTP_ANY, handleNetConfig);
-    on(pageWiFiNet, HTTP_ANY, handleNetEdit);
-    on(pageWiFiNetAdd, HTTP_ANY, handleNewNet);
+    // on(pageWiFiNet, HTTP_ANY, handleNetEdit);
+    // on(pageWiFiNetAdd, HTTP_ANY, handleNewNet);
     on(pageReset, HTTP_ANY, handleReset);
     on(pageSystemUpdate, HTTP_ANY, handleSystemUpdate);
     on(pageDoUpdate, HTTP_ANY, handleDoUpdate);
@@ -127,6 +125,7 @@ void P2WebServer::init()
     on("/wificonfdata.json", HTTP_GET, getWifiConfData);
     on("/wifidiscdata.json", HTTP_GET, getWifiDiscData);
     on("/wifi.html", HTTP_POST, postWifiData);
+    on("/netedit.html", HTTP_POST, postNetEdit);
     on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, wwwpath + "/index.html", "text/html");
     });
@@ -232,38 +231,6 @@ void P2WebServer::genUpdatePage(AsyncWebServerRequest *req)
     }
 }
 
-/*
-
-String &P2WebServer::listNetworks(String &body, networkList &networks, bool selected)
-{
-    for (unsigned int i = 0; i < networks.size(); i++)
-    {
-        body += String(R"=====(
-<tr>
-<td>
-<input type=checkbox)=====") +
-                String(selected ? " checked" : "") + String(" id=") + String(selected ? "cf" : "ds") + String(i) + String(" name=conf") + String(R"=====(></input>
-<label for=)=====") +
-                String(selected ? "cf" : "ds") + i + String(R"=====(>&nbsp;</label>
-<input type=hidden name=ssid value=")=====") +
-                networks[i].ssid + String(R"=====("/>
-</td>
-<td>)=====") +
-                String(networks[i].openNet ? "🔓" : "🔒") +
-                (selected ? (String(" <a href=\"") +
-                             P2WebServer::pageWiFiNet + "?ssid=" +
-                             networks[i].ssid + "\">")
-                          : "") +
-                networks[i].ssid + String(selected ? "</a>" : "") + String(R"=====(
-</td>
-</tr>
-)=====");
-    }
-    return body;
-}
-*/
-
-// void P2WebServer::netConfigPage(AsyncWebServerRequest *req)
 void P2WebServer::wifiDataRecd(AsyncWebServerRequest *req)
 {
     if (req->method() != HTTP_POST)
@@ -303,67 +270,30 @@ void P2WebServer::wifiDataRecd(AsyncWebServerRequest *req)
     serveFile(req);
 }
 
-/*
-    String confnets;
-    String discnets;
-    networkList &cnetworks = networkConfRead();
-    networkList &snetworks = scanNetworks();
-    std::sort(snetworks.begin(), snetworks.end(), [](WiFiNetworkDef i, WiFiNetworkDef j) { return (i.rssi > j.rssi); });
-
-    listNetworks(confnets, cnetworks, true);
-    listNetworks(discnets, snetworks, false);
-
-    sendPage(req, HEAD, TITLE, "WiFi Networks", END_TITLE, STYLES,
-             END_HEAD,
-             BODY,
-             DIV_HEADER, BUTTON_HOME, BUTTON_RESET, BUTTON_UPDATE, END_DIV,
-             DIV_CONTENT,
-             "<BR><B>WiFi Configuration: ", config[controllername_n].c_str(),
-             "</B>",
-             "<FORM id=theform method=post action=/config.net>",
-             TABLE,
-             "<TR><TH colspan=2>Configured Networks</TH></TR>",
-             confnets.c_str(),
-             "<TR><TD>+</td><td><input name=newnet /></td></tr>",
-             END_TABLE,
-             TABLE,
-             "<TR><TH colspan=2>Discovered Networks</TH></TR>",
-             discnets.c_str(),
-             END_TABLE,
-             "</FORM>",
-             END_DIV,
-             END_BODY,
-             NULL);
-
-}
-             */
-
-void P2WebServer::newNetPage(AsyncWebServerRequest *req)
+void P2WebServer::netEditRecd(AsyncWebServerRequest *req)
 {
     WiFiNetworkDef net("");
     net.openNet = true;
 
-    if (req->method() == HTTP_POST)
+    for (uint8_t i = 0; i < req->args(); i++)
     {
+        const String argN = req->argName(i);
 
-        for (uint8_t i = 0; i < req->args(); i++)
+        if (argN == "ssid")
         {
-            const String argN = req->argName(i);
-
-            if (argN == "ssid")
-            {
-                net.ssid = req->arg(i);
-            }
-            else if (argN == "psk")
-            {
-                net.psk = req->arg(i);
-                net.openNet = false;
-            }
+            net.ssid = req->arg(i);
+        }
+        else if (argN == "psk")
+        {
+            net.psk = req->arg(i);
+            net.openNet = false;
         }
     }
     serr.printf("Edited network %s\n", net.ssid.c_str());
     updateWiFiDef(net);
+    serveFile(req);
 
+    /*
     sendPage(req, HEAD, TITLE, "WiFi Network", END_TITLE, STYLES,
              END_HEAD,
              BODY,
@@ -375,35 +305,7 @@ void P2WebServer::newNetPage(AsyncWebServerRequest *req)
              END_DIV,
              END_BODY,
              NULL);
-}
-
-void P2WebServer::netEditPage(AsyncWebServerRequest *req)
-{
-    String ssid;
-    for (int i = 0; i < req->args(); i++)
-    {
-        if (req->argName(i) == "ssid")
-        {
-            ssid = req->arg(i);
-            break;
-        }
-    }
-
-    sendPage(req, HEAD, TITLE, "WiFi Network", END_TITLE, STYLES,
-             END_HEAD,
-             BODY,
-             DIV_HEADER, BUTTON_HOME, BUTTON_WIFI, BUTTON_RESET, BUTTON_UPDATE, END_DIV,
-             DIV_CONTENT,
-             "<br><B>WiFi Network Edit: ", config[controllername_n].c_str(), "</B>",
-             "<FORM id=theform method=post action=", pageWiFiNetAdd, ">",
-             TABLE,
-             "<tr><td>SSID:</td><td><INPUT name=ssid value=", ssid.c_str(), "></td></tr>",
-             "<tr><td>PSK:</td><td><INPUT type=password name=psk value=\"\"></td></tr>",
-             END_TABLE,
-             "</FORM>",
-             END_DIV,
-             END_BODY,
-             NULL);
+             */
 }
 
 void P2WebServer::systemUpdatePage(AsyncWebServerRequest *req)

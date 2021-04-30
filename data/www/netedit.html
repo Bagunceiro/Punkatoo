@@ -1,0 +1,35 @@
+<HTML>
+<HEAD>
+    <meta http-equiv="content-type" charset="UTF-8"
+    content="text/html, width=device-width, initial-scale=1">
+    <TITLE>WiFi Network</TITLE>
+    <script src="/navfuncs.js"></script>
+    <link rel="stylesheet" href="/punkatoo.css">
+</HEAD>
+<BODY>
+    <div class="header" id="myHeader">
+        <button onclick=gohome()>Home</button>
+        <button onclick=gowificonf()>WiFi</button>
+        <button onclick=goreset()>Reset</button>
+        <button type=submit form=theform>Update</button>
+    </div>
+    <div class=content>
+        <br><B>WiFi Network Edit: test</B>
+        <FORM id=theform method=post>
+            <TABLE>
+                <tr><td>SSID:</td><td><INPUT name=ssid></td></tr>
+                <tr><td>PSK:</td><td><INPUT type=password name=psk></td></tr>
+            </TABLE>
+        </FORM>
+    </div>
+</BODY>
+</HTML>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+p =  urlParams.get("ssid");
+var eles = document.getElementsByName("ssid");
+for (element of eles)
+{
+    element.value = p;
+}
+</script>

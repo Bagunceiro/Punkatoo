@@ -35,7 +35,9 @@ function netdata(obj) {
           netdesc.ssid +
           '"></td>' +
           "<td>";
-        if (conf) txt += "<a href=/config.netedit?ssid=" + netdesc.ssid + ">"; // Only confs
+        if (conf) txt += "<a href=\"/netedit.html?ssid=" 
+        + encodeURIComponent(netdesc.ssid) 
+        + "\">"; // Only confs
         if (netdesc.open) txt += "🔓";
         else txt += "🔒";
         txt += netdesc.ssid;

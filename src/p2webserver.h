@@ -25,8 +25,8 @@ public:
     // static void handleGenConfig(AsyncWebServerRequest *r) { pThis->genConfigPage(r); }
     static void handleGenUpdate(AsyncWebServerRequest *r) { pThis->genUpdatePage(r); }
     // static void handleNetConfig(AsyncWebServerRequest *r) { pThis->netConfigPage(r); }
-    static void handleNetEdit(AsyncWebServerRequest *r) { pThis->netEditPage(r); }
-    static void handleNewNet(AsyncWebServerRequest *r) { pThis->newNetPage(r); }
+    // static void handleNetEdit(AsyncWebServerRequest *r) { pThis->netEditPage(r); }
+    // static void handleNewNet(AsyncWebServerRequest *r) { pThis->newNetPage(r); }
     static void handleReset(AsyncWebServerRequest *r) { pThis->blankResetMessagePage(r); }
     static void handleSystemUpdate(AsyncWebServerRequest *r) { pThis->systemUpdatePage(r); }
     static void handleDoUpdate(AsyncWebServerRequest *r) { pThis->doUpdatePage(r); }
@@ -40,8 +40,8 @@ private:
     // void genConfigPage(AsyncWebServerRequest *r);
     void genUpdatePage(AsyncWebServerRequest *r);
     // void netConfigPage(AsyncWebServerRequest *r);
-    void netEditPage(AsyncWebServerRequest *r);
-    void newNetPage(AsyncWebServerRequest *r);
+    // void netEditPage(AsyncWebServerRequest *r);
+    
     void resetMessagePage(AsyncWebServerRequest *r, const char* reason = "");
     void blankResetMessagePage(AsyncWebServerRequest *r);
     void systemUpdatePage(AsyncWebServerRequest *r);
@@ -59,12 +59,14 @@ private:
     void wifiConfData(AsyncWebServerRequest *r);
     void wifiDiscData(AsyncWebServerRequest *r);
     void wifiDataRecd(AsyncWebServerRequest *r);
+    void netEditRecd(AsyncWebServerRequest *r);
 
     static void getRootData(AsyncWebServerRequest *r) { pThis->rootData(r);}
     static void getGenData(AsyncWebServerRequest *r) { pThis->genData(r);}
     static void getWifiConfData(AsyncWebServerRequest *r) { pThis->wifiConfData(r);}
     static void getWifiDiscData(AsyncWebServerRequest *r) { pThis->wifiDiscData(r);}
     static void postWifiData(AsyncWebServerRequest *r) { pThis->wifiDataRecd(r);}
+    static void postNetEdit(AsyncWebServerRequest *r) { pThis->netEditRecd(r);}
 
     String &listNetworks(String &body, networkList &networks, bool selected);
     void addNetworks(JsonArray& array, networkList& list);
