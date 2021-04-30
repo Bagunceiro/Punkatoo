@@ -31,6 +31,10 @@ public:
         target = tgt;
     }
     static void progcb(size_t completed, size_t total) { pThis->doprogcb(completed, total); }
+    const char* getServer() { return server.c_str(); }
+    const int getPort() { return port; }
+    const char* getSource() { return source.c_str(); }
+    const char* getTarget() { return target.c_str(); }
 
 private:
     void doprogcb(size_t completed, size_t total);

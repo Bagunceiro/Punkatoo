@@ -39,6 +39,9 @@ Updater::Updater(const String &devName) : P2Task(devName, 8000)
   failcbdata = NULL;
   pThis = this;
   messageBuffer[0] = '\0';
+ // server = config[mqtthost_n];
+ // port = 80;
+ //  source = "/bin/punkatoo.bin";
 }
 
 Updater::~Updater()
@@ -76,7 +79,7 @@ void Updater::systemUpdate()
 
   if (startCallback != NULL)
   {
-    startCallback("", startcbdata);
+    startCallback("Upload started", startcbdata);
   }
 
   httpUpdate.rebootOnUpdate(false);

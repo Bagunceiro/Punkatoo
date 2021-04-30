@@ -108,6 +108,21 @@ void P2WebServer::addNetworks(JsonArray &array, networkList &list)
     }
 }
 
+void P2WebServer::sysupdData(AsyncWebServerRequest *request)
+{
+    StaticJsonDocument<512> doc;
+
+    doc["controllername"] = config[controllername_n];
+    doc["server"] = dev.updater.getServer();
+    doc["port"] = String(dev.updater.getPort());
+    doc["image"] = dev.updater.getSource();
+    doc["target"] = dev.updater.getTarget();
+
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    serializeJson(doc, *response);
+    request->send(response);
+}
+
 void P2WebServer::init()
 {
     // HTTP_ANY for now. should be HTTP_GET etc?
@@ -117,8 +132,8 @@ void P2WebServer::init()
     // on(pageWiFiNet, HTTP_ANY, handleNetEdit);
     // on(pageWiFiNetAdd, HTTP_ANY, handleNewNet);
     on(pageReset, HTTP_ANY, handleReset);
-    on(pageSystemUpdate, HTTP_ANY, handleSystemUpdate);
-    on(pageDoUpdate, HTTP_ANY, handleDoUpdate);
+    // on(pageSystemUpdate, HTTP_ANY, handleSystemUpdate);
+    // on(pageDoUpdate, HTTP_ANY, handleDoUpdate);
 
     on("/rootdata.json", HTTP_GET, getRootData);
     on("/gendata.json", HTTP_GET, getGenData);
@@ -126,6 +141,8 @@ void P2WebServer::init()
     on("/wifidiscdata.json", HTTP_GET, getWifiDiscData);
     on("/wifi.html", HTTP_POST, postWifiData);
     on("/netedit.html", HTTP_POST, postNetEdit);
+    on("/sysupd.html", HTTP_POST, postSysupd);
+    on("/sysupddata.json", HTTP_GET, getSysupdData);
     on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, wwwpath + "/index.html", "text/html");
     });
@@ -292,41 +309,6 @@ void P2WebServer::netEditRecd(AsyncWebServerRequest *req)
     serr.printf("Edited network %s\n", net.ssid.c_str());
     updateWiFiDef(net);
     serveFile(req);
-
-    /*
-    sendPage(req, HEAD, TITLE, "WiFi Network", END_TITLE, STYLES,
-             END_HEAD,
-             BODY,
-             DIV_HEADER, BUTTON_HOME, BUTTON_WIFI, BUTTON_RESET, END_DIV,
-             DIV_CONTENT,
-             "<br><B>WiFi Network Edit: ",
-             config[controllername_n].c_str(),
-             "</B><br><br>", net.ssid.c_str(), " Updated",
-             END_DIV,
-             END_BODY,
-             NULL);
-             */
-}
-
-void P2WebServer::systemUpdatePage(AsyncWebServerRequest *req)
-{
-    sendPage(req, HEAD, TITLE, "Punkatoo System Update", END_TITLE, STYLES,
-             END_HEAD,
-             BODY,
-             DIV_HEADER, BUTTON_HOME, BUTTON_RESET, BUTTON_UPDATE, END_DIV,
-             DIV_CONTENT,
-             "<br><B>System Update: ", config[controllername_n].c_str(), "</B>",
-             "<FORM id=theform method=post action=", pageDoUpdate, ">",
-             TABLE,
-             "<tr><td><label for=server>Update server:</label></td><td><input type=text name=server value=\"", config[mqtthost_n].c_str(), "\"></td></tr>",
-             "<tr><td><label for=port>Port:</label></td><td><input type=text name=port value=80></td></tr>",
-             "<tr><td><label for=image>Source file:</label></td><td><input type=text name=image value=\"/bin/punkatoo.bin\"></td></tr>",
-             "<tr><td><label for=target>Target file:</label></td><td><input type=text name=target value=\"\"></td></tr>",
-             END_TABLE,
-             "</FORM>",
-             END_DIV,
-             END_BODY,
-             NULL);
 }
 
 void P2WebServer::progressCB(size_t completed, size_t total, void *data)
@@ -347,12 +329,16 @@ void P2WebServer::progressCB(size_t completed, size_t total, void *data)
                 dev.indicators[0].setColour(indicate_update, true);
         }
         serr.printf("Progress: %d%% (%d/%d)\n", progress, completed, total);
-        pThis->event("progress", (String(progress) + "%").c_str());
+        char buff[32];
+        snprintf(buff, sizeof(buff) - 1, "Progress: %d%% (%u/%u)", progress, completed, total);
+        updateInfo(buff, NULL);
+
+        //pThis->event("progress", (String(progress) + "%").c_str());
         oldPhase = phase;
     }
 }
 
-void P2WebServer::updateInfo(const char *message, void *data)
+void P2WebServer::updateInfo(const char *message, void *)
 {
     if (message != NULL)
     {
@@ -362,11 +348,16 @@ void P2WebServer::updateInfo(const char *message, void *data)
     {
         pThis->event("progress", "No Message");
     }
+    StaticJsonDocument<512> doc;
+    doc["message"] = message;
+    String jmsg;
+    serializeJson(doc, jmsg);
+    pThis->event("updprog", jmsg.c_str());
 }
 
-void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
+// void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
+void P2WebServer::sysupdRecd(AsyncWebServerRequest *req)
 {
-
     String server;
     String port;
     String image;
@@ -404,11 +395,13 @@ void P2WebServer::doUpdatePage(AsyncWebServerRequest *req)
 
 void P2WebServer::doUpdateSysPage(AsyncWebServerRequest *req, const char *server, const int port, const char *image)
 {
+    dev.updater.onStart(updateInfo);
     dev.updater.onEnd(updateInfo);
     dev.updater.onFail(updateInfo);
     dev.updater.onProgress(progressCB);
-    dev.updater.setRemote(Updater::UPD_SYS, server, port, image, image);
-
+    dev.updater.setRemote(Updater::UPD_SYS, server, port, image, "");
+    serveFile(req);
+    /*
     sendPage(req, HEAD, TITLE, "Punkatoo", END_TITLE, STYLES,
              END_HEAD,
              BODY,
@@ -451,6 +444,7 @@ if (!!window.EventSource) {
              END_DIV,
              END_BODY,
              NULL);
+             */
 }
 
 void P2WebServer::doUpdateConfPage(AsyncWebServerRequest *req, const char *server, const int port, const char *src, const char *target)
@@ -459,7 +453,8 @@ void P2WebServer::doUpdateConfPage(AsyncWebServerRequest *req, const char *serve
     dev.updater.onFail(updateInfo);
     dev.updater.onProgress(progressCB);
     dev.updater.setRemote(Updater::UPD_CONF, server, port, src, target);
-
+    serveFile(req);
+    /*
     sendPage(req, HEAD, TITLE, "Punkatoo", END_TITLE, STYLES,
              END_HEAD,
              BODY,
@@ -477,6 +472,7 @@ void P2WebServer::doUpdateConfPage(AsyncWebServerRequest *req, const char *serve
              END_DIV,
              END_BODY,
              NULL);
+             */
 }
 
 void P2WebServer::event(const char *name, const char *content)

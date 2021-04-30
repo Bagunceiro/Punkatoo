@@ -168,11 +168,12 @@ void parseCompileDate()
 
 void setup()
 {
+  Serial.begin(9600);
+  delay(500);
+
   parseCompileDate();
 
   WiFi.mode(WIFI_STA);
-  Serial.begin(9600);
-  delay(500);
 
   LITTLEFS.begin();
 
@@ -204,6 +205,7 @@ void setup()
   e2.enqueue("Startup complete");
 
   initWiFi();
+  dev.updater.setRemote(Updater::UPD_NONE, config[mqtthost_n].c_str(), 80, "/bin/punkatoo.bin", "");
 }
 
 unsigned long long startedAt = 0;

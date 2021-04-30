@@ -28,8 +28,8 @@ public:
     // static void handleNetEdit(AsyncWebServerRequest *r) { pThis->netEditPage(r); }
     // static void handleNewNet(AsyncWebServerRequest *r) { pThis->newNetPage(r); }
     static void handleReset(AsyncWebServerRequest *r) { pThis->blankResetMessagePage(r); }
-    static void handleSystemUpdate(AsyncWebServerRequest *r) { pThis->systemUpdatePage(r); }
-    static void handleDoUpdate(AsyncWebServerRequest *r) { pThis->doUpdatePage(r); }
+    // static void handleSystemUpdate(AsyncWebServerRequest *r) { pThis->systemUpdatePage(r); }
+    // static void handleDoUpdate(AsyncWebServerRequest *r) { pThis->doUpdatePage(r); }
 
     static void progressCB(size_t completed, size_t total, void * data);
 
@@ -44,8 +44,8 @@ private:
     
     void resetMessagePage(AsyncWebServerRequest *r, const char* reason = "");
     void blankResetMessagePage(AsyncWebServerRequest *r);
-    void systemUpdatePage(AsyncWebServerRequest *r);
-    void doUpdatePage(AsyncWebServerRequest *r);
+    // void systemUpdatePage(AsyncWebServerRequest *r);
+    // void doUpdatePage(AsyncWebServerRequest *r);
     void doUpdateSysPage(AsyncWebServerRequest *r, const char* srv, const int port, const char* src);
     void doUpdateConfPage(AsyncWebServerRequest *r,  const char* srv, const int port, const char* src, const char* target);
     void messagePage(AsyncWebServerRequest *r, const char* message);
@@ -60,6 +60,9 @@ private:
     void wifiDiscData(AsyncWebServerRequest *r);
     void wifiDataRecd(AsyncWebServerRequest *r);
     void netEditRecd(AsyncWebServerRequest *r);
+    void sysupdData(AsyncWebServerRequest *r);
+    void sysupdRecd(AsyncWebServerRequest *r);
+
 
     static void getRootData(AsyncWebServerRequest *r) { pThis->rootData(r);}
     static void getGenData(AsyncWebServerRequest *r) { pThis->genData(r);}
@@ -67,6 +70,11 @@ private:
     static void getWifiDiscData(AsyncWebServerRequest *r) { pThis->wifiDiscData(r);}
     static void postWifiData(AsyncWebServerRequest *r) { pThis->wifiDataRecd(r);}
     static void postNetEdit(AsyncWebServerRequest *r) { pThis->netEditRecd(r);}
+    static void getSysupdData(AsyncWebServerRequest *r) { pThis->sysupdData(r);}
+    static void postSysupd(AsyncWebServerRequest *r) { pThis->sysupdRecd(r);}
+    
+
+    
 
     String &listNetworks(String &body, networkList &networks, bool selected);
     void addNetworks(JsonArray& array, networkList& list);
