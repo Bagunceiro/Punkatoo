@@ -1,23 +1,3 @@
-function addEntry(ele, net, conf) {
-  ele +=
-    "<tr><td>" +
-    "<input type=checkbox checked id=" +
-    "cf0" +
-    " name=conf /><label for=" +
-    "cf0" +
-    ">&nbsp;</label>" +
-    "<input type=hidden name=ssid value=" +
-    net.ssid +
-    "/></td>" +
-    "<td>";
-  if (conf) ele += "<a href=/config.netedit?ssid=" + net.ssid + ">"; // Only confs
-  if (net.open) ele += "🔓";
-  else ele += "🔒";
-  ele += net.ssid;
-  if (conf) ele += "</a>"; // only confs
-  ele += "</td></tr>";
-}
-
 function netdata(obj) {
   for (const [key, value] of Object.entries(obj)) {
     // console.log(key, value);
@@ -33,7 +13,8 @@ function netdata(obj) {
       }
 
       var txt = thetable.innerHTML;
-      console.log(thetable);
+      // txt = "";
+      // console.log(thetable);
       var idn = 0;
       for (netdesc of value) {
         console.log(netdesc.ssid);
@@ -42,18 +23,17 @@ function netdata(obj) {
         else id = "df" + idn;
         idn++;
 
+        txt += "<tr><td>" + "<input type=checkbox ";
+        if (!conf) txt += "un";
         txt +=
-          "<tr><td>" +
-          "<input type=checkbox ";
-          if (!conf) txt+= "un";
-          txt += "checked id=" +
+          "checked id=" +
           id +
           " name=conf /><label for=" +
           id +
           ">&nbsp;</label>" +
-          "<input type=hidden name=ssid value=" +
+          '<input type=hidden name=ssid value="' +
           netdesc.ssid +
-          "/></td>" +
+          '"></td>' +
           "<td>";
         if (conf) txt += "<a href=/config.netedit?ssid=" + netdesc.ssid + ">"; // Only confs
         if (netdesc.open) txt += "🔓";
@@ -62,7 +42,13 @@ function netdata(obj) {
         if (conf) txt += "</a>"; // only confs
         txt += "</td></tr>";
       }
+
       thetable.innerHTML = txt;
+    } else {
+      var eles = document.getElementsByName(key);
+      for (element of eles) {
+        element.innerHTML = value;
+      }
     }
   }
   console.log(document);

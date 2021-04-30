@@ -44,12 +44,8 @@ void P2WebServer::rootData(AsyncWebServerRequest *request)
     doc["ssid"] = WiFi.macAddress();
     doc["starttime"] = WiFi.macAddress();
 
-    String data();
-    AsyncResponseStream *response = request->beginResponseStream("text/html");
-    response = request->beginResponseStream("text/html");
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
     serializeJson(doc, *response);
-    // response->print(data);
-    Serial.printf("Root data requested\n");
     request->send(response);
 }
 
@@ -57,7 +53,6 @@ void P2WebServer::genData(AsyncWebServerRequest *request)
 {
     StaticJsonDocument<512> doc;
 
-    // doc["ctlr"] = config[controllername_n];
     doc["controllername"] = config[controllername_n];
     doc["mqtthost"] = config[mqtthost_n];
     doc["mqttport"] = config[mqttport_n];
@@ -67,51 +62,60 @@ void P2WebServer::genData(AsyncWebServerRequest *request)
     doc["mqtttopic"] = config[mqtttopic_n];
     doc["ind"] = "1";
 
-    String data();
-    AsyncResponseStream *response = request->beginResponseStream("text/html");
-    response = request->beginResponseStream("text/html");
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
     serializeJson(doc, *response);
-    // response->print(data);
-    Serial.printf("Root data requested\n");
     request->send(response);
 }
 
-
-void P2WebServer::wifiData(AsyncWebServerRequest *request)
+void P2WebServer::wifiData(AsyncWebServerRequest *request, const char* name, networkList& n)
 {
+    // std::sort(n.begin(), n.end(), [](WiFiNetworkDef i, WiFiNetworkDef j) { return (i.rssi > j.rssi); });
 
-    String confnets;
-    String discnets;
-    networkList &cnetworks = networkConfRead();
-    networkList &snetworks = scanNetworks();
-    std::sort(snetworks.begin(), snetworks.end(), [](WiFiNetworkDef i, WiFiNetworkDef j) { return (i.rssi > j.rssi); });
-
-    listNetworks(confnets, cnetworks, true);
-    listNetworks(discnets, snetworks, false);
-    
     StaticJsonDocument<1024> doc;
+    StaticJsonDocument<1024> doca;
 
-    // doc["ctlr"] = config[controllername_n];
+    JsonArray array = doca.to<JsonArray>();
+
+    addNetworks(array, n);
+
     doc["controllername"] = config[controllername_n];
-    doc["discnets"] = discnets;
-    doc["confnets"] = confnets;
+    doc[name] = doca;
 
-
-    String data();
-    AsyncResponseStream *response = request->beginResponseStream("text/html");
-    response = request->beginResponseStream("text/html");
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
     serializeJson(doc, *response);
-    // response->print(data);
-    Serial.printf("Root data requested\n");
     request->send(response);
+}
+
+void P2WebServer::wifiConfData(AsyncWebServerRequest *request)
+{
+    networkList &cnetworks = networkConfRead();
+    wifiData(request, "confnets", cnetworks);
+}
+void P2WebServer::wifiDiscData(AsyncWebServerRequest *request)
+{
+    networkList &snetworks = scanNetworks();
+    wifiData(request, "discnets", snetworks);
+}
+
+void P2WebServer::addNetworks(JsonArray &array, networkList &list)
+{
+    for (unsigned int i = 0; i < list.size(); i++)
+    {
+        StaticJsonDocument<64> doc;
+        JsonObject obj = doc.to<JsonObject>();
+        obj["ssid"] = list[i].ssid;
+        obj["open"] = list[i].openNet;
+        Serial.printf("Network %s\n", list[i].ssid.c_str());
+        array.add(doc);
+    }
 }
 
 void P2WebServer::init()
 {
     // HTTP_ANY for now. should be HTTP_GET etc?
     // on(pageGen, HTTP_ANY, handleGenConfig);
-    on(pageGenUpdate, HTTP_ANY, handleGenUpdate);
-    on(pageWiFi, HTTP_ANY, handleNetConfig);
+    // on(pageGenUpdate, HTTP_ANY, handleGenUpdate);
+    // on(pageWiFi, HTTP_ANY, handleNetConfig);
     on(pageWiFiNet, HTTP_ANY, handleNetEdit);
     on(pageWiFiNetAdd, HTTP_ANY, handleNewNet);
     on(pageReset, HTTP_ANY, handleReset);
@@ -120,7 +124,9 @@ void P2WebServer::init()
 
     on("/rootdata.json", HTTP_GET, getRootData);
     on("/gendata.json", HTTP_GET, getGenData);
-    on("/wifidata.json", HTTP_GET, getWifiData);
+    on("/wificonfdata.json", HTTP_GET, getWifiConfData);
+    on("/wifidiscdata.json", HTTP_GET, getWifiDiscData);
+    on("/wifi.html", HTTP_POST, postWifiData);
     on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, wwwpath + "/index.html", "text/html");
     });
@@ -227,40 +233,6 @@ void P2WebServer::genUpdatePage(AsyncWebServerRequest *req)
 }
 
 /*
-void P2WebServer::genConfigPage(AsyncWebServerRequest *req)
-{
-    sendPage(req, HEAD, TITLE, "Punkatoo Message", END_TITLE, STYLES,
-             END_HEAD,
-             BODY,
-             DIV_HEADER, BUTTON_HOME, BUTTON_RESET, BUTTON_UPDATE, END_DIV,
-             DIV_CONTENT,
-
-             "<BR><B>General Configuration: ", config[controllername_n].c_str(),
-             "<FORM id=theform method=post action=\"", pageGenUpdate, "\">",
-             TABLE,
-             R"!(<tr><td><label for=ctlrname>Controller Name:</label></td><td><input type=text name=")!",
-             controllername_n, "\" value=\"", config[controllername_n].c_str(), R"!("></td></tr>)!",
-             R"!(<tr><td><label for=mqtthost>MQTT Broker:</label></td><td><input type=text name=")!",
-             mqtthost_n, "\" value=\"", config[mqtthost_n].c_str(), R"!("></td></tr>)!",
-             R"!(<tr><td><label for=mqttport>MQTT Port:</label></td><td><input type=text name=")!",
-             mqttport_n, "\" value=\"", config[mqttport_n].c_str(), R"!("></td></tr>)!",
-             R"!(<tr><td><label for=mqttuser>MQTT User:</label></td><td><input type=text name=")!",
-             mqttuser_n, "\" value=\"", config[mqttuser_n].c_str(), R"!("></td></tr>)!",
-             R"!(<tr><td><label for=mqttuser>MQTT Password:</label></td><td><input type=text name=")!",
-             mqttpwd_n, "\" value=\"", config[mqttpwd_n].c_str(), R"!("></td></tr>)!",
-             R"!(<tr><td><label for=mqttroot>MQTT Topic root:</label></td><td><input type=text name=")!",
-             mqttroot_n, "\" value=\"", config[mqttroot_n].c_str(), R"!("></td></tr>)!",
-             R"!(<tr><td><label for=mqtttopic>MQTT Topic:</label></td><td><input type=text name=")!",
-             mqtttopic_n, "\" value=\"", config[mqtttopic_n].c_str(), R"!("></td></tr>)!",
-             R"!(<tr><td><label for="ind">Status Indicator:</label></td><td><input type=checkbox id="ind" name=")!",
-             indicator_n, "\"", (config[indicator_n] == "1" ? " checked" : ""), R"!(/><label for=ind>&nbsp;</label></td></tr>)!",
-             END_TABLE,
-             "</FORM>",
-             END_DIV,
-             END_BODY,
-             NULL);
-}
-*/
 
 String &P2WebServer::listNetworks(String &body, networkList &networks, bool selected)
 {
@@ -289,43 +261,49 @@ String &P2WebServer::listNetworks(String &body, networkList &networks, bool sele
     }
     return body;
 }
+*/
 
-void P2WebServer::netConfigPage(AsyncWebServerRequest *req)
+// void P2WebServer::netConfigPage(AsyncWebServerRequest *req)
+void P2WebServer::wifiDataRecd(AsyncWebServerRequest *req)
 {
-    if (req->method() == HTTP_POST)
+    if (req->method() != HTTP_POST)
     {
-        serr.println("Network Update");
-        networkList newlist;
+        Serial.printf("In wifiDataRecd with wrong method (%d)\n", req->method());
+    }
+    serr.println("Network Update");
+    networkList newlist;
 
-        bool usenext = false;
-        for (uint8_t i = 0; i < req->args(); i++)
+    bool usenext = false;
+    for (uint8_t i = 0; i < req->args(); i++)
+    {
+        const String argN = req->argName(i);
+        const String value = req->arg(i);
+
+        if (usenext && (argN == "ssid"))
         {
-            const String argN = req->argName(i);
-            const String value = req->arg(i);
-
-            if (usenext && (argN == "ssid"))
+            // serr.println(value);
+            addNetwork(newlist, value);
+        }
+        // serr.println(argName.c_str());
+        if (argN == "conf")
+            usenext = true;
+        else
+        {
+            usenext = false;
+            if (argN == "newnet")
             {
-                // serr.println(value);
-                addNetwork(newlist, value);
-            }
-            // serr.println(argName.c_str());
-            if (argN == "conf")
-                usenext = true;
-            else
-            {
-                usenext = false;
-                if (argN == "newnet")
+                if (value.length() != 0)
                 {
-                    if (value.length() != 0)
-                    {
-                        addNetwork(newlist, value);
-                    }
+                    addNetwork(newlist, value);
                 }
             }
         }
-        networkConfWrite(newlist);
     }
+    networkConfWrite(newlist);
+    serveFile(req);
+}
 
+/*
     String confnets;
     String discnets;
     networkList &cnetworks = networkConfRead();
@@ -356,7 +334,9 @@ void P2WebServer::netConfigPage(AsyncWebServerRequest *req)
              END_DIV,
              END_BODY,
              NULL);
+
 }
+             */
 
 void P2WebServer::newNetPage(AsyncWebServerRequest *req)
 {
@@ -417,8 +397,8 @@ void P2WebServer::netEditPage(AsyncWebServerRequest *req)
              "<br><B>WiFi Network Edit: ", config[controllername_n].c_str(), "</B>",
              "<FORM id=theform method=post action=", pageWiFiNetAdd, ">",
              TABLE,
-             "<tr><td>SSID:</td><td><INPUT name=ssid value=", ssid.c_str(), "/></td></tr>",
-             "<tr><td>PSK:</td><td><INPUT type=password name=psk value=\"\"/></td></tr>",
+             "<tr><td>SSID:</td><td><INPUT name=ssid value=", ssid.c_str(), "></td></tr>",
+             "<tr><td>PSK:</td><td><INPUT type=password name=psk value=\"\"></td></tr>",
              END_TABLE,
              "</FORM>",
              END_DIV,

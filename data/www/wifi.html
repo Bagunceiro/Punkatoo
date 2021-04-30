@@ -14,12 +14,13 @@
         <button type=submit form=theform>Update</button>
     </div>
     <div class=content>
-        <BR><B>WiFi Configuration: test</B>
-        <FORM id=theform method=post action=/config.net>
+        <BR><B>WiFi Configuration: <span name=controllername></span></B>
+        <FORM id=theform method=post>
             <TABLE id="conftable">
                 <TR><TH colspan=2>Configured Networks</TH></TR>
-                <TR><TD>+</td><td><input name=newnet /></td></tr>
+                <TR><TD>+</td><td><input name=newnet></td></tr>
             </TABLE>
+            <br>
             <TABLE id=disctable>
                 <TR><TH colspan=2>Discovered Networks</TH></TR>
             </TABLE>
@@ -28,8 +29,12 @@
     <script>
     var dataFile = new XMLHttpRequest();
     dataFile.onreadystatechange = orsc;
-    dataFile.open("GET", "/netconf.json", true);
+    dataFile.open("GET", "/wificonfdata.json", true);
     dataFile.send(null);
+    var dataFile2 = new XMLHttpRequest();
+    dataFile2.onreadystatechange = orsc;
+    dataFile2.open("GET", "/wifidiscdata.json", true);
+    dataFile2.send(null);
     </script>
 </BODY>
 </HTML>

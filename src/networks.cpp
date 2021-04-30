@@ -15,24 +15,18 @@ networkList &scanNetworks()
 {
     scannedNets.clear();
     int n = WiFi.scanNetworks();
-    if (n == 0)
+    serr.printf("%d networks found\n", n);
+    scannedNets.clear();
+    for (int i = 0; i < n; ++i)
     {
-        serr.println("no networks found");
-    }
-    else
-    {
-        // serr.print(n);
-        // serr.println(" networks found");
-        scannedNets.clear();
-        for (int i = 0; i < n; ++i)
-        {
-            // Print SSID and RSSI for each network found
-            WiFiNetworkDef network(WiFi.SSID(i));
-            network.openNet = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
-            network.rssi = WiFi.RSSI(i);
-            scannedNets.push_back(network);
+        // Print SSID and RSSI for each network found
+        const String &netname = WiFi.SSID(i);
+        WiFiNetworkDef network(netname);
+        network.openNet = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
+        network.rssi = WiFi.RSSI(i);
+        scannedNets.push_back(network);
 
-/*
+        /*
             serr.print(i + 1);
             serr.print(": ");
             serr.print(WiFi.SSID(i));
@@ -41,9 +35,9 @@ networkList &scanNetworks()
             serr.print(")");
             serr.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
 */
-        }
     }
-    serr.println("");
+    std::sort(scannedNets.begin(), scannedNets.end(),
+              [](WiFiNetworkDef i, WiFiNetworkDef j) { return (i.rssi > j.rssi); });
     return scannedNets;
 }
 
