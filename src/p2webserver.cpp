@@ -6,15 +6,6 @@
 
 P2WebServer *P2WebServer::pThis;
 
-// const char *P2WebServer::pageRoot = "/";
-// const char *P2WebServer::pageGen = "/config.gen";
-// const char *P2WebServer::pageGenUpdate = "/config.update";
-// const char *P2WebServer::pageWiFi = "/config.net";
-// const char *P2WebServer::pageWiFiNet = "/config.netedit";
-// const char *P2WebServer::pageWiFiNetAdd = "/config.addnet";
-// const char *P2WebServer::pageReset = "/reset";
-// const char *P2WebServer::pageSystemUpdate = "/system.update";
-// const char *P2WebServer::pageDoUpdate = "/system.update.do";
 const String wwwpath = "/www";
 
 void serveFile(AsyncWebServerRequest *request)
@@ -29,7 +20,6 @@ void serveFile(AsyncWebServerRequest *request)
         mimetype = "text/html";
     else
         mimetype = "application/octet-stream";
-    Serial.printf("File %s requested\n", file.c_str());
     request->send(LITTLEFS, wwwpath + file, mimetype);
 }
 

@@ -10,18 +10,8 @@ Updater *Updater::pThis = NULL;
 
 Updater::Updater(const String &devName) : P2Task(devName, 8000)
 {
-  startCallback = NULL;
-  endCallback = NULL;
-  nullCallback = NULL;
-  failCallback = NULL;
-  progCallback = NULL;
-  uType = UPD_NONE;
-  startcbdata = NULL;
-  endcbdata = NULL;
-  nullcbdata = NULL;
-  failcbdata = NULL;
+  clear();
   pThis = this;
-  messageBuffer[0] = '\0';
 }
 
 Updater::~Updater()
@@ -42,14 +32,15 @@ bool Updater::operator()()
   {
   case UPD_SYS:
     systemUpdate();
+    clear();
     break;
   case UPD_CONF:
     configUpdate();
+    clear();
     break;
   default:
     break;
   }
-  uType = UPD_NONE;
   return true;
 }
 
@@ -99,8 +90,10 @@ void Updater::systemUpdate()
   dev.p2sys.revertState();
 }
 
-void Updater::configUpdate()
+bool Updater::configUpdate()
 {
+  bool result = false;
+
   HTTPClient http;
   http.begin(server, port, source);
   int httpCode = http.GET();
@@ -113,41 +106,46 @@ void Updater::configUpdate()
       if (f)
       {
         Stream &s = http.getStream();
-        uint8_t buffer[32];
+        uint8_t buffer[128];
         size_t total = http.getSize();
         size_t sofar = 0;
         size_t l;
-        unsigned long then = 0;
         doprogcb(sofar, total);
-        delay(1000);
         while ((l = s.readBytes(buffer, sizeof(buffer) - 1)))
         {
-          unsigned long now = millis();
-          if ((now - then) > 1000)
-          {
-            then = now;
-            doprogcb(sofar, total);
-          }
+          doprogcb(sofar, total);
           sofar += l;
           f.write(buffer, l);
         }
         f.close();
+        doprogcb(sofar, total);
         if (LITTLEFS.rename("/upload.tmp", target))
         {
           if (endCallback != NULL)
             endCallback("Complete", endcbdata);
+          result = true;
         }
-        else if (failCallback != NULL)
-          failCallback("Could not create file", failcbdata);
+        else
+        {
+          if (failCallback != NULL)
+            failCallback("Could not create file", failcbdata);
+          // Serial.println("Couldn't create file");
+        }
       }
-      else if (failCallback != NULL)
-        failCallback("Could not open temporary file", failcbdata);
+
+      else
+      {
+        if (failCallback != NULL)
+          failCallback("Could not open temporary file", failcbdata);
+        // Serial.println("Couldn't create temp file");
+      }
     }
     else
     {
       snprintf(messageBuffer, sizeof(messageBuffer) - 1, "Upload failed (%d)", httpCode);
       if (failCallback != NULL)
         failCallback(messageBuffer, failcbdata);
+      // Serial.printf("Upload failed %d\n", httpCode);
     }
   }
   else
@@ -155,7 +153,9 @@ void Updater::configUpdate()
     snprintf(messageBuffer, sizeof(messageBuffer) - 1, "GET failed, error: %s", http.errorToString(httpCode).c_str());
     if (failCallback != NULL)
       failCallback(messageBuffer, failcbdata);
+       // Serial.printf("Get failed %s", http.errorToString(httpCode).c_str());
   }
+  return result;
 }
 
 void Updater::onStart(void (*callback)(const char *, void *), void *d)
@@ -186,4 +186,21 @@ void Updater::onProgress(void (*callback)(size_t completed, size_t total, void *
 {
   progCallback = callback;
   progcbdata = d;
+}
+
+void Updater::clear()
+{
+  startCallback = NULL;
+  endCallback = NULL;
+  nullCallback = NULL;
+  failCallback = NULL;
+  progCallback = NULL;
+  startcbdata = NULL;
+  endcbdata = NULL;
+  nullcbdata = NULL;
+  failcbdata = NULL;
+  progcbdata = NULL;
+  messageBuffer[0] = '\0';
+
+  uType = UPD_NONE;
 }
