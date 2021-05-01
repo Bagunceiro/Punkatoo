@@ -15,9 +15,12 @@
 #include "spdt.h"
 #include "networks.h"
 #include "updater.h"
+#include "cli.h"
 
 WiFiSerialClient serr;
 Devices dev;
+CLITask clitask("CLI");
+
 
 /*
  * Status colours
@@ -206,6 +209,7 @@ void setup()
 
   initWiFi();
   dev.updater.setRemote(Updater::UPD_NONE, config[mqtthost_n].c_str(), 80, "/bin/punkatoo.bin", "");
+  clitask.init();
 }
 
 unsigned long long startedAt = 0;
