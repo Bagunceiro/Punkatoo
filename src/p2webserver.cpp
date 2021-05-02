@@ -31,8 +31,8 @@ void P2WebServer::rootData(AsyncWebServerRequest *request)
     doc["revision"] = gitrevision;
     doc["comptime"] = compDateTime;
     doc["mac"] = WiFi.macAddress();
-    doc["ssid"] = WiFi.macAddress();
-    doc["starttime"] = WiFi.macAddress();
+    doc["ssid"] = WiFi.SSID();
+    doc["starttime"] = startTime();
 
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     serializeJson(doc, *response);
@@ -50,7 +50,7 @@ void P2WebServer::genData(AsyncWebServerRequest *request)
     doc["mqttpwd"] = config[mqttpwd_n];
     doc["mqttroot"] = config[mqttroot_n];
     doc["mqtttopic"] = config[mqtttopic_n];
-    doc["ind"] = "1";
+    doc["selection"] = String("indic_") + config[indicator_n];
 
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     serializeJson(doc, *response);
@@ -118,6 +118,7 @@ void P2WebServer::init()
     on("/gendata.json", HTTP_GET, getGenData);
     on("/wificonfdata.json", HTTP_GET, getWifiConfData);
     on("/wifidiscdata.json", HTTP_GET, getWifiDiscData);
+    on("/general.html", HTTP_POST, postGenData);
     on("/wifi.html", HTTP_POST, postWifiData);
     on("/netedit.html", HTTP_POST, postNetEdit);
     on("/sysupd.html", HTTP_POST, postSysupd);
@@ -140,67 +141,39 @@ void P2WebServer::init()
     begin();
 }
 
-/*
-void P2WebServer::sendPage(AsyncWebServerRequest *req, ...)
-{
-    va_list args;
-    va_start(args, req);
-
-    AsyncResponseStream *response = req->beginResponseStream("text/html");
-    char *s;
-    for (int i = 0; (s = va_arg(args, char *)) != NULL; i++)
-    {
-        response->print(s);
-    }
-    va_end(args);
-    req->send(response);
-}
-*/
-/*
-const char *HEAD = R"!(<HEAD><meta http-equiv="content-type" charset="UTF-8"
-content="text/html, width=device-width, initial-scale=1">)!";
-const char *TITLE = "<TITLE>";
-const char *STYLES = R"!(<script src="/navfuncs.js"></script>
-<link rel="stylesheet" href="/punkatoo.css">)!";
-const char *END_TITLE = "</TITLE>";
-const char *END_HEAD = "</HEAD>";
-const char *BODY = "<BODY>";
-const char *END_BODY = "</BODY>";
-const char *DIV_HEADER = R"!(<div class="header" id="myHeader">)!";
-const char *END_DIV = "</div>";
-const char *BUTTON_HOME = "<button onclick=gohome()>Home</button>";
-const char *BUTTON_GENERAL = "<button onclick=gogenconf()>General</button>";
-const char *BUTTON_WIFI = "<button onclick=gowificonf()>WiFi</button>";
-const char *BUTTON_RESET = "<button onclick=goreset()>Reset</button>";
-const char *BUTTON_SYSUPDATE = "<button onclick=gosysupdate()>System Update</button>";
-const char *BUTTON_UPDATE = "<button type=submit form=theform>Update</button>";
-
-const char *DIV_CONTENT = "<div class=content>";
-const char *TABLE = "<TABLE>";
-const char *END_TABLE = "</TABLE>";
-*/
-/*
-void P2WebServer::messagePage(AsyncWebServerRequest *req, const char *message)
-{
-    sendPage(req, HEAD, TITLE, "Punkatoo Message", END_TITLE, STYLES,
-             "<meta http-equiv=\"refresh\" content=\"15;url=/\" />",
-             END_HEAD,
-             BODY,
-             DIV_HEADER, BUTTON_HOME, BUTTON_RESET, END_DIV,
-             DIV_CONTENT,
-             "<BR><B>Controller: ",
-             config[controllername_n].c_str(),
-             "</B><br><br>",
-             message,
-             END_DIV,
-             END_BODY,
-             NULL);
-}
-*/
-
 void P2WebServer::sysReset(AsyncWebServerRequest *req)
 {
     dev.p2sys.reset();
+    serveFile(req);
+}
+
+void P2WebServer::genDataRecd(AsyncWebServerRequest *req)
+{
+    for (uint8_t i = 0; i < req->args(); i++)
+    {
+        const String argN = req->argName(i);
+        const String value = req->arg(i);
+
+        if (argN == "controllername")
+            config[controllername_n] = value;
+        else if (argN == "mqtthost")
+            config[mqtthost_n] = value;
+        else if (argN == "mqttport")
+            config[mqttport_n] = value;
+        else if (argN == "mqttuser")
+            config[mqttuser_n] = value;
+        else if (argN == "mqttpwd")
+            config[mqttpwd_n] = value;
+        else if (argN == "mqttroot")
+            config[mqttroot_n] = value;
+        else if (argN == "mqtttopic")
+            config[mqtttopic_n] = value;
+        else if (argN == "indicator")
+        if (value.length() > 0)
+            config[indicator_n] = value;
+        config.writeFile();
+    }
+
     serveFile(req);
 }
 

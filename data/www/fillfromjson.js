@@ -1,15 +1,22 @@
 function fillFromJson(obj) {
   for (const [key, value] of Object.entries(obj)) {
-    // console.log(key, value);
-    var elements = document.getElementsByName(key);
-    for (element of elements) {
-      // var element = document.getElementById(key);
-      if (element) {
-        var tag = element.tagName;
-        if (tag == "INPUT") {
-          element.value = value;
-        } else {
-          element.innerHTML = value;
+    if (key == "selection") {
+      var selects = document.getElementsByName(value);
+      for (element of selects)
+      {
+        element.selected = "selected";
+      }
+    } else {
+      var elements = document.getElementsByName(key);
+      for (element of elements) {
+        // var element = document.getElementById(key);
+        if (element) {
+          var tag = element.tagName;
+          if (tag == "INPUT") {
+            element.value = value;
+          } else {
+            element.innerHTML = value;
+          }
         }
       }
     }

@@ -15,6 +15,8 @@ class CLITask : public P2Task
     virtual ~CLITask();
     bool operator()() override;
     void init();
+    void reportProgress(size_t completed, size_t total);
+    static void reportProgressCB(size_t completed, size_t total);
 
     private:
     WiFiServer cliServer;
@@ -22,8 +24,13 @@ class CLITask : public P2Task
     String getCommand();
     int parse(const char *line, stringArray &argv);
     int execute(stringArray argv);
+
     int upload(stringArray argv);
+    int sysupdate(stringArray argv);
+
     void progress(const size_t comp, const size_t total);
     static void progcb(const size_t comp, const size_t total, void* obj);
+
     String error;
+    static CLITask* pThis;
 };

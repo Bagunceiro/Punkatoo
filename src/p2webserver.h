@@ -55,6 +55,7 @@ private:
 
     void rootData(AsyncWebServerRequest *r);
     void genData(AsyncWebServerRequest *r);
+    void genDataRecd(AsyncWebServerRequest *r);
     void wifiData(AsyncWebServerRequest *r, const char* name, networkList& n);
     void wifiConfData(AsyncWebServerRequest *r);
     void wifiDiscData(AsyncWebServerRequest *r);
@@ -68,6 +69,7 @@ private:
     static void getGenData(AsyncWebServerRequest *r) { pThis->genData(r);}
     static void getWifiConfData(AsyncWebServerRequest *r) { pThis->wifiConfData(r);}
     static void getWifiDiscData(AsyncWebServerRequest *r) { pThis->wifiDiscData(r);}
+    static void postGenData(AsyncWebServerRequest *r) { pThis->genDataRecd(r);}
     static void postWifiData(AsyncWebServerRequest *r) { pThis->wifiDataRecd(r);}
     static void postNetEdit(AsyncWebServerRequest *r) { pThis->netEditRecd(r);}
     static void getSysupdData(AsyncWebServerRequest *r) { pThis->sysupdData(r);}

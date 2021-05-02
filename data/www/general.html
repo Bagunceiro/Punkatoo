@@ -16,7 +16,7 @@
         <BR>
             <B>General Configuration: <span name="controllername"></span><span></B>
         </BR>
-        <FORM id=theform method=post action="/config.update">
+        <FORM id=theform method=post>
         <TABLE>
             <tr><td><label for=ctlrname>Controller Name:</label></td>
                 <td><input type=text name="controllername" id="controllername"></td>
@@ -39,8 +39,13 @@
             <tr><td><label for=mqtttopic>MQTT Topic:</label></td>
                 <td><input type=text name="mqtttopic" id="mqtttopic"></td>
             </tr>
-            <tr><td><label for="ind">Status Indicator:</label></td>
-                <td><input type=checkbox id="ind" name="indicator" id=indicator/><label for=ind>&nbsp;</label></td>
+            <tr><td><label for="indicator">Status Indicator:</label></td>
+                <td><select id = "indicator" name="indicator">
+                    <option ></option>
+                    <option value="1" name="indic_1">on</option>
+                    <option value="0" name="indic_0">off</option>
+                  </select>
+                  </td>
             </tr>
         </TABLE>
         </FORM>

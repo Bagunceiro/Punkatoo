@@ -3,7 +3,7 @@ table {
   font-family: arial, sans-serif; border-collapse: collapse; margin-left: 5%; width: 90%;
   box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5);
 }
-th, td, input {font-size: 4vw; border: 1px solid #dddddd;white-space:nowrap; text-align: left; padding: 8px; }
+th, td, input, select {font-size: 4vw; border: 1px solid #dddddd;white-space:nowrap; text-align: left; padding: 8px; }
 tr:nth-child(even) { background-color: thistle;}
 button {
   font-size: 3vw; background: indigo; color: white;

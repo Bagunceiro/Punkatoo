@@ -2,8 +2,11 @@
 #include <config.h>
 #include <LITTLEFS.h>
 
+CLITask* CLITask::pThis = NULL;
+
 CLITask::CLITask(const char *name) : P2Task(name, 4096), cliServer(1685)
 {
+    pThis = this;
 }
 
 CLITask::~CLITask() {}
@@ -11,7 +14,7 @@ CLITask::~CLITask() {}
 void CLITask::init()
 {
     cliServer.begin();
-    start(0);
+    start(1);
 }
 
 bool CLITask::operator()()
@@ -142,12 +145,74 @@ int CLITask::upload(stringArray argv)
     return result;
 }
 
+void CLITask::reportProgress(size_t completed, size_t total)
+{
+    static int oldPhase = 1;
+    int progress = (completed * 100) / total;
+
+    int phase = (progress / 5) % 2; // report at 5% intervals
+
+    if (phase != oldPhase)
+    {
+        cliClient.printf("%3d%% (%d/%d)\n", progress, completed, total);
+        oldPhase = phase;
+    }
+}
+
+void CLITask::reportProgressCB(size_t completed, size_t total)
+{
+    pThis->progress(completed, total);
+}
+
+int CLITask::sysupdate(stringArray argv)
+{
+    int result = -1;
+    if (argv.size() == 2)
+    {
+        const char* url = argv[1].c_str();
+
+        WiFiClient httpclient;
+
+        httpUpdate.rebootOnUpdate(false);
+
+        Update.onProgress(reportProgressCB);
+
+        t_httpUpdate_return ret = httpUpdate.update(httpclient, url);
+
+        switch (ret)
+        {
+        case HTTP_UPDATE_FAILED:
+            cliClient.printf("Update fail error (%d): %s\n",
+                          httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+            break;
+
+        case HTTP_UPDATE_NO_UPDATES:
+            cliClient.println("No update file available");
+            break;
+
+        case HTTP_UPDATE_OK:
+            cliClient.println("System update available - reboot to load");
+            result = 0;
+            break;
+        }
+    }
+    else
+    {
+        error = "sysupdate URL";
+    }
+    return result;
+}
+
 int CLITask::execute(stringArray argv)
 {
     int result = -1;
     if (argv[0] == "upload")
     {
         result = upload(argv);
+    }
+    if (argv[0] == "sysupdate")
+    {
+        result = sysupdate(argv);
     }
     else
     {
