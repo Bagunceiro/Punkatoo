@@ -15,7 +15,7 @@ class CLITask : public P2Task
     virtual ~CLITask();
     bool operator()() override;
     void init();
-    void reportProgress(size_t completed, size_t total);
+    void reportProgress(size_t completed, size_t total, int interval = 10);
     static void reportProgressCB(size_t completed, size_t total);
 
     private:

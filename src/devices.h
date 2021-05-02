@@ -12,7 +12,6 @@
 #include "indicator.h"
 #include "bme.h"
 #include "eventlog.h"
-#include "updater.h"
 #include "p2webserver.h"
 
 using namespace std;
@@ -23,7 +22,6 @@ struct Devices
     MQTTController  mqtt;
     IRController*   irctlr;
     EventLogger     eventlogger;
-    Updater         updater;
     P2WebServer     webServer;
     Switches*       switchTask;
 

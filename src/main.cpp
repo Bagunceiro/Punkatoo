@@ -14,7 +14,6 @@
 #include "devices.h"
 #include "spdt.h"
 #include "networks.h"
-#include "updater.h"
 #include "cli.h"
 
 WiFiSerialClient serr;
@@ -208,7 +207,6 @@ void setup()
   e2.enqueue("Startup complete");
 
   initWiFi();
-  dev.updater.setRemote(Updater::UPD_NONE, config[mqtthost_n].c_str(), 80, "/bin/punkatoo.bin", "");
   clitask.init();
 }
 

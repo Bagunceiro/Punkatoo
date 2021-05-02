@@ -97,21 +97,6 @@ void P2WebServer::addNetworks(JsonArray &array, networkList &list)
     }
 }
 
-void P2WebServer::sysupdData(AsyncWebServerRequest *request)
-{
-    StaticJsonDocument<512> doc;
-
-    doc["controllername"] = config[controllername_n];
-    doc["server"] = dev.updater.getServer();
-    doc["port"] = String(dev.updater.getPort());
-    doc["image"] = dev.updater.getSource();
-    doc["target"] = dev.updater.getTarget();
-
-    AsyncResponseStream *response = request->beginResponseStream("application/json");
-    serializeJson(doc, *response);
-    request->send(response);
-}
-
 void P2WebServer::init()
 {
     on("/rootdata.json", HTTP_GET, getRootData);
@@ -121,8 +106,6 @@ void P2WebServer::init()
     on("/general.html", HTTP_POST, postGenData);
     on("/wifi.html", HTTP_POST, postWifiData);
     on("/netedit.html", HTTP_POST, postNetEdit);
-    on("/sysupd.html", HTTP_POST, postSysupd);
-    on("/sysupddata.json", HTTP_GET, getSysupdData);
     on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LITTLEFS, wwwpath + "/index.html", "text/html");
     });
@@ -235,105 +218,6 @@ void P2WebServer::netEditRecd(AsyncWebServerRequest *req)
     }
     serr.printf("Edited network %s\n", net.ssid.c_str());
     updateWiFiDef(net);
-    serveFile(req);
-}
-
-void P2WebServer::progressCB(size_t completed, size_t total, void *data)
-{
-    extern AsyncEventSource events;
-    static int oldPhase = 1;
-    int progress = (completed * 100) / total;
-
-    int phase = (progress / 5) % 2; // report at 5% intervals
-
-    if (phase != oldPhase)
-    {
-        if (dev.indicators.size() > 0)
-        {
-            if (phase)
-                dev.indicators[0].off();
-            else
-                dev.indicators[0].setColour(indicate_update, true);
-        }
-        serr.printf("Progress: %d%% (%d/%d)\n", progress, completed, total);
-        char buff[32];
-        snprintf(buff, sizeof(buff) - 1, "Progress: %d%% (%u/%u)", progress, completed, total);
-        updateInfo(buff, NULL);
-
-        oldPhase = phase;
-    }
-}
-
-void P2WebServer::updateInfo(const char *message, void *)
-{
-    if (message != NULL)
-    {
-        pThis->event("progress", message);
-    }
-    else
-    {
-        pThis->event("progress", "No Message");
-    }
-    StaticJsonDocument<512> doc;
-    doc["message"] = message;
-    String jmsg;
-    serializeJson(doc, jmsg);
-    pThis->event("updprog", jmsg.c_str());
-}
-
-void P2WebServer::sysupdRecd(AsyncWebServerRequest *req)
-{
-    String server;
-    String port;
-    String image;
-    String target;
-
-    for (int i = 0; i < req->args(); i++)
-    {
-        const String argN = req->argName(i);
-        if (argN == "server")
-            server = req->arg(i);
-        else if (argN == "port")
-            port = req->arg(i);
-        else if (argN == "image")
-            image = req->arg(i);
-        else if (argN == "target")
-            target = req->arg(i);
-    }
-
-    String ext;
-    int extidx = image.lastIndexOf('.');
-    if (extidx >= 0)
-        ext = image.substring(extidx + 1);
-
-    serr.printf("Update %s, %ld, %s\n", server.c_str(), port.toInt(), image.c_str());
-
-    if (ext == "bin")
-    {
-        doUpdateSysPage(req, server.c_str(), port.toInt(), image.c_str());
-    }
-    else
-    {
-        doUpdateConfPage(req, server.c_str(), port.toInt(), image.c_str(), target.c_str());
-    }
-}
-
-void P2WebServer::doUpdateSysPage(AsyncWebServerRequest *req, const char *server, const int port, const char *image)
-{
-    dev.updater.onStart(updateInfo);
-    dev.updater.onEnd(updateInfo);
-    dev.updater.onFail(updateInfo);
-    dev.updater.onProgress(progressCB);
-    dev.updater.setRemote(Updater::UPD_SYS, server, port, image, "");
-    serveFile(req);
-}
-
-void P2WebServer::doUpdateConfPage(AsyncWebServerRequest *req, const char *server, const int port, const char *src, const char *target)
-{
-    dev.updater.onEnd(updateInfo);
-    dev.updater.onFail(updateInfo);
-    dev.updater.onProgress(progressCB);
-    dev.updater.setRemote(Updater::UPD_CONF, server, port, src, target);
     serveFile(req);
 }
 

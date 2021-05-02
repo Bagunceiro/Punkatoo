@@ -295,12 +295,6 @@ bool Devices::build(const char *fileName)
         serr.println("Device file open for read failed");
     }
     switchTask = new Switches(&switches);
-    /*
-    if (irctlr == NULL) // Emergency Dummy IR Controller to give things 
-    {
-        irctlr = new IRController("DummyIR", 34); 
-    }
-    */
     
     return result;
 }
@@ -369,6 +363,5 @@ void Devices::start()
         }
     }
     // configurator.registerIR(irctlr);
-    updater.start(1);
     webServer.init();
 }

@@ -1,10 +1,11 @@
 #include "cli.h"
-#include <config.h>
+#include "config.h"
 #include <LITTLEFS.h>
+#include <HTTPUpdate.h>
 
-CLITask* CLITask::pThis = NULL;
+CLITask *CLITask::pThis = NULL;
 
-CLITask::CLITask(const char *name) : P2Task(name, 4096), cliServer(1685)
+CLITask::CLITask(const char *name) : P2Task(name, 6000), cliServer(1685)
 {
     pThis = this;
 }
@@ -22,18 +23,10 @@ bool CLITask::operator()()
     cliClient = cliServer.available();
     if (cliClient)
     {
-        // stringArray args;
-
         String s = getCommand();
         stringArray argv;
         parse(s.c_str(), argv);
-        int result = execute(argv);
-        if (result == 0)
-            cliClient.println("\nOK");
-        else
-        {
-            cliClient.println(error);
-        }
+        execute(argv);
     }
     return true;
 }
@@ -119,7 +112,7 @@ void CLITask::progcb(size_t completed, size_t total, void *ptr)
 
 int CLITask::upload(stringArray argv)
 {
-    int result = 0;
+    int result = -1;
     if (argv.size() == 5)
     {
         const char *server = argv[1].c_str();
@@ -127,30 +120,57 @@ int CLITask::upload(stringArray argv)
         const char *source = argv[3].c_str();
         const char *target = argv[4].c_str();
 
-        // cliClient.printf("upload %s:%d%s to %s\n", server, port, source, target);
+        HTTPClient http;
+        http.begin(server, port, source);
+        int httpCode = http.GET();
 
-        dev.updater.onProgress(progcb, this);
-        Serial.println("calling configUpsdate");
-        if (!dev.updater.configUpdate(server, port, source, target))
+        if (httpCode > 0)
         {
-            error = String("Upload failed ") + server + ":" + port + source + " " + target;
-            result = -1;
+            if (httpCode == HTTP_CODE_OK)
+            {
+                File f = LITTLEFS.open("/upload.tmp", "w+");
+                if (f)
+                {
+                    Stream &s = http.getStream();
+                    uint8_t buffer[128];
+                    size_t total = http.getSize();
+                    size_t sofar = 0;
+                    size_t l;
+                    while ((l = s.readBytes(buffer, sizeof(buffer) - 1)))
+                    {
+                        f.write(buffer, l);
+                        reportProgress(sofar, total);
+                        sofar += l;
+                    }
+                    f.close();
+                    if (LITTLEFS.rename("/upload.tmp", target))
+                    {
+                        cliClient.println("Complete");
+                        result = 0;
+                    }
+                    else
+                        cliClient.println("Couldn't create file");
+                }
+                else
+                    cliClient.println("Couldn't create temp file");
+            }
+            else
+                cliClient.printf("Upload failed %d\n", httpCode);
         }
+        else
+            cliClient.printf("Get failed %s", http.errorToString(httpCode).c_str());
     }
     else
-    {
         error = "upload SERVER PORT SOURCE TARGET";
-        result = -1;
-    }
     return result;
 }
 
-void CLITask::reportProgress(size_t completed, size_t total)
+void CLITask::reportProgress(size_t completed, size_t total, int interval)
 {
     static int oldPhase = 1;
     int progress = (completed * 100) / total;
 
-    int phase = (progress / 5) % 2; // report at 5% intervals
+    int phase = (progress / interval) % 2; // report at 5% intervals
 
     if (phase != oldPhase)
     {
@@ -161,7 +181,7 @@ void CLITask::reportProgress(size_t completed, size_t total)
 
 void CLITask::reportProgressCB(size_t completed, size_t total)
 {
-    pThis->progress(completed, total);
+    pThis->reportProgress(completed, total);
 }
 
 int CLITask::sysupdate(stringArray argv)
@@ -169,7 +189,7 @@ int CLITask::sysupdate(stringArray argv)
     int result = -1;
     if (argv.size() == 2)
     {
-        const char* url = argv[1].c_str();
+        const char *url = argv[1].c_str();
 
         WiFiClient httpclient;
 
@@ -183,7 +203,7 @@ int CLITask::sysupdate(stringArray argv)
         {
         case HTTP_UPDATE_FAILED:
             cliClient.printf("Update fail error (%d): %s\n",
-                          httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+                             httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
             break;
 
         case HTTP_UPDATE_NO_UPDATES:
@@ -191,7 +211,10 @@ int CLITask::sysupdate(stringArray argv)
             break;
 
         case HTTP_UPDATE_OK:
-            cliClient.println("System update available - reboot to load");
+            cliClient.println("System update available - reseting");
+            cliClient.stop();
+            delay(1000);
+            ESP.restart();
             result = 0;
             break;
         }
@@ -210,7 +233,7 @@ int CLITask::execute(stringArray argv)
     {
         result = upload(argv);
     }
-    if (argv[0] == "sysupdate")
+    else if (argv[0] == "sysupdate")
     {
         result = sysupdate(argv);
     }

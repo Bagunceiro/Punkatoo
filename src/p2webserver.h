@@ -46,9 +46,7 @@ private:
     // void blankResetMessagePage(AsyncWebServerRequest *r);
     // void systemUpdatePage(AsyncWebServerRequest *r);
     // void doUpdatePage(AsyncWebServerRequest *r);
-    void doUpdateSysPage(AsyncWebServerRequest *r, const char* srv, const int port, const char* src);
-    void doUpdateConfPage(AsyncWebServerRequest *r,  const char* srv, const int port, const char* src, const char* target);
-    // void messagePage(AsyncWebServerRequest *r, const char* message);
+  // void messagePage(AsyncWebServerRequest *r, const char* message);
     // void sendPage(AsyncWebServerRequest *r, ...);
     
     static void updateInfo(const char*, void*);
@@ -61,8 +59,6 @@ private:
     void wifiDiscData(AsyncWebServerRequest *r);
     void wifiDataRecd(AsyncWebServerRequest *r);
     void netEditRecd(AsyncWebServerRequest *r);
-    void sysupdData(AsyncWebServerRequest *r);
-    void sysupdRecd(AsyncWebServerRequest *r);
     void sysReset(AsyncWebServerRequest *r);
 
     static void getRootData(AsyncWebServerRequest *r) { pThis->rootData(r);}
@@ -72,8 +68,6 @@ private:
     static void postGenData(AsyncWebServerRequest *r) { pThis->genDataRecd(r);}
     static void postWifiData(AsyncWebServerRequest *r) { pThis->wifiDataRecd(r);}
     static void postNetEdit(AsyncWebServerRequest *r) { pThis->netEditRecd(r);}
-    static void getSysupdData(AsyncWebServerRequest *r) { pThis->sysupdData(r);}
-    static void postSysupd(AsyncWebServerRequest *r) { pThis->sysupdRecd(r);}
     static void doSysReset(AsyncWebServerRequest *r) { pThis->sysReset(r);}
 
     // String &listNetworks(String &body, networkList &networks, bool selected);
