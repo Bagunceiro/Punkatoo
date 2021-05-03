@@ -5,7 +5,7 @@
 
 CLITask *CLITask::pThis = NULL;
 
-CLITask::CLITask(const char *name) : P2Task(name, 6000), cliServer(1685)
+CLITask::CLITask(const char *name) : P2Task(name, 3500), cliServer(1685)
 {
     pThis = this;
 }
@@ -119,6 +119,7 @@ int CLITask::upload(stringArray argv)
         int port = argv[2].toInt();
         const char *source = argv[3].c_str();
         const char *target = argv[4].c_str();
+        serr.printf("Downloading http://%s:%d%s to %s\n", server, port, source, target);
 
         HTTPClient http;
         http.begin(server, port, source);
@@ -145,6 +146,7 @@ int CLITask::upload(stringArray argv)
                     f.close();
                     if (LITTLEFS.rename("/upload.tmp", target))
                     {
+                        serr.println("Complete");
                         cliClient.println("Complete");
                         result = 0;
                     }
@@ -158,7 +160,7 @@ int CLITask::upload(stringArray argv)
                 cliClient.printf("Upload failed %d\n", httpCode);
         }
         else
-            cliClient.printf("Get failed %s", http.errorToString(httpCode).c_str());
+            cliClient.printf("Get failed %s\n", http.errorToString(httpCode).c_str());
     }
     else
         error = "upload SERVER PORT SOURCE TARGET";
@@ -174,6 +176,7 @@ void CLITask::reportProgress(size_t completed, size_t total, int interval)
 
     if (phase != oldPhase)
     {
+        serr.printf("%3d%% (%d/%d)\n", progress, completed, total);
         cliClient.printf("%3d%% (%d/%d)\n", progress, completed, total);
         oldPhase = phase;
     }
@@ -196,6 +199,7 @@ int CLITask::sysupdate(stringArray argv)
         httpUpdate.rebootOnUpdate(false);
 
         Update.onProgress(reportProgressCB);
+        serr.println("System update started");
 
         t_httpUpdate_return ret = httpUpdate.update(httpclient, url);
 
@@ -211,6 +215,7 @@ int CLITask::sysupdate(stringArray argv)
             break;
 
         case HTTP_UPDATE_OK:
+            serr.println("System update available - reseting");
             cliClient.println("System update available - reseting");
             cliClient.stop();
             delay(1000);

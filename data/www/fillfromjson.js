@@ -9,7 +9,6 @@ function fillFromJson(obj) {
     } else {
       var elements = document.getElementsByName(key);
       for (element of elements) {
-        // var element = document.getElementById(key);
         if (element) {
           var tag = element.tagName;
           if (tag == "INPUT") {
