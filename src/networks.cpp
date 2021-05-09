@@ -34,7 +34,7 @@ networkList &scanNetworks()
             serr.print(WiFi.RSSI(i));
             serr.print(")");
             serr.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
-*/
+        */
     }
     std::sort(scannedNets.begin(), scannedNets.end(),
               [](WiFiNetworkDef i, WiFiNetworkDef j) { return (i.rssi > j.rssi); });
@@ -104,6 +104,7 @@ bool networkConfWrite(networkList &networks)
 
 void addNetwork(networkList &netlist, const String &ssid)
 {
+    /*
     bool added = false;
     for (uint16_t i = 0; i < netlist.size(); i++)
     {
@@ -127,10 +128,12 @@ void addNetwork(networkList &netlist, const String &ssid)
     if (!added)
     {
         // serr.printf("Adding new %s\n", ssid.c_str());
-
+*/
         WiFiNetworkDef d(ssid);
         netlist.push_back(d);
+        /*
     }
+    */
 }
 
 void updateWiFiDef(WiFiNetworkDef &net)

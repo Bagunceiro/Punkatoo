@@ -45,6 +45,10 @@ bool Switch::poll()
       result = true;
     }
   }
+  else
+  {
+    debounce = 0; // to flag no change of state
+  }
   return result;
 }
 

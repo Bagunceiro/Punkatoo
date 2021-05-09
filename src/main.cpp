@@ -20,7 +20,6 @@ WiFiSerialClient serr;
 Devices dev;
 CLITask clitask("CLI");
 
-
 /*
  * Status colours
  */
@@ -35,6 +34,7 @@ const IndicatorLed::Colour indicate_wps = IndicatorLed::MAGENTA;
 
 extern void wpsInit();
 extern void updateWiFiDef(String &ssid, String &psk);
+
 
 void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
 {
@@ -103,7 +103,7 @@ void wpsInit()
   strcpy(wpsconfig.factory_info.model_name, "Punkatoo");
   strcpy(wpsconfig.factory_info.device_name, config[controllername_n].c_str());
   // strcpy(wpsconfig.factory_info.device_name, config[controllername_n]);
-esp_wifi_wps_enable(&wpsconfig);
+  esp_wifi_wps_enable(&wpsconfig);
   esp_wifi_wps_start(0);
   serr.println("WPS started");
   dev.p2sys.enterState(P2System::STATE_WPS);
@@ -269,6 +269,14 @@ void heartbeat()
 
   serializeJson(doc, data);
   dev.webServer.event("heartbeat", data.c_str());
+  /*
+  static bool blinker = false;
+  blinker = !blinker;
+  if (blinker)
+    digitalWrite(4, 1);
+  else
+    digitalWrite(4, 0);
+  */
 }
 
 void loop()

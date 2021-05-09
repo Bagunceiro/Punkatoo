@@ -194,6 +194,11 @@ void IRLed::subscribeToMQTT()
 
 void IRLed::txCode(String type, long code, int bits)
 {
+  Event e;
+  char buffer[32];
+  snprintf(buffer, sizeof(buffer)-1, "IR TX: %s, %lx, %d\n", type.c_str(), code, bits);
+
+  e.enqueue(buffer);
   if (type == "NEC")
   {
     irsend->sendNEC(code);
@@ -207,6 +212,7 @@ void IRLed::mqttMsgRecd(const String &topic, const String &msg)
     String type;
     String code;
     int bits = 32;
+    int rpt = 1;
 
     StaticJsonDocument<512> doc;
 
@@ -233,11 +239,18 @@ void IRLed::mqttMsgRecd(const String &topic, const String &msg)
         {
           bits = (const int)kv.value();
         }
+        else if (kv.key() == "repeat")
+        {
+          rpt = (const int)kv.value();
+        }
       }
     }
     if ((type != "") && (code != ""))
     {
-      txCode(type, strtoll(code.c_str(), 0, 16), bits);
+      for (int i = 0; i < rpt; i++)
+      {
+        txCode(type, strtoll(code.c_str(), 0, 16), bits);
+      }
     }
   }
 }

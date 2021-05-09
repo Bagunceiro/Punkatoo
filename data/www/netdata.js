@@ -42,6 +42,7 @@ function netdata(obj) {
         else txt += "🔒";
         txt += netdesc.ssid;
         if (conf) txt += "</a>"; // only confs
+        if (!conf && netdesc.rssi) txt +=  " (" + netdesc.rssi + ")";
         txt += "</td></tr>";
       }
 

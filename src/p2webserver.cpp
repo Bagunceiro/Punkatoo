@@ -89,10 +89,11 @@ void P2WebServer::addNetworks(JsonArray &array, networkList &list)
 {
     for (unsigned int i = 0; i < list.size(); i++)
     {
-        StaticJsonDocument<64> doc;
+        StaticJsonDocument<100> doc;
         JsonObject obj = doc.to<JsonObject>();
         obj["ssid"] = list[i].ssid;
         obj["open"] = list[i].openNet;
+        obj["rssi"] = list[i].rssi;
         array.add(doc);
     }
 }
