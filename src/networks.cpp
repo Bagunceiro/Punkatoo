@@ -37,7 +37,8 @@ networkList &scanNetworks()
         */
     }
     std::sort(scannedNets.begin(), scannedNets.end(),
-              [](WiFiNetworkDef i, WiFiNetworkDef j) { return (i.rssi > j.rssi); });
+              [](WiFiNetworkDef i, WiFiNetworkDef j)
+              { return (i.rssi > j.rssi); });
     return scannedNets;
 }
 
@@ -104,36 +105,8 @@ bool networkConfWrite(networkList &networks)
 
 void addNetwork(networkList &netlist, const String &ssid)
 {
-    /*
-    bool added = false;
-    for (uint16_t i = 0; i < netlist.size(); i++)
-    {
-        if (netlist[i].ssid == ssid)
-        {
-            // serr.printf("Already added %s\n", ssid.c_str());
-            return;
-        }
-    }
-    for (uint16_t i = 0; i < configuredNets.size(); i++)
-    {
-        if (configuredNets[i].ssid == ssid)
-        {
-            // serr.printf("Adding existing %s\n", ssid.c_str());
-            WiFiNetworkDef d = configuredNets[i];
-            netlist.push_back(d);
-            added = true;
-            break;
-        }
-    }
-    if (!added)
-    {
-        // serr.printf("Adding new %s\n", ssid.c_str());
-*/
-        WiFiNetworkDef d(ssid);
-        netlist.push_back(d);
-        /*
-    }
-    */
+    WiFiNetworkDef d(ssid);
+    netlist.push_back(d);
 }
 
 void updateWiFiDef(WiFiNetworkDef &net)

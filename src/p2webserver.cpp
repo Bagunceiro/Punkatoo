@@ -60,8 +60,8 @@ void P2WebServer::genData(AsyncWebServerRequest *request)
 
 void P2WebServer::wifiData(AsyncWebServerRequest *request, const char *name, networkList &n)
 {
-    StaticJsonDocument<1024> doc;
-    StaticJsonDocument<1024> doca;
+    StaticJsonDocument<1566> doc;
+    StaticJsonDocument<1566> doca;
 
     JsonArray array = doca.to<JsonArray>();
 
