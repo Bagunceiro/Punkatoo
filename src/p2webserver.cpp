@@ -32,6 +32,7 @@ void P2WebServer::rootData(AsyncWebServerRequest *request)
     doc["comptime"] = compDateTime;
     doc["mac"] = WiFi.macAddress();
     doc["ssid"] = WiFi.SSID();
+    doc["bssid"] = WiFi.BSSIDstr();
     doc["starttime"] = startTime();
 
     AsyncResponseStream *response = request->beginResponseStream("application/json");
