@@ -170,7 +170,7 @@ void parseCompileDate()
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115600);
   delay(500);
 
   parseCompileDate();
