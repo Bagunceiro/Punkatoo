@@ -17,11 +17,6 @@ const uint16_t kCaptureBufferSize = 1024;
 class IRClientDev;
 
 typedef uint32_t IRCode;
-typedef String IRMessage;
-typedef std::vector<IRClientDev *> DevList;
-typedef std::vector<IRMessage> MsgList;
-typedef std::map<IRMessage, DevList> SubscriptionList;
-typedef std::map<IRCode, MsgList> DecodeList;
 /*
   Miniature test remote
 */
@@ -48,35 +43,19 @@ typedef std::map<IRCode, MsgList> DecodeList;
 /*
    Fan controller remote
 */
+/*
 const IRCode IRREMOTE_FAN_ONOFF   = 0xff20df;
 const IRCode IRREMOTE_FAN_FASTER  = 0xffe01f;
 const IRCode IRREMOTE_FAN_SLOWER  = 0xff58a7;
 const IRCode IRREMOTE_FAN_REVERSE = 0xff10ef;
 const IRCode IRREMOTE_FAN_TIMER   = 0xffd827;
-
+*/
+/*
 const IRCode IRREMOTE_LIGHT_ONOFF = 0xff609f;
 const IRCode IRREMOTE_LIGHT_UP    = 0xff906f;
 const IRCode IRREMOTE_LIGHT_DOWN  = 0xff38c7;
 const IRCode IRREMOTE_LIGHT_TIMER = 0xffa05f;
-
-// Internal (decoded) messages
-
-extern const IRMessage IR_LAMP_OFF;
-extern const IRMessage IR_LAMP_ON;
-extern const IRMessage IR_LAMP_TOGGLE;
-
-extern const IRMessage IR_FAN_TOGGLE;
-extern const IRMessage IR_FAN_REVERSE;
-extern const IRMessage IR_FAN_FASTER;
-extern const IRMessage IR_FAN_SLOWER;
-
-extern const IRMessage IR_CONFIGURATOR_START;
-extern const IRMessage IR_CONFIGURATOR_STOP;
-
-extern const IRMessage IR_SEND_IRCODE;
-
-extern const IRMessage IR_RESET;
-
+*/
 
 class IRController : public IRrecv, public P2Task, public MQTTClientDev
 {
@@ -84,43 +63,10 @@ public:
   IRController(const char *name, int pin);
   ~IRController();
   void poll();
-  void newpoll();
-  bool subscribe(IRClientDev *, IRMessage);
   virtual bool operator()();
 
 private:
   const String dec(const IRCode c);
-
-  SubscriptionList subList;
-  static DecodeList decList;
-};
-
-class IRClientDev
-{
-public:
-  IRClientDev(const String& n);
-  virtual ~IRClientDev();
-  /*
-   Take action on receipt of an IR message. This function should be implemented by the derived class.
-  */
-  virtual void irmsgRecd(const IRMessage msg);
-  /*
-   Register with the IR controller.
-   Also subscribes to messages of interest (via the subscribeToIR function for the derived class)
-  */
-  void registerIR(IRController* c);
-  /*
-    Called by registerIR to allow derived class to subscribe to messages of interest
-  */
-  virtual void subscribeToIR() = 0;
-  const char* getName() { return name.c_str(); }
-
-protected:
-  bool subscribe(IRMessage m);
-
-private:
-  IRController *ctlr;
-  String name;
 };
 
 class IRLed : public MQTTClientDev

@@ -5,9 +5,13 @@
 const int MAXDEBOUNCE = 5;
 const int MIN_MILLIS = 100;
 
-Switch::Switch(const String &i, const int pin)
+Switch::Switch(const String &i)
 {
   id = i;
+}
+
+PhysSwitch::PhysSwitch(const String &i, const int pin) : Switch(i)
+{
   spin = pin;
   pinMode(spin, INPUT_PULLUP);
   delay(500); // input pin appears to need settling time after mode setting??
@@ -16,9 +20,22 @@ Switch::Switch(const String &i, const int pin)
   changeAt = 0;
 }
 
-bool Switch::poll()
+IRSwitch::IRSwitch(const String &i, const String& c) : Switch(i)
 {
-  bool result = false;
+  sscanf(c.c_str(), "%lx", &code);
+  Serial.printf("IR Switch %s(%lx)\n", i.c_str(), code);
+}
+
+void Switch::pressed()
+{
+  for (SwitchedDev *d : switched)
+  {
+    d->switched(parm.c_str());
+  }
+}
+
+void PhysSwitch::poll()
+{
   int newState = digitalRead(spin);
   if (newState != switchState)
   {
@@ -27,39 +44,48 @@ bool Switch::poll()
     {
       changeAt = now; // so note when it was
     }
-    debounce++; // and increment the count of sightings
+    debounce++;                        // and increment the count of sightings
     if ((now - changeAt) > MIN_MILLIS) // the state has been stable for MIN_MILLIS ms, switch it
-    // if (debounce > MAXDEBOUNCE)
     {
       Event e;
 
-      char buffer [24];
-      snprintf(buffer, sizeof(buffer) -1, "Switch %s (%d)", (newState == 1 ? "Open" : "Closed"), debounce);
+      char buffer[24];
+      snprintf(buffer, sizeof(buffer) - 1, "Switch %s (%d)", (newState == 1 ? "Open" : "Closed"), debounce);
       e.enqueue(buffer);
-      for (SwitchedDev *d : switched)
-      {
-        d->switchTo(newState);
-      }
+      pressed();
       switchState = newState;
       debounce = 0;
-      result = true;
     }
   }
   else
   {
     debounce = 0; // to flag no change of state
   }
-  return result;
 }
 
 bool Switches::operator()()
 {
   bool result = true;
-
-  for (Switch &sw : *swlist)
+  for (std::unique_ptr<Switch>& sw : *swlist)
   {
-    sw.poll();
+    sw->poll();
   }
 
   return result;
+}
+
+void Switches::irMessage(const unsigned long code)
+{
+  for (std::unique_ptr<Switch>& sw : *swlist)
+  {
+    sw->poll(code);
+  }
+}
+
+void IRSwitch::poll(const unsigned long irc)
+{
+  if (irc == code)
+  {
+    pressed();
+  }
 }

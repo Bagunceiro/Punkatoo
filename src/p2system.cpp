@@ -1,7 +1,7 @@
 #include "p2system.h"
 #include "config.h"
 
-P2System::P2System() : MQTTClientDev("P2Sys"), IRClientDev("P2Sys")
+P2System::P2System() : MQTTClientDev("P2Sys")
 {
     resetFlag = false;
     prevst = st = STATE_0;

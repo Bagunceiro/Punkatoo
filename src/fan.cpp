@@ -2,7 +2,7 @@
 #include "fan.h"
 #include "eventlog.h"
 
-Fan::Fan(const char* devName, const int d1, const int d2, const int s1, const int s2) : MQTTClientDev(devName), IRClientDev(devName)
+Fan::Fan(const char* devName, const int d1, const int d2, const int s1, const int s2) : MQTTClientDev(devName), SwitchedDev(devName)
 {
   dir.setPins(d1, d2);
   spd.setPins(s1, s2);
@@ -174,18 +174,19 @@ void Fan::subscribeToMQTT()
   mqttSendStatus();
 }
 
-void Fan::irmsgRecd(const IRMessage msg)
+void Fan::switched(const char* parm)
 {
-  if (msg == IR_FAN_TOGGLE)
+  if (strcmp(parm, "pwr") == 0)
     onoff();
-  else if (msg == IR_FAN_REVERSE)
+  else if (strcmp(parm,"rev") == 0)
     reverse();
-  else if (msg == IR_FAN_FASTER)
+  else if (strcmp(parm,"+") == 0)
     faster();
-  else if (msg == IR_FAN_SLOWER)
+  else if (strcmp(parm,"-") == 0)
     slower();
 }
 
+/*
 void Fan::subscribeToIR()
 {
   subscribe(IR_FAN_TOGGLE);
@@ -193,3 +194,4 @@ void Fan::subscribeToIR()
   subscribe(IR_FAN_FASTER);
   subscribe(IR_FAN_SLOWER);
 }
+*/

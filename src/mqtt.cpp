@@ -67,6 +67,7 @@ MQTTController *MQTTController::thectlr = NULL;
 bool MQTTController::subscribe(MQTTClientDev *dev, const MQTTTopic &topic)
 {
     auto record = subList.find(topic);
+    Serial.printf("Subscribing %s\n", topic.c_str());
     if (record == subList.end())
     {
         MQTTDevList newVector;

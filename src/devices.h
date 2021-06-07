@@ -27,7 +27,7 @@ struct Devices
 
     vector<Lamp>         lamps;
     vector<Fan>          fans;
-    vector<Switch>       switches;
+    SwitchList_t         switches;
     vector<LDR>          ldrs;
     vector<BME>          bmes;
     vector<IRLed>        irleds;

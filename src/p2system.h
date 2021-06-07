@@ -4,7 +4,7 @@
 #include "infrared.h"
 #include "mqtt.h"
 
-class P2System : public MQTTClientDev, public IRClientDev
+class P2System : public MQTTClientDev
 {
 public:
     P2System();
@@ -17,7 +17,7 @@ public:
     void subscribeToMQTT();
     void mqttMsgRecd(const String &topic, const String &msg);
 
-    void subscribeToIR() {}
+//    void subscribeToIR() {}
     String mqttGetStatus();
 
     enum State

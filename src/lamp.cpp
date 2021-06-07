@@ -4,7 +4,7 @@
 #include "indicator.h"
 #include "eventlog.h"
 
-Lamp::Lamp(const char* devName, const int relayPin) : MQTTClientDev(devName), IRClientDev(devName), SwitchedDev(devName)
+Lamp::Lamp(const char* devName, const int relayPin) : MQTTClientDev(devName), SwitchedDev(devName)
 {
   lpin = relayPin;
   pinMode(lpin, OUTPUT);
@@ -16,7 +16,7 @@ void Lamp::sw(int toState)
 {
   Event e;
 
-  e.enqueue(String("Lamp ") + (toState == 0 ? "off" : "on"));
+  e.enqueue("Lamp " + String(mqttGetName()) + " " + (toState == 0 ? "off" : "on"));
   if (toState == 0)
   {
     digitalWrite(lpin, HIGH);
@@ -66,11 +66,11 @@ void Lamp::blip(const int number, const int length)
 
 void Lamp::mqttMsgRecd(const String &topic, const String &msg)
 {
-  if (topic == MQTT_TPC_SWITCH)
+  if (topic.endsWith(MQTT_TPC_SWITCH))
   {
     sw(msg.toInt());
   }
-  else if (topic == MQTT_TPC_SWITCHTO)
+  else if (topic.endsWith(MQTT_TPC_SWITCHTO))
   {
     StaticJsonDocument<512> doc;
     DeserializationError error = deserializeJson(doc, msg);
@@ -107,20 +107,7 @@ void Lamp::mqttMsgRecd(const String &topic, const String &msg)
 
 void Lamp::subscribeToMQTT()
 {
-  pmqttctlr->subscribe(this, MQTT_TPC_SWITCH);
-  pmqttctlr->subscribe(this, MQTT_TPC_SWITCHTO);
+  pmqttctlr->subscribe(this, mqttGetName() + MQTT_TPC_SWITCH);
+  pmqttctlr->subscribe(this, mqttGetName() + MQTT_TPC_SWITCHTO);
   mqttSendStatus();
-}
-
-void Lamp::irmsgRecd(IRMessage msg)
-{
-  if (msg == IR_LAMP_TOGGLE)
-    toggle();
-}
-
-void Lamp::subscribeToIR()
-{
-  subscribe(IR_LAMP_ON);
-  subscribe(IR_LAMP_OFF);
-  subscribe(IR_LAMP_TOGGLE);
 }

@@ -54,7 +54,7 @@ networkList &networkConfRead()
     else
     {
         configuredNets.clear();
-        StaticJsonDocument<1024> doc;
+        StaticJsonDocument<1500> doc;
         DeserializationError error = deserializeJson(doc, netsFile);
         if (error)
         {
@@ -68,7 +68,7 @@ networkList &networkConfRead()
         {
             const char *ssid = (const char *)net["ssid"];
             const char *psk = (const char *)net["psk"];
-            // serr.printf("Configured network: %s/%s\n", ssid, psk);
+            // Serial.printf("Configured network: %s/%s\n", ssid, psk);
 
             WiFiNetworkDef network(ssid, psk);
             configuredNets.push_back(network);
@@ -142,7 +142,7 @@ void connectToWiFi()
         {
             for (unsigned int i = 0; i < numNets; i++)
             {
-                serr.printf("Connect to %s/%s\n", configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
+                Serial.printf("Connect to %s/%s\n", configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
                 wifimulti.addAP(configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
             }
             wifimulti.run();

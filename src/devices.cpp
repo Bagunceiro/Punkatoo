@@ -6,6 +6,8 @@
 
 const char *KEY_ID = "id";
 const char *KEY_PIN = "pin";
+const char *KEY_IR = "ir";
+const char *KEY_PARM = "parm";
 const char *KEY_SWITCH = "switch";
 const char *KEY_PIN_R = "pinR";
 const char *KEY_PIN_G = "pinG";
@@ -106,13 +108,20 @@ void Devices::buildLamp(JsonArray list)
     }
 }
 
+struct internalIRMsg
+{
+    String dev;
+    String parm;
+};
+
 void Devices::buildSwitch(JsonArray list)
 {
     for (JsonObject obj : list)
     {
         String id;
-        int pin = 0;
-        vector<String> swdevs;
+        int pin = -1;
+        String ircode;
+        vector<internalIRMsg> swdevs;
 
         for (JsonPair kv : obj)
         {
@@ -120,37 +129,67 @@ void Devices::buildSwitch(JsonArray list)
                 id = kv.value().as<String>();
             else if (kv.key() == KEY_PIN)
                 pin = kv.value().as<int>();
+            else if (kv.key() == KEY_IR)
+                ircode = kv.value().as<String>();
             else if (kv.key() == KEY_SWITCHED)
             {
                 for (JsonObject swobj : kv.value().as<JsonArray>())
                 {
+                    internalIRMsg iirm;
                     for (JsonPair kvs : swobj)
                     {
+
                         if (kvs.key() == KEY_ID)
                         {
-                            swdevs.push_back(kvs.value().as<String>());
+                            iirm.dev = kvs.value().as<String>();
+                            // swdevs.push_back(kvs.value().as<String>());
+                        }
+                        if (kvs.key() == KEY_PARM)
+                        {
+                            iirm.parm = kvs.value().as<String>();
+                            // swdevs.push_back(kvs.value().as<String>());
                         }
                         else
                             serr.printf("  %s: %s\n", kvs.key().c_str(), kvs.value().as<String>().c_str());
                     }
+                    swdevs.push_back(iirm);
                 }
             }
             else
                 serr.printf("  %s: %s", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        Switch *sw = new Switch(id, pin);
-        for (String s : swdevs)
+        Switch *sw;
+        if (pin >= 0)
+            sw = new PhysSwitch(id, pin);
+        else if (ircode.length() > 0)
+            sw = new IRSwitch(id, ircode);
+        else
+        {
+            serr.println("Unknown switch type");
+            continue;
+        }
+        for (internalIRMsg& s : swdevs)
         {
             for (Lamp &l : lamps)
             {
-                if (l.getid() == s)
+                if (l.getid() == s.dev)
                 {
                     sw->addDevice(l);
+                    sw->addParm(s.parm.c_str());
+                    break;
+                }
+            }
+            for (Fan &f : fans)
+            {
+                if (f.getid() == s.dev)
+                {
+                    sw->addDevice(f);
+                    sw->addParm(s.parm.c_str());
                     break;
                 }
             }
         }
-        switches.push_back(*sw);
+        switches.push_back((std::unique_ptr<Switch>)sw);
     }
 }
 
@@ -240,7 +279,7 @@ bool Devices::build(const char *fileName)
     File devfile = LITTLEFS.open(fileName, "r");
     if (devfile)
     {
-        StaticJsonDocument<1024> doc;
+        StaticJsonDocument<2000> doc;
 
         DeserializationError error = deserializeJson(doc, devfile);
         if (error)
@@ -295,7 +334,7 @@ bool Devices::build(const char *fileName)
         serr.println("Device file open for read failed");
     }
     switchTask = new Switches(&switches);
-    
+
     return result;
 }
 
@@ -336,17 +375,17 @@ void Devices::start()
     eventlogger.registerMQTT(mqtt);
     eventlogger.start(0);
 
-    p2sys.registerIR(irctlr);
+//    p2sys.registerIR(irctlr);
     p2sys.registerMQTT(mqtt);
 
     for (Fan &fan : fans)
     {
-        fan.registerIR(irctlr);
+//         fan.registerIR(irctlr);
         fan.registerMQTT(mqtt);
     }
     for (Lamp &lamp : lamps)
     {
-        lamp.registerIR(irctlr);
+        // lamp.registerIR(irctlr);
         lamp.registerMQTT(mqtt);
         // lamp.start(5);
     }

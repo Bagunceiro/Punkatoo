@@ -7,7 +7,7 @@
 #include "infrared.h"
 #include "switch.h"
 
-class Lamp: public MQTTClientDev, public IRClientDev, public SwitchedDev
+class Lamp: public MQTTClientDev, public SwitchedDev
 {
   public:
     Lamp(const char* devName, const int relayPin);
@@ -23,12 +23,10 @@ class Lamp: public MQTTClientDev, public IRClientDev, public SwitchedDev
     virtual String mqttGetStatus() override;
     virtual void mqttMsgRecd(const String &topic, const String &msg) override;
     
-    virtual void irmsgRecd(IRMessage msg) override;
-    virtual void switchTo(const int state) { toggle(); }
+    virtual void switched(const char* parm) { toggle(); }
 
   private:
     int lpin; // goes to the control relay (active low)
-    virtual void subscribeToIR() override;
     virtual void subscribeToMQTT() override;
 };
 

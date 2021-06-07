@@ -2,20 +2,45 @@
 
 #include <vector>
 
+
+
 class SwitchedDev
 {
   /*
    * A device controlled by a Switch object
    */
-  public:
-  SwitchedDev(const String& i) { id = i; }
+public:
+  SwitchedDev(const String &i) { id = i; }
   const String getid() { return id; }
-  virtual void switchTo(const int state) = 0;
-  private:
+  virtual void switched(const char* parm) = 0;
+
+private:
   String id;
 };
 
 class Switch
+{
+  /*
+  * An actuator
+  * This class defines what it does, sub classes defined how it is triggered
+  */
+public:
+  Switch(const String &i);
+  void addDevice(SwitchedDev &d) { switched.push_back(&d); }
+  virtual void poll() {}
+  virtual void poll(const unsigned long irc) {}
+  void pressed();
+  void addParm(const char* p) { parm = p; }
+
+private:
+  String id;
+  String parm;
+  std::vector<SwitchedDev *> switched;
+};
+
+typedef std::vector<std::unique_ptr<Switch>> SwitchList_t;
+
+class PhysSwitch : public Switch
 {
   /*
    * An input switch, physically SPST, on/off but the transition between
@@ -24,19 +49,28 @@ class Switch
    * 
    * Future enhancement option - add momentary switch capability.
    */
-  public:
+public:
+  PhysSwitch(const String &i, const int pin);
+  virtual void poll() override;
 
-  Switch(const String& i, const int pin);
-  void addDevice(SwitchedDev& d) { switched.push_back(&d);}
-  bool poll();
-
-  private:
-  String id;
+private:
   int spin;
   int switchState;
   int debounce;
   unsigned long changeAt; // When the switch changed state
-  std::vector<SwitchedDev*> switched;
+};
+
+class IRSwitch : public Switch
+{
+  /*
+   * An infrared code.
+   */
+public:
+  IRSwitch(const String &i, const String &ircode);
+  virtual void poll(const unsigned long irc) override;
+
+private:
+  unsigned long code;
 };
 
 class Switches : public P2Task
@@ -45,8 +79,10 @@ class Switches : public P2Task
    * RTOS task that routines the switches attached to the system and acts upon them
    */
 public:
-  Switches(std::vector<Switch>* list) : P2Task("switches", 2000) { swlist = list; }
+  Switches(SwitchList_t *list) : P2Task("switches", 2000) { swlist = list; }
+  void irMessage(const unsigned long code);
+
 private:
-  std::vector<Switch>* swlist;
+  SwitchList_t *swlist;
   bool operator()();
 };

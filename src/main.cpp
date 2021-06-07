@@ -35,7 +35,6 @@ const IndicatorLed::Colour indicate_wps = IndicatorLed::MAGENTA;
 extern void wpsInit();
 extern void updateWiFiDef(String &ssid, String &psk);
 
-
 void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
 {
   String ssid;
@@ -170,7 +169,7 @@ void parseCompileDate()
 
 void setup()
 {
-  Serial.begin(115600);
+  Serial.begin(115200);
   delay(500);
 
   parseCompileDate();
@@ -235,7 +234,7 @@ void heartbeat()
     Fan &fan = dev.fans[i];
     StaticJsonDocument<20> docf;
     JsonObject f = docf.to<JsonObject>();
-    f[fan.getName()] = fan.getSpeed();
+    f[fan.mqttGetName()] = fan.getSpeed();
     fans.add(docf);
   }
   doc["fans"] = dfans;
@@ -246,7 +245,7 @@ void heartbeat()
   {
     StaticJsonDocument<20> docl;
     Lamp &lmp = dev.lamps[i];
-    docl[lmp.getName()] = lmp.getStatus();
+    docl[lmp.mqttGetName()] = lmp.getStatus();
     lmps.add(docl);
   }
   doc["lamps"] = dlamps;
@@ -269,13 +268,21 @@ void heartbeat()
 
   serializeJson(doc, data);
   dev.webServer.event("heartbeat", data.c_str());
-  /*
+/*
   static bool blinker = false;
   blinker = !blinker;
   if (blinker)
-    digitalWrite(4, 1);
+  {
+    serr.println("on");
+    // dev.irleds[0].on();
+    digitalWrite(4,1);
+  }
   else
-    digitalWrite(4, 0);
+  {
+    serr.println("off");
+    // dev.irleds[0].off();
+    digitalWrite(4,0);
+  }
   */
 }
 
@@ -307,7 +314,7 @@ void loop()
       ntpstarted = true;
     }
     // in NTPClient_Generic false return is not (necessarily) a failure - it just means
-    // not updated, which happens most spins of the loop becasue no attempt is made.
+    // not updated, which happens most spins of the loop because no attempt is made.
     // if (!timeClient.update()) serr.println("NTP failure");
     timeClient.update();
 
