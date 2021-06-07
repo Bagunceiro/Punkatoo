@@ -18,24 +18,17 @@
     }
   ],
   "lamp": [
-    { "id": "main", "pin": 13 }
-  ],
-  "fan": [
-    {
-      "id": "fan",
-      "pinSpd1": 25,
-      "pinSpd2": 33,
-      "pinDir1": 26,
-      "pinDir2": 27
-    }
+    { "id": "main", "pin": 13 },
+    { "id": "secondary", "pin": 27 },
+    { "id": "stairs", "pin": 26 }
   ],
   "switch": [
     { "id": "sw1", "pin": 23, "switched": [{ "id": "main" }] },
+    { "id": "sw2", "pin": 19, "switched": [{ "id": "secondary" }] },
+    { "id": "sw3", "pin": 18, "switched": [{ "id": "stairs" }] },
     { "id": "ir1", "ir": "ff609f", "switched": [{ "id": "main" }] },
-    { "id": "irfan+", "ir": "ffe01f", "switched": [{ "id": "fan", "parm": "+" }] },
-    { "id": "irfan-", "ir": "ff58a7", "switched": [{ "id": "fan", "parm": "-" }] },
-    { "id": "irfan_pwr", "ir": "ff20df", "switched": [{ "id": "fan", "parm": "pwr" }] },
-    { "id": "irfan_rev", "ir": "ff10ef", "switched": [{ "id": "fan", "parm": "rev" }] }
+    { "id": "ir2", "ir": "", "switched": [{ "id": "secondary" }] },
+    { "id": "ir3", "ir": "", "switched": [{ "id": "stairs" }] }
   ],
   "ldr": [
     {
@@ -47,6 +40,12 @@
     {
       "id": "bme",
       "addr": "0x76"
+    }
+  ],
+  "irremote": [
+    {
+      "id": "fanController",
+      "button": [{ "id": "lightOnOff", "code": "ff609f" }]
     }
   ]
 }

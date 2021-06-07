@@ -62,7 +62,6 @@ class IRController : public IRrecv, public P2Task, public MQTTClientDev
 public:
   IRController(const char *name, int pin);
   ~IRController();
-  void poll();
   virtual bool operator()();
 
 private:
