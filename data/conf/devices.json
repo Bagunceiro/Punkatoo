@@ -30,7 +30,7 @@
     }
   ],
   "switch": [
-    { "id": "sw1", "pin": 23, "switched": [{ "id": "main" }] },
+    { "id": "sw1", "pin": 19, "switched": [{ "id": "main" }] },
     { "id": "ir1", "ir": "ff609f", "switched": [{ "id": "main" }] },
     { "id": "irfan+", "ir": "ffe01f", "switched": [{ "id": "fan", "parm": "+" }] },
     { "id": "irfan-", "ir": "ff58a7", "switched": [{ "id": "fan", "parm": "-" }] },

@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <vector>
+#include <LITTLEFS.h>
 
 #include "p2task.h"
 
@@ -26,7 +27,12 @@ class CLITask : public P2Task
     int execute(stringArray argv);
 
     int upload(stringArray argv);
+    int wget(stringArray argv);
     int sysupdate(stringArray argv);
+    int rm(stringArray argv);
+    int mkdir(stringArray argv);
+    int tree(stringArray argv);
+    void treeRec(File f);
 
     void progress(const size_t comp, const size_t total);
     static void progcb(const size_t comp, const size_t total, void* obj);

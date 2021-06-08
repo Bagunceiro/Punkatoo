@@ -1,6 +1,6 @@
 #include "cli.h"
 #include "config.h"
-#include <LITTLEFS.h>
+#include "url.h"
 #include <HTTPUpdate.h>
 
 CLITask *CLITask::pThis = NULL;
@@ -21,12 +21,16 @@ void CLITask::init()
 bool CLITask::operator()()
 {
     cliClient = cliServer.available();
-    if (cliClient)
+    while (cliClient)
     {
         String s = getCommand();
         stringArray argv;
         parse(s.c_str(), argv);
-        execute(argv);
+        int result = execute(argv);
+        if (result < 0)
+        {
+            cliClient.printf("%s: error %d (%s)\n", argv[0].c_str(), result, error.c_str());
+        }
     }
     return true;
 }
@@ -34,13 +38,25 @@ bool CLITask::operator()()
 String CLITask::getCommand()
 {
     String result;
+    cliClient.printf("%s>\n", config[controllername_n].c_str());
 
     while (true)
     {
         if (cliClient.available() > 0)
         {
-            result = cliClient.readStringUntil('\n');
-            break;
+            int c = (cliClient.read());
+            if (c == '\n')
+                break;
+            else if (c == '\r')
+                ;
+            else
+            {
+                if (isprint(c))
+                    result += (char)c;
+                else
+                {
+                }
+            }
         }
         else if (!cliClient.connected())
         {
@@ -110,19 +126,38 @@ void CLITask::progcb(size_t completed, size_t total, void *ptr)
     thecli->progress(completed, total);
 }
 
-int CLITask::upload(stringArray argv)
+int CLITask::wget(stringArray argv)
 {
     int result = -1;
-    if (argv.size() == 5)
+    if ((argv.size() >= 2) && (argv.size() < 4))
     {
-        const char *server = argv[1].c_str();
-        int port = argv[2].toInt();
-        const char *source = argv[3].c_str();
-        const char *target = argv[4].c_str();
-        serr.printf("Downloading http://%s:%d%s to %s\n", server, port, source, target);
+        String url = argv[1];
+        String target;
+        if (!url.startsWith("http://"))
+            url = "http://" + url;
+        if (argv.size() == 3)
+        {
+            target = argv[2];
+        }
+        else
+        {
+            int index = url.lastIndexOf("/");
+            target = url.substring(index);
+        }
+        if (!target.startsWith("/"))
+            target = "/" + target;
 
         HTTPClient http;
-        http.begin(server, port, source);
+
+        // http.begin(url); using this form adds 150K odd to the size of the image!
+        // So instead:
+
+        Url u(url.c_str());
+        uint16_t port = u.getPort();
+        if (port == 0)
+            port = 80;
+        http.begin(u.getHost(), port, u.getPath());
+
         int httpCode = http.GET();
 
         if (httpCode > 0)
@@ -192,7 +227,9 @@ int CLITask::sysupdate(stringArray argv)
     int result = -1;
     if (argv.size() == 2)
     {
-        const char *url = argv[1].c_str();
+        String url = argv[1];
+        if (!url.startsWith("http://"))
+            url = "http://" + url;
 
         WiFiClient httpclient;
 
@@ -231,20 +268,102 @@ int CLITask::sysupdate(stringArray argv)
     return result;
 }
 
+void CLITask::treeRec(File dir)
+{
+    if (dir)
+    {
+        dir.size();
+        if (dir.isDirectory())
+        {
+            cliClient.printf("%s :\n", dir.name());
+            while (File f = dir.openNextFile())
+            {
+                treeRec(f);
+                f.close();
+            }
+        }
+        else
+            cliClient.printf(" %6.d %s\n", dir.size(), dir.name());
+
+        dir.close();
+    }
+}
+
+int CLITask::rm(stringArray argv)
+{
+    for (int i = 1; i < argv.size(); i++)
+    {
+        if (!((LITTLEFS.remove(argv[i]) || LITTLEFS.rmdir(argv[i]))))
+        {
+            cliClient.printf("Could not remove %s\n", argv[i].c_str());
+        }
+    }
+    return 0;
+}
+
+int CLITask::tree(stringArray argv)
+{
+    File dir = LITTLEFS.open("/");
+    treeRec(dir);
+    dir.close();
+    return 0;
+}
+
+int CLITask::mkdir(stringArray argv)
+{
+    for (int i = 1; i < argv.size(); i++)
+    {
+        if (!LITTLEFS.mkdir(argv[i]))
+        {
+            cliClient.printf("Could not make %s\n", argv[i].c_str());
+        }
+    }
+    return 0;
+}
+
 int CLITask::execute(stringArray argv)
 {
     int result = -1;
-    if (argv[0] == "upload")
+    if (argv.size() >= 1)
     {
-        result = upload(argv);
-    }
-    else if (argv[0] == "sysupdate")
-    {
-        result = sysupdate(argv);
-    }
-    else
-    {
-        error = "Command not recognised";
+
+        if (argv[0] == "sysupdate")
+        {
+            result = sysupdate(argv);
+        }
+        else if (argv[0] == "wget")
+        {
+            result = wget(argv);
+        }
+        else if (argv[0] == "tree")
+        {
+            result = tree(argv);
+        }
+        else if (argv[0] == "rm")
+        {
+            result = rm(argv);
+        }
+        else if (argv[0] == "mkdir")
+        {
+            result = mkdir(argv);
+        }
+        else if (argv[0] == "help")
+        {
+            cliClient.println("rm FILE ...");
+            cliClient.println("mkdir DIR ...");
+            cliClient.println("sysupdate URL");
+            cliClient.println("tree");
+            cliClient.println("wget URL [TARGET]");
+            result = true;
+        }
+        else if (argv[0] == "exit")
+        {
+            cliClient.stop();
+        }
+        else
+        {
+            error = "Command not recognised";
+        }
     }
     return result;
 }
