@@ -11,15 +11,15 @@ typedef std::vector<String> stringArray;
 
 class CLITask : public P2Task
 {
-    public:
-    CLITask(const char* name);
+public:
+    CLITask(const char *name);
     virtual ~CLITask();
     bool operator()() override;
     void init();
     void reportProgress(size_t completed, size_t total, int interval = 10);
     static void reportProgressCB(size_t completed, size_t total);
 
-    private:
+private:
     WiFiServer cliServer;
     WiFiClient cliClient;
     String getCommand();
@@ -28,6 +28,7 @@ class CLITask : public P2Task
 
     int upload(stringArray argv);
     int wget(stringArray argv);
+    int cat(stringArray argv);
     int sysupdate(stringArray argv);
     int rm(stringArray argv);
     int mkdir(stringArray argv);
@@ -35,8 +36,8 @@ class CLITask : public P2Task
     void treeRec(File f);
 
     void progress(const size_t comp, const size_t total);
-    static void progcb(const size_t comp, const size_t total, void* obj);
+    static void progcb(const size_t comp, const size_t total, void *obj);
 
     String error;
-    static CLITask* pThis;
+    static CLITask *pThis;
 };

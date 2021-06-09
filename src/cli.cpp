@@ -38,7 +38,7 @@ bool CLITask::operator()()
 String CLITask::getCommand()
 {
     String result;
-    cliClient.printf("%s>\n", config[controllername_n].c_str());
+    cliClient.printf("%s> ", config[controllername_n].c_str());
 
     while (true)
     {
@@ -321,6 +321,34 @@ int CLITask::mkdir(stringArray argv)
     return 0;
 }
 
+int CLITask::cat(stringArray argv)
+{
+    for (int i = 1; i < argv.size(); i++)
+    {
+        File f = LITTLEFS.open(argv[i].c_str());
+        if (f)
+        {
+            if (f.isDirectory())
+            {
+                cliClient.printf("%s is a directory\n", argv[i].c_str());
+                break;
+            }
+            else
+            {
+                int c;
+                while ((c = f.read()) >= 0)
+                    cliClient.write(c);
+            }
+            f.close();
+        }
+        else
+        {
+            cliClient.printf("Could not open %s\n", argv[i].c_str());
+        }
+    }
+return 0;
+}
+
 int CLITask::execute(stringArray argv)
 {
     int result = -1;
@@ -347,8 +375,13 @@ int CLITask::execute(stringArray argv)
         {
             result = mkdir(argv);
         }
+        else if (argv[0] == "cat")
+        {
+            result = cat(argv);
+        }
         else if (argv[0] == "help")
         {
+            cliClient.println("cat FILE");
             cliClient.println("rm FILE ...");
             cliClient.println("mkdir DIR ...");
             cliClient.println("sysupdate URL");
