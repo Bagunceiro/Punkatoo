@@ -227,3 +227,74 @@ void P2WebServer::event(const char *name, const char *content)
 {
     events->send(content, name, eventid++);
 }
+
+void P2WebServer::sendEvents()
+{
+  if (events->count() > 0)
+  {
+    StaticJsonDocument<512> doc;
+    String data;
+
+    doc["ctlr"] = config[controllername_n];
+    doc["nowtime"] = nowTime();
+    doc["uptime"] = upTime();
+
+    StaticJsonDocument<100> dfans;
+    JsonArray fans = dfans.to<JsonArray>();
+    for (int i = 0; i < dev.fans.size(); i++)
+    {
+      Fan &fan = dev.fans[i];
+      StaticJsonDocument<20> docf;
+      JsonObject f = docf.to<JsonObject>();
+      f[fan.mqttGetName()] = fan.getSpeed();
+      fans.add(docf);
+    }
+    doc["fans"] = dfans;
+
+    StaticJsonDocument<100> dlamps;
+    JsonArray lmps = dlamps.to<JsonArray>();
+    for (int i = 0; i < dev.fans.size(); i++)
+    {
+      StaticJsonDocument<20> docl;
+      Lamp &lmp = dev.lamps[i];
+      docl[lmp.mqttGetName()] = lmp.getStatus();
+      lmps.add(docl);
+    }
+    doc["lamps"] = dlamps;
+
+    if (!dev.bmes.empty())
+    {
+      BME &bme = dev.bmes[0];
+      char buffer[16];
+      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readTemperature() * 10) / 10);
+      doc["temperature"] = buffer;
+      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readHumidity() * 10) / 10);
+      doc["humidity"] = buffer;
+      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readPressure() * 10) / 1000);
+      doc["pressure"] = buffer;
+    }
+    for (LDR &ldr : dev.ldrs)
+    {
+      doc["lux"] = ldr.read();
+    }
+
+    serializeJson(doc, data);
+    events->send(data.c_str(), "heartbeat", eventid++);
+    /*
+  static bool blinker = false;
+  blinker = !blinker;
+  if (blinker)
+  {
+    serr.println("on");
+    // dev.irleds[0].on();
+    digitalWrite(4,1);
+  }
+  else
+  {
+    serr.println("off");
+    // dev.irleds[0].off();
+    digitalWrite(4,0);
+  }
+  */
+  }
+}

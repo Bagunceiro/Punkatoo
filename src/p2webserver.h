@@ -32,6 +32,7 @@ public:
     // static void handleDoUpdate(AsyncWebServerRequest *r) { pThis->doUpdatePage(r); }
 
     static void progressCB(size_t completed, size_t total, void * data);
+    void sendEvents();
 
 private:
     static P2WebServer *pThis;
@@ -84,7 +85,8 @@ private:
     static const char *pageSystemUpdate;
     static const char *pageDoUpdate;
 */
-
-    AsyncEventSource *events;
     unsigned long eventid;
+
+public:
+    AsyncEventSource *events;
 };

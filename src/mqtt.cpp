@@ -86,7 +86,8 @@ String MQTTController::stdPrefix()
     return config[mqttroot_n] + "/" + config[mqtttopic_n] + "/";
 }
 
-void MQTTController::publish(String &topic, String &msg, bool retained)
+// void MQTTController::publish(const String &topic, const String &msg, const bool retained)
+void MQTTController::publish(const char *topic, const char *msg, const bool retained)
 {
     if (connected())
     {
@@ -97,7 +98,7 @@ void MQTTController::publish(String &topic, String &msg, bool retained)
                   // server. The debug line takes >100ms.
         // serr.printf("publishing %s, %s, %d\n", t.c_str(), msg.c_str(), retained);
         xSemaphoreTake(pubMutex, portMAX_DELAY);
-        client->publish(t.c_str(), msg.c_str(), retained);
+        client->publish(t.c_str(), msg, retained);
         xSemaphoreGive(pubMutex);
     }
 }
@@ -183,7 +184,7 @@ void MQTTClientDev::mqttPublish(const String topic, const String message, bool r
         // serr.println("Publishing:");
         // serr.println(name + "/" + topic);
         // serr.println(message);
-        pmqttctlr->publish(name + "/" + topic, (String &)message, retain);
+        pmqttctlr->publish((name + "/" + topic).c_str(), message.c_str(), retain);
     }
 }
 
@@ -208,7 +209,7 @@ bool MQTTController::poll()
 {
     bool result = true;
 
-/*
+    /*
     if (client->connected())
     {
         client->loop();

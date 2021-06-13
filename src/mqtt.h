@@ -33,7 +33,6 @@ protected:
 private:
     String topicPrefix;
     String name;
-
 };
 
 /*
@@ -48,14 +47,15 @@ public:
     bool init();
     bool poll(); // Called by the app's main loop - ToDo: make MQTTController its own task?
 
-    void msgRecd(const String& fullTopic, const String& msg);
-    static void rcvCallback(char* fullTopic, byte* payload, unsigned int length);
+    void msgRecd(const String &fullTopic, const String &msg);
+    static void rcvCallback(char *fullTopic, byte *payload, unsigned int length);
 
     bool subscribe(MQTTClientDev *, const MQTTTopic &);
-    void publish(String& topic, String& msg, bool retained = false);
+    // void publish(const String &topic, const String &msg, const bool retained = false);
+    void publish(const char* topic, const char* msg, const bool retained = false);
     void doSubscriptions();
-    void addClientDev(MQTTClientDev& dev);
-    void rmClientDev(MQTTClientDev& dev);
+    void addClientDev(MQTTClientDev &dev);
+    void rmClientDev(MQTTClientDev &dev);
     bool connected();
 
 private:
@@ -63,9 +63,9 @@ private:
     typedef std::map<MQTTTopic, MQTTDevList> MQTTSubscriptionList;
     MQTTSubscriptionList subList;
     MQTTDevList devList;
-    static MQTTController* thectlr;
+    static MQTTController *thectlr;
     WiFiClient wifiClient;
-    PubSubClient* client;
+    PubSubClient *client;
     String stdPrefix();
     bool connFlag; // set by poll to avoid using the thread unsafe PubSubClient::connected elsewhere
 };

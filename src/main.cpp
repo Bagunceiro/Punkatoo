@@ -19,6 +19,7 @@
 WiFiSerialClient serr;
 Devices dev;
 CLITask clitask("CLI");
+const char* const telegramBotToken = "1831001601:AAEIn25ouJXhznXa0IQvTHtdgH8FHU4IOi8";
 
 /*
  * Status colours
@@ -218,74 +219,6 @@ void ntpUpdated(NTPClient *c)
   c->setUpdateCallback(NULL);
 }
 
-void heartbeat()
-{
-  StaticJsonDocument<512> doc;
-  String data;
-
-  doc["ctlr"] = config[controllername_n];
-  doc["nowtime"] = nowTime();
-  doc["uptime"] = upTime();
-
-  StaticJsonDocument<100> dfans;
-  JsonArray fans = dfans.to<JsonArray>();
-  for (int i = 0; i < dev.fans.size(); i++)
-  {
-    Fan &fan = dev.fans[i];
-    StaticJsonDocument<20> docf;
-    JsonObject f = docf.to<JsonObject>();
-    f[fan.mqttGetName()] = fan.getSpeed();
-    fans.add(docf);
-  }
-  doc["fans"] = dfans;
-
-  StaticJsonDocument<100> dlamps;
-  JsonArray lmps = dlamps.to<JsonArray>();
-  for (int i = 0; i < dev.fans.size(); i++)
-  {
-    StaticJsonDocument<20> docl;
-    Lamp &lmp = dev.lamps[i];
-    docl[lmp.mqttGetName()] = lmp.getStatus();
-    lmps.add(docl);
-  }
-  doc["lamps"] = dlamps;
-
-  if (!dev.bmes.empty())
-  {
-    BME &bme = dev.bmes[0];
-    char buffer[16];
-    snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readTemperature() * 10) / 10);
-    doc["temperature"] = buffer;
-    snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readHumidity() * 10) / 10);
-    doc["humidity"] = buffer;
-    snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readPressure() * 10) / 1000);
-    doc["pressure"] = buffer;
-  }
-  for (LDR &ldr : dev.ldrs)
-  {
-    doc["lux"] = ldr.read();
-  }
-
-  serializeJson(doc, data);
-  dev.webServer.event("heartbeat", data.c_str());
-/*
-  static bool blinker = false;
-  blinker = !blinker;
-  if (blinker)
-  {
-    serr.println("on");
-    // dev.irleds[0].on();
-    digitalWrite(4,1);
-  }
-  else
-  {
-    serr.println("off");
-    // dev.irleds[0].off();
-    digitalWrite(4,0);
-  }
-  */
-}
-
 void loop()
 {
   static bool wifiWasConnected = false;
@@ -341,11 +274,20 @@ void loop()
     dev.indicators[0].poll();
   }
 
-  static unsigned long then = 0;
+  static unsigned long eventsthen = 0;
+  static unsigned long pingthen = 0;
+
   unsigned long now = millis();
-  if ((now - then) >= 1000)
+  if ((now - eventsthen) >= 1 * 1000)
   {
-    heartbeat();
-    then = now;
+    dev.webServer.sendEvents();
+    eventsthen = now;
+  }
+  if ((now - pingthen) >= 60 * 1000)
+  {
+    char buffer[64];
+    sprintf(buffer, R"!({ "id": "%s", "timeout": 125})!", config[controllername_n].c_str());
+    dev.mqtt.publish("ping", buffer);
+    pingthen = now;
   }
 }
