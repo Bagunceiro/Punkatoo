@@ -18,6 +18,7 @@ const char *mqttpwd_n = "mqttpwd";
 const char *mqttroot_n = "mqttroot";
 const char *mqtttopic_n = "mqtttopic";
 const char *indicator_n = "indicator";
+const char *watchdog_n = "watchdog";
 
 const String MQTT_TPC_STAT = "status";
 const String MQTT_TPC_SPEED = "fan/speed";
@@ -55,7 +56,7 @@ const char *startTime()
   }
   else
   {
-    strcpy(buff, "Unknown");
+    strcpy(buff, "");
   }
   return buff;
 }
@@ -70,7 +71,7 @@ const char *nowTime()
   }
   else
   {
-    strcpy(buff, "Unknown");
+    strcpy(buff, "");
   }
   return buff;
 }

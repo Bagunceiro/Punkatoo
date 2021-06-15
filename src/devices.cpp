@@ -168,7 +168,7 @@ void Devices::buildSwitch(JsonArray list)
             serr.println("Unknown switch type");
             continue;
         }
-        for (internalIRMsg& s : swdevs)
+        for (internalIRMsg &s : swdevs)
         {
             for (Lamp &l : lamps)
             {
@@ -272,6 +272,35 @@ void Devices::buildBME(JsonArray list)
     }
 }
 
+void Devices::buildWatchdog(JsonObject obj)
+{
+    for (JsonPair kvwd : obj)
+    {
+        if (kvwd.key() == "telegram")
+        {
+            const char* bottoken = NULL;
+            const char* chatid = NULL;
+            JsonObject tg = kvwd.value().as<JsonObject>();
+            for (JsonPair kvtg : tg)
+            {
+                if (kvtg.key() == "bottoken")
+                {
+                    bottoken = kvtg.value();
+                }
+                else if (kvtg.key() == "chatid")
+                {
+                    chatid = kvtg.value();
+                }
+            }
+            if (bottoken && chatid)
+            {
+                watchdog.telegram(bottoken, chatid);
+            }
+            else serr.println("Watchdog definition incomplete");
+        }
+    }
+}
+
 bool Devices::build(const char *fileName)
 {
     bool result = true;
@@ -324,6 +353,10 @@ bool Devices::build(const char *fileName)
                 {
                     buildBME(kvroot.value().as<JsonArray>());
                 }
+                else if (kvroot.key() == "watchdog")
+                {
+                    buildWatchdog(kvroot.value().as<JsonObject>());
+                }
             }
         }
         devfile.close();
@@ -375,12 +408,12 @@ void Devices::start()
     eventlogger.registerMQTT(mqtt);
     eventlogger.start(0);
 
-//    p2sys.registerIR(irctlr);
+    //    p2sys.registerIR(irctlr);
     p2sys.registerMQTT(mqtt);
 
     for (Fan &fan : fans)
     {
-//         fan.registerIR(irctlr);
+        //         fan.registerIR(irctlr);
         fan.registerMQTT(mqtt);
     }
     for (Lamp &lamp : lamps)

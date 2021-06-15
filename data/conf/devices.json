@@ -17,9 +17,7 @@
       "pinB": 15
     }
   ],
-  "lamp": [
-    { "id": "main", "pin": 13 }
-  ],
+  "lamp": [{ "id": "main", "pin": 13 }],
   "fan": [
     {
       "id": "fan",
@@ -32,10 +30,26 @@
   "switch": [
     { "id": "sw1", "pin": 19, "switched": [{ "id": "main" }] },
     { "id": "ir1", "ir": "ff609f", "switched": [{ "id": "main" }] },
-    { "id": "irfan+", "ir": "ffe01f", "switched": [{ "id": "fan", "parm": "+" }] },
-    { "id": "irfan-", "ir": "ff58a7", "switched": [{ "id": "fan", "parm": "-" }] },
-    { "id": "irfan_pwr", "ir": "ff20df", "switched": [{ "id": "fan", "parm": "pwr" }] },
-    { "id": "irfan_rev", "ir": "ff10ef", "switched": [{ "id": "fan", "parm": "rev" }] }
+    {
+      "id": "irfan+",
+      "ir": "ffe01f",
+      "switched": [{ "id": "fan", "parm": "+" }]
+    },
+    {
+      "id": "irfan-",
+      "ir": "ff58a7",
+      "switched": [{ "id": "fan", "parm": "-" }]
+    },
+    {
+      "id": "irfan_pwr",
+      "ir": "ff20df",
+      "switched": [{ "id": "fan", "parm": "pwr" }]
+    },
+    {
+      "id": "irfan_rev",
+      "ir": "ff10ef",
+      "switched": [{ "id": "fan", "parm": "rev" }]
+    }
   ],
   "ldr": [
     {
@@ -48,5 +62,11 @@
       "id": "bme",
       "addr": "0x76"
     }
-  ]
+  ],
+  "watchdog": {
+    "telegram": {
+      "bottoken": "1831001601:AAEIn25ouJXhznXa0IQvTHtdgH8FHU4IOi8",
+      "chatid": "1871023724"
+    }
+  }
 }

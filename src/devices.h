@@ -13,6 +13,7 @@
 #include "bme.h"
 #include "eventlog.h"
 #include "p2webserver.h"
+#include "watchdog.h"
 
 using namespace std;
 
@@ -24,6 +25,7 @@ struct Devices
     EventLogger     eventlogger;
     P2WebServer     webServer;
     Switches*       switchTask;
+    Watchdog        watchdog;
 
     vector<Lamp>         lamps;
     vector<Fan>          fans;
@@ -55,6 +57,7 @@ private:
     void buildFan(JsonArray list);
     void buildLDR(JsonArray list);
     void buildBME(JsonArray list);
+    void buildWatchdog(JsonObject obj);
 };
 
 extern struct Devices dev;

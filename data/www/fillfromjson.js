@@ -1,6 +1,6 @@
 function fillFromJson(obj) {
   for (const [key, value] of Object.entries(obj)) {
-    if (key == "selection") {
+    if (key.slice(0,6) == "select") {
       var selects = document.getElementsByName(value);
       for (element of selects)
       {

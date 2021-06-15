@@ -145,6 +145,7 @@ void connectToWiFi()
                 Serial.printf("Connect to %s/%s\n", configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
                 wifimulti.addAP(configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
             }
+            delay(500);
             wifimulti.run();
         }
         else

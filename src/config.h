@@ -48,8 +48,8 @@ extern const char *mqttuser_n;
 extern const char *mqttpwd_n;
 extern const char *mqttroot_n;
 extern const char *mqtttopic_n;
-// extern const char *updateTime_n;
 extern const char *indicator_n;
+extern const char *watchdog_n;
 
 extern ConfBlk config;
 extern WiFiSerialClient serr;

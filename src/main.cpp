@@ -236,8 +236,6 @@ void loop()
       dev.p2sys.enterState(P2System::STATE_NETWORK);
     }
 
-    dev.mqtt.poll();
-
     if (!ntpstarted)
     {
       timeClient.setUpdateCallback(ntpUpdated);
@@ -251,6 +249,8 @@ void loop()
     // if (!timeClient.update()) serr.println("NTP failure");
     timeClient.update();
 
+    dev.mqtt.poll();
+
     serr.loop();
   }
   else
@@ -260,7 +260,7 @@ void loop()
       serr.println("WiFi connection lost");
       wifiWasConnected = false;
     }
-    connectToWiFi();
+    // connectToWiFi();
   }
 
   if (startWPS)

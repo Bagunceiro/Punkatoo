@@ -52,6 +52,7 @@ void P2WebServer::genData(AsyncWebServerRequest *request)
     doc["mqttroot"] = config[mqttroot_n];
     doc["mqtttopic"] = config[mqtttopic_n];
     doc["selection"] = String("indic_") + config[indicator_n];
+    doc["select_watch"] = String("watch_") + config[watchdog_n];
 
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     serializeJson(doc, *response);
@@ -154,8 +155,15 @@ void P2WebServer::genDataRecd(AsyncWebServerRequest *req)
         else if (argN == "mqtttopic")
             config[mqtttopic_n] = value;
         else if (argN == "indicator")
+        {
         if (value.length() > 0)
             config[indicator_n] = value;
+        }
+        else if (argN == "watchdog")
+        {
+        if (value.length() > 0)
+            config[watchdog_n] = value;
+        }
         config.writeFile();
     }
 

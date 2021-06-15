@@ -69,6 +69,8 @@ bool ConfBlk::readStream(Stream &s)
         {
             (*this)[kv.key().c_str()] = (const char*)kv.value();
         }
+        //(*this)["tgbottoken"] = "1831001601:AAEIn25ouJXhznXa0IQvTHtdgH8FHU4IOi8";
+        //(*this)["chatid"] = "1871023724";
         result = true;
     }
     return result;
