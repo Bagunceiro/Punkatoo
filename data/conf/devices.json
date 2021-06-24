@@ -17,7 +17,7 @@
       "pinB": 15
     }
   ],
-  "lamp": [{ "id": "main", "pin": 13 }],
+  "lamp": [{ "id": "lamp", "pin": 13 }],
   "fan": [
     {
       "id": "fan",
@@ -28,7 +28,8 @@
     }
   ],
   "switch": [
-    { "id": "sw1", "pin": 19, "switched": [{ "id": "main" }] },
+    { "id": "sw1", "pin": 23, "switched": [{ "id": "lamp" }] },
+    { "id": "sw2", "pin": 19, "switched": [{ "id": "lamp" }] },
     { "id": "ir1", "ir": "ff609f", "switched": [{ "id": "main" }] },
     {
       "id": "irfan+",

@@ -42,7 +42,7 @@ const char *timeAndDate(char buff[], const int maxSize, const time_t when)
 {
   struct tm tmstr;
   localtime_r(&when, &tmstr);
-  strftime(buff, maxSize, "%H:%M:%S %d/%m/%y", &tmstr);
+  strftime(buff, maxSize, "%d/%m/%y %H:%M:%S", &tmstr);
   return buff;
 }
 

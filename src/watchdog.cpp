@@ -26,7 +26,7 @@ void Watchdog::send(const char *msg)
         if (bot)
         {
             char buff[64];
-            sprintf(buff, "%s %s", nowTime(), msg);
+            sprintf(buff, "%s %s: %s", nowTime(), config[controllername_n].c_str(), msg);
             Serial.printf("Watchdog sends: %s\n", buff);
             bot->sendMessage(chatId, buff, "");
         }

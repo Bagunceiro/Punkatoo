@@ -2,8 +2,6 @@
 
 #include <vector>
 
-
-
 class SwitchedDev
 {
   /*
@@ -12,7 +10,7 @@ class SwitchedDev
 public:
   SwitchedDev(const String &i) { id = i; }
   const String getid() { return id; }
-  virtual void switched(const char* parm) = 0;
+  virtual void switched(const char *parm) = 0;
 
 private:
   String id;
@@ -30,10 +28,12 @@ public:
   virtual void poll() {}
   virtual void poll(const unsigned long irc) {}
   void pressed();
-  void addParm(const char* p) { parm = p; }
+  void addParm(const char *p) { parm = p; }
+
+protected:
+  String id;
 
 private:
-  String id;
   String parm;
   std::vector<SwitchedDev *> switched;
 };

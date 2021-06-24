@@ -50,7 +50,7 @@ void PhysSwitch::poll()
       Event e;
 
       char buffer[24];
-      snprintf(buffer, sizeof(buffer) - 1, "Switch %s (%d)", (newState == 1 ? "Open" : "Closed"), debounce);
+      snprintf(buffer, sizeof(buffer) - 1, "Switch %s %s (%d)", id.c_str(), (newState == 1 ? "Open" : "Closed"), debounce);
       e.enqueue(buffer);
       pressed();
       switchState = newState;
