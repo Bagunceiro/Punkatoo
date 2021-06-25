@@ -105,7 +105,16 @@ bool networkConfWrite(networkList &networks)
 
 void addNetwork(networkList &netlist, const String &ssid)
 {
-    WiFiNetworkDef d(ssid);
+    String psk;
+    // Don't clobber the PSK if we already know it
+    for (uint16_t i = 0; i < configuredNets.size(); i++)
+    {
+        if (configuredNets[i].ssid == ssid)
+        {
+            psk = configuredNets[i].psk;
+        }
+    }
+    WiFiNetworkDef d(ssid,psk);
     netlist.push_back(d);
 }
 
