@@ -23,7 +23,7 @@ void WiFiSerialClient::loop()
     WSerialServer.handle();
 }
 
-WiFiSerialServer::WiFiSerialServer() : WiFiServer(1685)
+WiFiSerialServer::WiFiSerialServer() : WiFiServer(1686)
 {
 }
 

@@ -109,19 +109,19 @@ void P2WebServer::init()
     on("/general.html", HTTP_POST, postGenData);
     on("/wifi.html", HTTP_POST, postWifiData);
     on("/netedit.html", HTTP_POST, postNetEdit);
-    on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LITTLEFS, wwwpath + "/index.html", "text/html");
-    });
+    on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+       { request->send(LITTLEFS, wwwpath + "/index.html", "text/html"); });
     on("/reset.html", HTTP_ANY, doSysReset);
 
     onNotFound(serveFile);
 
-    events->onConnect([](AsyncEventSourceClient *client) {
-        if (client->lastId())
-        {
-            serr.println("Client reconnected");
-        }
-    });
+    events->onConnect([](AsyncEventSourceClient *client)
+                      {
+                          if (client->lastId())
+                          {
+                              serr.println("Client reconnected");
+                          }
+                      });
     addHandler(events);
 
     begin();
@@ -156,13 +156,13 @@ void P2WebServer::genDataRecd(AsyncWebServerRequest *req)
             config[mqtttopic_n] = value;
         else if (argN == "indicator")
         {
-        if (value.length() > 0)
-            config[indicator_n] = value;
+            if (value.length() > 0)
+                config[indicator_n] = value;
         }
         else if (argN == "watchdog")
         {
-        if (value.length() > 0)
-            config[watchdog_n] = value;
+            if (value.length() > 0)
+                config[watchdog_n] = value;
         }
         config.writeFile();
     }
@@ -238,71 +238,75 @@ void P2WebServer::event(const char *name, const char *content)
 
 void P2WebServer::sendEvents()
 {
-  if (events->count() > 0)
-  {
-    StaticJsonDocument<512> doc;
-    String data;
-
-    doc["ctlr"] = config[controllername_n];
-    doc["nowtime"] = nowTime();
-    doc["uptime"] = upTime();
-
-    StaticJsonDocument<100> dfans;
-    JsonArray fans = dfans.to<JsonArray>();
-    for (int i = 0; i < dev.fans.size(); i++)
+    if (events->count() > 0)
     {
-      Fan &fan = dev.fans[i];
-      StaticJsonDocument<20> docf;
-      JsonObject f = docf.to<JsonObject>();
-      f[fan.mqttGetName()] = fan.getSpeed();
-      fans.add(docf);
-    }
-    doc["fans"] = dfans;
+        StaticJsonDocument<512> doc;
+        String data;
 
-    StaticJsonDocument<100> dlamps;
-    JsonArray lmps = dlamps.to<JsonArray>();
-    for (int i = 0; i < dev.fans.size(); i++)
-    {
-      StaticJsonDocument<20> docl;
-      Lamp &lmp = dev.lamps[i];
-      docl[lmp.mqttGetName()] = lmp.getStatus();
-      lmps.add(docl);
-    }
-    doc["lamps"] = dlamps;
+        doc["ctlr"] = config[controllername_n];
+        doc["nowtime"] = nowTime();
+        doc["uptime"] = upTime();
 
-    if (!dev.bmes.empty())
-    {
-      BME &bme = dev.bmes[0];
-      char buffer[16];
-      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readTemperature() * 10) / 10);
-      doc["temperature"] = buffer;
-      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readHumidity() * 10) / 10);
-      doc["humidity"] = buffer;
-      snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readPressure() * 10) / 1000);
-      doc["pressure"] = buffer;
-    }
-    for (LDR &ldr : dev.ldrs)
-    {
-      doc["lux"] = ldr.read();
-    }
+        StaticJsonDocument<100> dfans;
+        JsonArray fans = dfans.to<JsonArray>();
+        for (int i = 0; i < dev.fans.size(); i++)
+        {
+            Fan &fan = dev.fans[i];
+            StaticJsonDocument<20> docf;
+            JsonObject f = docf.to<JsonObject>();
+            f[fan.mqttGetName()] = fan.getSpeed();
+            fans.add(docf);
+        }
+        doc["fans"] = dfans;
 
-    serializeJson(doc, data);
-    events->send(data.c_str(), "heartbeat", eventid++);
-    /*
-  static bool blinker = false;
-  blinker = !blinker;
-  if (blinker)
-  {
-    serr.println("on");
-    // dev.irleds[0].on();
-    digitalWrite(4,1);
-  }
-  else
-  {
-    serr.println("off");
-    // dev.irleds[0].off();
-    digitalWrite(4,0);
-  }
-  */
-  }
+        StaticJsonDocument<100> dlamps;
+        JsonArray lmps = dlamps.to<JsonArray>();
+        for (int i = 0; i < dev.fans.size(); i++)
+        {
+            StaticJsonDocument<20> docl;
+            Lamp &lmp = dev.lamps[i];
+            docl[lmp.mqttGetName()] = lmp.getStatus();
+            lmps.add(docl);
+        }
+        doc["lamps"] = dlamps;
+
+        if (!dev.bmes.empty())
+        {
+            BME &bme = dev.bmes[0];
+            if (bme.running())
+            {
+                char buffer[16];
+                snprintf(buffer, sizeof(buffer) - 1, "%.1lf°C", round(bme.readTemperature() * 10) / 10);
+                doc["temperature"] = buffer;
+                snprintf(buffer, sizeof(buffer) - 1, "%.1lf%%", round(bme.readHumidity() * 10) / 10);
+                doc["humidity"] = buffer;
+                snprintf(buffer, sizeof(buffer) - 1, "%.1lf mBar", round(bme.readPressure() * 10) / 1000);
+                doc["pressure"] = buffer;
+            }
+        }
+        for (LDR &ldr : dev.ldrs)
+        {
+            uint32_t lux = ldr.read();
+            char buffer[16];
+            snprintf(buffer, sizeof(buffer) - 1, "%dL", lux);
+            doc["lux"] = buffer;
+        }
+
+        serializeJson(doc, data);
+        events->send(data.c_str(), "heartbeat", eventid++);
+    }
+    /* IR LED Test VVVV
+    static bool blinker = false;
+    blinker = !blinker;
+    if (blinker)
+    {
+        serr.println("on");
+        dev.irleds[0].on();
+    }
+    else
+    {
+        serr.println("off");
+        dev.irleds[0].off();
+    }
+    // IR LED Test ^^^^ */
 }

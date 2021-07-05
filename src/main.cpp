@@ -19,7 +19,7 @@
 WiFiSerialClient serr;
 Devices dev;
 CLITask clitask("CLI");
-const char* const telegramBotToken = "1831001601:AAEIn25ouJXhznXa0IQvTHtdgH8FHU4IOi8";
+// const char* const telegramBotToken = "1831001601:AAEIn25ouJXhznXa0IQvTHtdgH8FHU4IOi8";
 
 /*
  * Status colours

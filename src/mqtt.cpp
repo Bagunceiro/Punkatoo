@@ -55,7 +55,7 @@ bool MQTTController::init()
             }
             else
             {
-                serr.print("Failed: ");
+                serr.print("MQTT Connect Failure: ");
                 serr.println(client->state());
             }
         }
