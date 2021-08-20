@@ -346,7 +346,18 @@ int CLITask::cat(stringArray argv)
             cliClient.printf("Could not open %s\n", argv[i].c_str());
         }
     }
-return 0;
+    return 0;
+}
+
+int CLITask::reboot(stringArray argv)
+{
+    cliClient.println("Rebooting");
+    cliClient.flush();
+    delay(100);
+    cliClient.stop();
+    delay(500);
+    ESP.restart();
+    return 0;
 }
 
 int CLITask::execute(stringArray argv)
@@ -379,6 +390,10 @@ int CLITask::execute(stringArray argv)
         {
             result = cat(argv);
         }
+        else if (argv[0] == "reboot")
+        {
+            result = reboot(argv);
+        }
         else if (argv[0] == "help")
         {
             cliClient.println("cat FILE");
@@ -387,6 +402,7 @@ int CLITask::execute(stringArray argv)
             cliClient.println("sysupdate URL");
             cliClient.println("tree");
             cliClient.println("wget URL [TARGET]");
+            cliClient.println("reboot");
             result = true;
         }
         else if (argv[0] == "exit")

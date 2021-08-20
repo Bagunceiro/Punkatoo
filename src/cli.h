@@ -33,6 +33,7 @@ private:
     int rm(stringArray argv);
     int mkdir(stringArray argv);
     int tree(stringArray argv);
+    int reboot(stringArray argv);
     void treeRec(File f);
 
     void progress(const size_t comp, const size_t total);

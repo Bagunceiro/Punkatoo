@@ -66,17 +66,17 @@ void Lamp::blip(const int number, const int length)
 
 void Lamp::mqttMsgRecd(const String &topic, const String &msg)
 {
-  if (topic.endsWith(MQTT_TPC_SWITCH))
+  if (topic.endsWith(MQTT_TPC_SWITCHTO))
   {
     sw(msg.toInt());
   }
-  else if (topic.endsWith(MQTT_TPC_SWITCHTO))
+  else if (topic.endsWith(MQTT_TPC_SWITCH))
   {
     StaticJsonDocument<512> doc;
     DeserializationError error = deserializeJson(doc, msg);
     if (error)
     {
-      serr.printf("Lamp cannot decode switchto (%d)\n", error.code());
+      serr.printf("Lamp cannot decode switch (%d)\n", error.code());
     }
     else
     {
