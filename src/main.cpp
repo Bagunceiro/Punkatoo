@@ -260,7 +260,7 @@ void loop()
       serr.println("WiFi connection lost");
       wifiWasConnected = false;
     }
-    // connectToWiFi();
+    connectToWiFi();
   }
 
   if (startWPS)
