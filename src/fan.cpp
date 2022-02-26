@@ -13,6 +13,7 @@ void Fan::setSpeed(const int s)
 {
   if (s >= -3 && s <= 3)
   {
+    dev.indicators[0].setColour(s > 0 ? IndicatorLed::GREEN : (s < 0 ? IndicatorLed::BLUE : IndicatorLed::RED), true);
     Event e;
     String txt = "Fan to " + String(s);
     e.enqueue(txt.c_str());
@@ -35,6 +36,8 @@ void Fan::setSpeed(const int s)
     }
 
     mqttSendStatus();
+    delay(500);
+    dev.indicators[0].off();
   }
 }
 
