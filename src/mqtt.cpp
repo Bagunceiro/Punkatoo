@@ -42,7 +42,7 @@ bool MQTTController::init()
                                 config[mqttuser_n].c_str(),
                                 config[mqttpwd_n].c_str()))
             {
-                dev.watchdog.send("Server Connected");
+                // dev.watchdog.send("Server Connected");
                 serr.println("MQTT connected");
                 poll();
                 doSubscriptions();
@@ -215,7 +215,7 @@ bool MQTTController::poll()
         if (connFlag)
         {
             serr.println("Lost MQTT Connection");
-            dev.watchdog.send("Server Failure");
+            // dev.watchdog.send("Server Failure");
         }
         if (init())
         {

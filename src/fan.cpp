@@ -6,6 +6,7 @@ Fan::Fan(const char* devName, const int d1, const int d2, const int s1, const in
 {
   dir.setPins(d1, d2);
   spd.setPins(s1, s2);
+  setSpeed(0);
 }
 Fan::~Fan() {}
 

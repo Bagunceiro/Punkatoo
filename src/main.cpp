@@ -171,13 +171,14 @@ void parseCompileDate()
 void setup()
 {
   Serial.begin(115200);
-  delay(500);
+  // delay(500);
+
+  LITTLEFS.begin();
+  dev.build();
 
   parseCompileDate();
 
   WiFi.mode(WIFI_STA);
-
-  LITTLEFS.begin();
 
   if (config.readFile() == false)
     config.writeFile();
@@ -191,9 +192,7 @@ void setup()
   String sm("Starting ");
   sm += gitrevision;
   ev1.enqueue(sm.c_str());
-  dev.build();
 
-  dev.start();
 
   dev.p2sys.enterState(P2System::STATE_0);
 
@@ -207,6 +206,7 @@ void setup()
   e2.enqueue("Startup complete");
 
   initWiFi();
+  dev.start();
   clitask.init();
 }
 

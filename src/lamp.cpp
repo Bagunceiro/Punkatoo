@@ -8,6 +8,7 @@ Lamp::Lamp(const char* devName, const int relayPin) : MQTTClientDev(devName), Sw
 {
   lpin = relayPin;
   pinMode(lpin, OUTPUT);
+  sw(0);
 }
 
 Lamp::~Lamp() {}

@@ -278,7 +278,7 @@ void P2WebServer::sendEvents()
                 char buffer[16];
                 snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readTemperature() * 10) / 10);
                 doc["temperature"] = buffer;
-                snprintf(buffer, sizeof(buffer) - 1, "%.1lf%", round(bme.readHumidity() * 10) / 10);
+                snprintf(buffer, sizeof(buffer) - 1, "%.1lf%%", round(bme.readHumidity() * 10) / 10);
                 doc["humidity"] = buffer;
                 snprintf(buffer, sizeof(buffer) - 1, "%.1lf", round(bme.readPressure() * 10) / 1000);
                 doc["pressure"] = buffer;

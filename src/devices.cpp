@@ -272,6 +272,7 @@ void Devices::buildBME(JsonArray list)
     }
 }
 
+/*
 void Devices::buildWatchdog(JsonObject obj)
 {
     for (JsonPair kvwd : obj)
@@ -300,6 +301,7 @@ void Devices::buildWatchdog(JsonObject obj)
         }
     }
 }
+*/
 
 bool Devices::build(const char *fileName)
 {
@@ -353,10 +355,12 @@ bool Devices::build(const char *fileName)
                 {
                     buildBME(kvroot.value().as<JsonArray>());
                 }
+                /*
                 else if (kvroot.key() == "watchdog")
                 {
                     buildWatchdog(kvroot.value().as<JsonObject>());
                 }
+                */
             }
         }
         devfile.close();

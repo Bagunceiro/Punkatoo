@@ -12,9 +12,10 @@ Switch::Switch(const String &i)
 
 PhysSwitch::PhysSwitch(const String &i, const int pin) : Switch(i)
 {
+  Serial.printf("Switch %s(%d)\n", i.c_str(), pin);
   spin = pin;
   pinMode(spin, INPUT_PULLUP);
-  delay(500); // input needs settling time after mode setting to charge up capacitance
+  delay(50); // input needs settling time after mode setting to charge up capacitance
   switchState = digitalRead(spin);
   debounce = 0;
   changeAt = 0;
