@@ -3,7 +3,7 @@
 #include "switch.h"
 
 const int MAXDEBOUNCE = 5;
-const int MIN_MILLIS = 100;
+const int MIN_MILLIS = 10; // was 100
 
 Switch::Switch(const String &i)
 {
@@ -49,7 +49,7 @@ void PhysSwitch::poll()
     {
       Event e;
 
-      char buffer[24];
+      char buffer[32];
       snprintf(buffer, sizeof(buffer) - 1, "Switch %s %s (%d)", id.c_str(), (newState == 1 ? "Open" : "Closed"), debounce);
       e.enqueue(buffer);
       pressed();

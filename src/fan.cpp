@@ -108,10 +108,13 @@ void Fan::onoff()
 
 void Fan::faster()
 {
-  if (dir.stat() != 0)
-  {
+  // if (dir.stat() != 0)
+  // {
     switch (getSpeed())
     {
+    case 0:
+      setSpeed(1);
+      break;
     case 1:
       setSpeed(2);
       break;
@@ -125,7 +128,7 @@ void Fan::faster()
       setSpeed(-3);
       break;
     }
-  }
+  // }
 }
 
 void Fan::slower()
@@ -145,6 +148,10 @@ void Fan::slower()
       break;
     case -3:
       setSpeed(-2);
+      break;
+    case 1:
+    case -1:
+      setSpeed(0);
       break;
     }
   }
@@ -167,7 +174,15 @@ void Fan::mqttMsgRecd(const String &topic, const String &msg)
 {
   if (topic == MQTT_TPC_SPEED)
   {
-    setSpeed(msg.toInt());
+    if (msg == "+")
+    {
+      faster();
+    }
+    else if (msg == "-")
+    {
+      slower();
+    }
+    else setSpeed(msg.toInt());
   }
 }
 
