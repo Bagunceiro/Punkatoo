@@ -1,5 +1,5 @@
 #include <ArduinoJson.h>
-#include <LITTLEFS.h>
+#include <LittleFS.h>
 
 #include "devices.h"
 #include "config.h"
@@ -307,7 +307,7 @@ bool Devices::build(const char *fileName)
 {
     bool result = true;
 
-    File devfile = LITTLEFS.open(fileName, "r");
+    File devfile = LittleFS.open(fileName, "r");
     if (devfile)
     {
         StaticJsonDocument<2000> doc;

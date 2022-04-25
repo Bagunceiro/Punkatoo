@@ -164,7 +164,7 @@ int CLITask::wget(stringArray argv)
         {
             if (httpCode == HTTP_CODE_OK)
             {
-                File f = LITTLEFS.open("/upload.tmp", "w+");
+                File f = LittleFS.open("/upload.tmp", "w+");
                 if (f)
                 {
                     Stream &s = http.getStream();
@@ -179,7 +179,7 @@ int CLITask::wget(stringArray argv)
                         sofar += l;
                     }
                     f.close();
-                    if (LITTLEFS.rename("/upload.tmp", target))
+                    if (LittleFS.rename("/upload.tmp", target))
                     {
                         serr.println("Complete");
                         cliClient.println("Complete");
@@ -293,7 +293,7 @@ int CLITask::rm(stringArray argv)
 {
     for (int i = 1; i < argv.size(); i++)
     {
-        if (!((LITTLEFS.remove(argv[i]) || LITTLEFS.rmdir(argv[i]))))
+        if (!((LittleFS.remove(argv[i]) || LittleFS.rmdir(argv[i]))))
         {
             cliClient.printf("Could not remove %s\n", argv[i].c_str());
         }
@@ -303,7 +303,7 @@ int CLITask::rm(stringArray argv)
 
 int CLITask::tree(stringArray argv)
 {
-    File dir = LITTLEFS.open("/");
+    File dir = LittleFS.open("/");
     treeRec(dir);
     dir.close();
     return 0;
@@ -313,7 +313,7 @@ int CLITask::mkdir(stringArray argv)
 {
     for (int i = 1; i < argv.size(); i++)
     {
-        if (!LITTLEFS.mkdir(argv[i]))
+        if (!LittleFS.mkdir(argv[i]))
         {
             cliClient.printf("Could not make %s\n", argv[i].c_str());
         }
@@ -325,7 +325,7 @@ int CLITask::cat(stringArray argv)
 {
     for (int i = 1; i < argv.size(); i++)
     {
-        File f = LITTLEFS.open(argv[i].c_str());
+        File f = LittleFS.open(argv[i].c_str());
         if (f)
         {
             if (f.isDirectory())

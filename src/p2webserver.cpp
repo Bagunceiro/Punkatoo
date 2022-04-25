@@ -1,4 +1,4 @@
-#include <LITTLEFS.h>
+#include <LittleFS.h>
 #include <HTTPClient.h>
 #include "config.h"
 #include "p2webserver.h"
@@ -20,7 +20,7 @@ void serveFile(AsyncWebServerRequest *request)
         mimetype = "text/html";
     else
         mimetype = "application/octet-stream";
-    request->send(LITTLEFS, wwwpath + file, mimetype);
+    request->send(LittleFS, wwwpath + file, mimetype);
 }
 
 void P2WebServer::rootData(AsyncWebServerRequest *request)
@@ -110,7 +110,7 @@ void P2WebServer::init()
     on("/wifi.html", HTTP_POST, postWifiData);
     on("/netedit.html", HTTP_POST, postNetEdit);
     on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-       { request->send(LITTLEFS, wwwpath + "/index.html", "text/html"); });
+       { request->send(LittleFS, wwwpath + "/index.html", "text/html"); });
     on("/reset.html", HTTP_ANY, doSysReset);
 
     onNotFound(serveFile);

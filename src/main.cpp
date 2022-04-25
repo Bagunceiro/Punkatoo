@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <FreeRTOS.h>
+// #include <freertos/FreeRTOS.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <Wire.h>
@@ -7,7 +7,7 @@
 #include <time.h>
 #include <esp_wps.h>
 #include <TimeLib.h>
-#include <LITTLEFS.h>
+#include <LittleFS.h>
 
 #include "wifiserial.h"
 #include "config.h"
@@ -36,7 +36,7 @@ const IndicatorLed::Colour indicate_wps = IndicatorLed::MAGENTA;
 extern void wpsInit();
 extern void updateWiFiDef(String &ssid, String &psk);
 
-void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
+void WiFiEvent(WiFiEvent_t event) // , system_event_info_t info)
 {
   String ssid;
   String psk;
@@ -96,7 +96,7 @@ void wpsInit()
 {
   esp_wps_config_t wpsconfig;
 
-  wpsconfig.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
+  // wpsconfig.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
   wpsconfig.wps_type = WPS_TYPE_PBC;
   strcpy(wpsconfig.factory_info.manufacturer, "PA");
   strcpy(wpsconfig.factory_info.model_number, "1");
@@ -173,7 +173,7 @@ void setup()
   Serial.begin(115200);
   // delay(500);
 
-  LITTLEFS.begin();
+  LittleFS.begin();
   dev.build();
 
   parseCompileDate();

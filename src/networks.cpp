@@ -1,5 +1,5 @@
 #include <WiFiMulti.h>
-#include <LITTLEFS.h>
+#include <LittleFS.h>
 
 #include <ArduinoJson.h>
 #include "config.h"
@@ -45,7 +45,7 @@ networkList &scanNetworks()
 networkList &networkConfRead()
 {
 
-    File netsFile = LITTLEFS.open("/networks.json", "r");
+    File netsFile = LittleFS.open("/networks.json", "r");
     if (!netsFile)
     {
         perror("");
@@ -83,7 +83,7 @@ bool networkConfWrite(networkList &networks)
     StaticJsonDocument<1024> doc;
     JsonArray array = doc.to<JsonArray>();
 
-    File netsFile = LITTLEFS.open("/networks.json", "w");
+    File netsFile = LittleFS.open("/networks.json", "w");
     if (!netsFile)
     {
         perror("");

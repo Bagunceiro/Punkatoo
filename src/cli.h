@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <vector>
-#include <LITTLEFS.h>
+#include <LittleFS.h>
 
 #include "p2task.h"
 

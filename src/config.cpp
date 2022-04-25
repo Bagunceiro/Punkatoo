@@ -1,5 +1,4 @@
 #include <WiFi.h>
-#include <LITTLEFS.h>
 #include <ArduinoJson.h>
 #include <WiFiUdp.h>
 
