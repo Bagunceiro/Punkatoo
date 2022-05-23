@@ -1,1 +1,36 @@
-devices_bedroom.json
+{
+  "irrcv": {
+    "id": "irctlr",
+    "pin": 34
+  },
+  "indicator": [
+    {
+      "id": "indicator",
+      "pinR": 4,
+      "pinG": 15,
+      "pinB": 2
+    }
+  ],
+  "lamp": [
+    { "id": "lamp1", "pin": 33 },
+    { "id": "lamp2", "pin": 25 },
+    { "id": "lamp3", "pin": 26 },
+    { "id": "lamp4", "pin": 12 },
+    { "id": "lamp5", "pin": 13 }
+  ],
+
+  "switch": [
+    { "id": "sw23", "pin": 23, "switched": [{ "id": "lamp1" }] },
+    { "id": "sw19", "pin": 19, "switched": [{ "id": "lamp2" }] },
+    { "id": "sw18", "pin": 18, "switched": [{ "id": "lamp3" }] },
+    { "id": "sw17", "pin": 17, "switched": [{ "id": "lamp4" }] },
+    { "id": "sw16", "pin": 16, "switched": [{ "id": "lamp5" }] },
+    { "id": "sw32", "pin": 32, "switched": [{ "id": "lamp1" }] },
+    
+    { "id": "ir1", "ir": "ff609f", "switched": [{ "id": "lamp1" }] }
+  ],
+
+  "pir": [
+    { "id": "pir", "pin": 35, "kill": [{ "id": "lamp1"}, {"id": "lamp2"}] }
+  ]
+}

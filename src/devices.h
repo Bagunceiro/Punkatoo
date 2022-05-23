@@ -11,6 +11,7 @@
 #include "infrared.h"
 #include "indicator.h"
 #include "bme.h"
+#include "pir.h"
 #include "eventlog.h"
 #include "p2webserver.h"
 // #include "watchdog.h"
@@ -34,6 +35,7 @@ struct Devices
     vector<BME>          bmes;
     vector<IRLed>        irleds;
     vector<IndicatorLed> indicators;
+    vector<PIR>          pirs;
 
     Devices()
     {
@@ -46,6 +48,8 @@ struct Devices
     // Turn motors off, lights out etc.
     void toSecure();
     void start();
+    // Most devices that need polling have their own task. But for those that don't
+    void poll();
 
 private:
     void parse();
@@ -57,6 +61,7 @@ private:
     void buildFan(JsonArray list);
     void buildLDR(JsonArray list);
     void buildBME(JsonArray list);
+    void buildPIR(JsonArray list);
     // void buildWatchdog(JsonObject obj);
 };
 

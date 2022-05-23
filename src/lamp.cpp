@@ -4,7 +4,7 @@
 #include "indicator.h"
 #include "eventlog.h"
 
-Lamp::Lamp(const char* devName, const int relayPin) : MQTTClientDev(devName), SwitchedDev(devName)
+Lamp::Lamp(const char *devName, const int relayPin) : MQTTClientDev(devName), SwitchedDev(devName)
 {
   lpin = relayPin;
   pinMode(lpin, OUTPUT);
@@ -15,18 +15,22 @@ Lamp::~Lamp() {}
 
 void Lamp::sw(int toState)
 {
-  Event e;
+  const int isOn = getStatus();
+  if ((isOn && toState == 0) || (!isOn && (toState == 1)))
+  {
+    Event e;
 
-  e.enqueue("Lamp " + String(mqttGetName()) + " " + (toState == 0 ? "off" : "on"));
-  if (toState == 0)
-  {
-    digitalWrite(lpin, HIGH);
+    e.enqueue("Lamp " + String(mqttGetName()) + " " + (toState == 0 ? "off" : "on"));
+    if (toState == 0)
+    {
+      digitalWrite(lpin, HIGH);
+    }
+    else
+    {
+      digitalWrite(lpin, LOW);
+    }
+    mqttSendStatus();
   }
-  else
-  {
-    digitalWrite(lpin, LOW);
-  }
-  mqttSendStatus();
 }
 
 void Lamp::toggle()
@@ -38,7 +42,7 @@ void Lamp::toggle()
 const int Lamp::getStatus() const
 {
   int l = digitalRead(lpin);
-  return (l==0 ? 1 : 0);
+  return (l == 0 ? 1 : 0);
 }
 
 String Lamp::mqttGetStatus()

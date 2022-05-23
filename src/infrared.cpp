@@ -43,6 +43,7 @@ bool IRController::operator()()
 
       if ((when = irDebounce(then, IRDEBOUNCE)))
       {
+        Serial.printf("IRMsg %s\n", uint64ToString(val, HEX).c_str());
         // Inform anyone who's interested
         String payload = R"--({"source":")--" 
         + config[controllername_n] 

@@ -12,12 +12,14 @@ const char *KEY_SWITCH = "switch";
 const char *KEY_PIN_R = "pinR";
 const char *KEY_PIN_G = "pinG";
 const char *KEY_PIN_B = "pinB";
+const char *KEY_PIR = "pir";
 const char *KEY_PIN_S1 = "pinSpd1";
 const char *KEY_PIN_S2 = "pinSpd2";
 const char *KEY_PIN_D1 = "pinDir1";
 const char *KEY_PIN_D2 = "pinDir2";
 const char *KEY_ADDR = "addr";
 const char *KEY_SWITCHED = "switched";
+const char *KEY_KILL = "kill";
 
 void Devices::buildIRController(JsonObject obj)
 {
@@ -144,13 +146,13 @@ void Devices::buildSwitch(JsonArray list)
                             iirm.dev = kvs.value().as<String>();
                             // swdevs.push_back(kvs.value().as<String>());
                         }
-                        if (kvs.key() == KEY_PARM)
+                        else if (kvs.key() == KEY_PARM)
                         {
                             iirm.parm = kvs.value().as<String>();
                             // swdevs.push_back(kvs.value().as<String>());
                         }
                         else
-                            serr.printf("  %s: %s\n", kvs.key().c_str(), kvs.value().as<String>().c_str());
+                            serr.printf("  Unk %s: %s\n", kvs.key().c_str(), kvs.value().as<String>().c_str());
                     }
                     swdevs.push_back(iirm);
                 }
@@ -160,9 +162,13 @@ void Devices::buildSwitch(JsonArray list)
         }
         Switch *sw;
         if (pin >= 0)
+        {
             sw = new PhysSwitch(id, pin);
+        }
         else if (ircode.length() > 0)
+        {
             sw = new IRSwitch(id, ircode);
+        }
         else
         {
             serr.println("Unknown switch type");
@@ -272,36 +278,58 @@ void Devices::buildBME(JsonArray list)
     }
 }
 
-/*
-void Devices::buildWatchdog(JsonObject obj)
+void Devices::buildPIR(JsonArray list)
 {
-    for (JsonPair kvwd : obj)
+    for (JsonObject obj : list)
     {
-        if (kvwd.key() == "telegram")
+        String id;
+        int pin = 0;
+        vector<String> lampids;
+
+        for (JsonPair kv : obj)
         {
-            const char* bottoken = NULL;
-            const char* chatid = NULL;
-            JsonObject tg = kvwd.value().as<JsonObject>();
-            for (JsonPair kvtg : tg)
+            if (kv.key() == KEY_ID)
+                id = kv.value().as<String>();
+            else if (kv.key() == KEY_PIN)
             {
-                if (kvtg.key() == "bottoken")
+                pin = kv.value().as<int>();
+            }
+            else if (kv.key() == KEY_KILL)
+            {
+                for (JsonObject swobj : kv.value().as<JsonArray>())
                 {
-                    bottoken = kvtg.value();
-                }
-                else if (kvtg.key() == "chatid")
-                {
-                    chatid = kvtg.value();
+                    for (JsonPair kvs : swobj)
+                    {
+                        if (kvs.key() == KEY_ID)
+                        {
+                            String lid = kvs.value().as<String>();
+                            lampids.push_back(lid);
+                        }
+                        else
+                            serr.printf("  Unk %s: %s\n", kvs.key().c_str(), kvs.value().as<String>().c_str());
+                    }
                 }
             }
-            if (bottoken && chatid)
-            {
-                watchdog.telegram(bottoken, chatid);
-            }
-            else serr.println("Watchdog definition incomplete");
+            else
+                serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
+        serr.printf("PIR %s on pin %d\n", id.c_str(), pin);
+
+        PIR *pir = new PIR(id.c_str(), pin);
+        for (String lid : lampids)
+        {
+            for (Lamp& l : lamps)
+            {
+                if (lid == l.getid())
+                {
+                    Serial.printf("PIR %s, Lamp %s\n", pir->getID(), l.getid());
+                    pir->addLamp(l);
+                }
+            }
+        }
+        pirs.push_back(*pir);
     }
 }
-*/
 
 bool Devices::build(const char *fileName)
 {
@@ -354,6 +382,10 @@ bool Devices::build(const char *fileName)
                 else if (kvroot.key() == "bme")
                 {
                     buildBME(kvroot.value().as<JsonArray>());
+                }
+                else if (kvroot.key() == KEY_PIR)
+                {
+                    buildPIR(kvroot.value().as<JsonArray>());
                 }
                 /*
                 else if (kvroot.key() == "watchdog")
@@ -440,4 +472,12 @@ void Devices::start()
     }
     // configurator.registerIR(irctlr);
     webServer.init();
+}
+
+void Devices::poll()
+{
+    for (PIR &pir : pirs)
+    {
+        pir.routine();
+    }
 }

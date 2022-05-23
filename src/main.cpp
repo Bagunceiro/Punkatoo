@@ -280,16 +280,8 @@ void loop()
   unsigned long now = millis();
   if ((now - eventsthen) >= 1 * 1000)
   {
-    // static bool irledstat = false;
     dev.webServer.sendEvents();
     eventsthen = now;
-    /*
-    if (irledstat)
-    dev.irleds[0].off();
-    else
-    dev.irleds[0].on();
-    irledstat = !irledstat;
-    */
   }
   if ((now - pingthen) >= 60 * 1000)
   {
@@ -298,4 +290,5 @@ void loop()
     dev.mqtt.publish("ping", buffer);
     pingthen = now;
   }
+  dev.poll();
 }

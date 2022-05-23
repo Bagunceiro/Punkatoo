@@ -1384,7 +1384,7 @@
       (effects (font (size 0.75 0.75) (thickness 0.12)))
       (tstamp 66a220ef-3e0a-44d0-b97f-061b56f5cb98)
     )
-    (fp_text user "8" (at 5.08 25.4 90 unlocked) (layer "F.SilkS")
+    (fp_text user "32" (at 5.08 25.4 90 unlocked) (layer "F.SilkS")
       (effects (font (size 0.75 0.75) (thickness 0.12)))
       (tstamp 6d28cd88-5a44-4d5d-8d96-862e0db847f4)
     )

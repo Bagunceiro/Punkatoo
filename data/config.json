@@ -1,0 +1,11 @@
+{
+  "controllername": "terrace",
+  "indicator": "1",
+  "mqtthost": "mudlark.local",
+  "mqttport": "1883",
+  "mqttpwd": "fatty",
+  "mqttroot": "home",
+  "mqtttopic": "terrace",
+  "mqttuser": "ctlr",
+  "watchdog": ""
+}
