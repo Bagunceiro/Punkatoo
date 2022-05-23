@@ -28,9 +28,9 @@ void PIR::routine()
             if (_state == UNDETECTED)
             {
                 unsigned long undetectedFor = millis() - _lastChange;
-                if (undetectedFor > (30 * 1000))
+                if (undetectedFor > (30 * 60 * 1000))
                 {
-                    // 1 minute - this will become a config entry
+                    // 30 minutes - this will become a config entry
                     for (Lamp *l : _controlledLamps)
                     {
                         l->sw(0);
