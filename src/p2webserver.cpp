@@ -6,7 +6,7 @@
 
 P2WebServer *P2WebServer::pThis;
 
-const String wwwpath = "/www";
+const String wwwpath = "/";
 
 void serveFile(AsyncWebServerRequest *request)
 {
@@ -295,18 +295,4 @@ void P2WebServer::sendEvents()
         serializeJson(doc, data);
         events->send(data.c_str(), "heartbeat", eventid++);
     }
-    /* IR LED Test VVVV
-    static bool blinker = false;
-    blinker = !blinker;
-    if (blinker)
-    {
-        serr.println("on");
-        dev.irleds[0].on();
-    }
-    else
-    {
-        serr.println("off");
-        dev.irleds[0].off();
-    }
-    // IR LED Test ^^^^ */
 }
