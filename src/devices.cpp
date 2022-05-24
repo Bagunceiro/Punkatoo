@@ -20,6 +20,7 @@ const char *KEY_PIN_D2 = "pinDir2";
 const char *KEY_ADDR = "addr";
 const char *KEY_SWITCHED = "switched";
 const char *KEY_KILL = "kill";
+const char *KEY_TIMEOUT = "timeout";
 
 void Devices::buildIRController(JsonObject obj)
 {
@@ -284,6 +285,7 @@ void Devices::buildPIR(JsonArray list)
     {
         String id;
         int pin = 0;
+        int timeout = 0;
         vector<String> lampids;
 
         for (JsonPair kv : obj)
@@ -293,6 +295,10 @@ void Devices::buildPIR(JsonArray list)
             else if (kv.key() == KEY_PIN)
             {
                 pin = kv.value().as<int>();
+            }
+            else if (kv.key() == KEY_TIMEOUT)
+            {
+                timeout = kv.value().as<int>();
             }
             else if (kv.key() == KEY_KILL)
             {
@@ -327,6 +333,7 @@ void Devices::buildPIR(JsonArray list)
                 }
             }
         }
+        pir->setTimeoutSecs(timeout);
         pirs.push_back(*pir);
     }
 }

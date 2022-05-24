@@ -18,24 +18,25 @@ void PIR::routine()
     {
         _state = st;
         _lastChange = millis();
-        // Serial.printf("%d PIR cos -> %d\n", _lastChange, st);
         alreadySwitchedOff = false;
     }
     else
     {
-        if (!alreadySwitchedOff)
+        if (_timeout > 0)
         {
-            if (_state == UNDETECTED)
+            if (!alreadySwitchedOff)
             {
-                unsigned long undetectedFor = millis() - _lastChange;
-                if (undetectedFor > (30 * 60 * 1000))
+                if (_state == UNDETECTED)
                 {
-                    // 30 minutes - this will become a config entry
-                    for (Lamp *l : _controlledLamps)
+                    unsigned long undetectedFor = millis() - _lastChange;
+                    if (undetectedFor > (_timeout))
                     {
-                        l->sw(0);
+                        for (Lamp *l : _controlledLamps)
+                        {
+                            l->sw(0);
+                        }
+                        alreadySwitchedOff = true;
                     }
-                    alreadySwitchedOff = true;
                 }
             }
         }

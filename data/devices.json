@@ -31,6 +31,13 @@
   ],
 
   "pir": [
-    { "id": "pir", "pin": 35, "kill": [{ "id": "lamp1"}, {"id": "lamp2"}] }
+    { "id": "pir", "pin": 35, "timeout": 1800, "kill": [{ "id": "lamp1"}, {"id": "lamp2"}] }
+  ],
+  
+  "bme": [
+    {
+      "id": "bme",
+      "addr": "0x76"
+    }
   ]
 }
