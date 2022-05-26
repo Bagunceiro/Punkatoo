@@ -98,7 +98,6 @@ bool networkConfWrite(networkList &networks)
 {
     StaticJsonDocument<1024> doc;
     JsonArray array = doc.to<JsonArray>();
-    Serial.printf("networkConfWrite\n");
 
     File netsFile = LittleFS.open("/etc/networks.json", "w");
     if (!netsFile)

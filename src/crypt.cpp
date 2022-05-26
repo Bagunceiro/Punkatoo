@@ -7,7 +7,6 @@
 const String pencrypt(const char *plainText, const char *key)
 {
     unsigned char buffer[16];
-Serial.printf("pencrypt(%s,%s)\n", plainText, key);
 
     mbedtls_aes_context aes;
     mbedtls_aes_init(&aes);
@@ -18,11 +17,8 @@ Serial.printf("pencrypt(%s,%s)\n", plainText, key);
 
     for (int i = 0; i < 16; i++)
     {
-        Serial.printf("%02x", buffer[i]);
         s += (char)buffer[i];
     }
-    Serial.println("");
-    Serial.printf("~pencrypt(%s,%s)\n", plainText, key);
     return s;
 }
 
@@ -65,12 +61,8 @@ const char *privateKey()
 
 const String pencrypt64(const char *text, const char *key)
 {
-    Serial.println("pencrypt64");
     const char* k = (key == NULL ? privateKey() : key);
-    const char* txt = "enaLkraP";
     String encrypted = pencrypt(text, k);
-
-    Serial.println("");
     String r = b64Encode(encrypted);
     return r;
 }
