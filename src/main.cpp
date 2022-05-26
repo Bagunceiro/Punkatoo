@@ -15,6 +15,7 @@
 #include "spdt.h"
 #include "networks.h"
 #include "cli.h"
+#include "crypt.h"
 
 WiFiSerialClient serr;
 Devices dev;
@@ -168,12 +169,17 @@ void parseCompileDate()
   strftime(compDateTime, sizeof(compDateTime) - 1, "%H:%M:%S %d/%m/%y", &tmstr);
 }
 
+#include "b64.h"
+
 void setup()
 {
   Serial.begin(115200);
   // delay(500);
 
+  extern const char* privateKey();
+
   LittleFS.begin();
+
   dev.build();
 
   parseCompileDate();
@@ -190,9 +196,9 @@ void setup()
 
   Event ev1;
   String sm("Starting ");
+
   sm += gitrevision;
   ev1.enqueue(sm.c_str());
-
 
   dev.p2sys.enterState(P2System::STATE_0);
 
@@ -208,6 +214,16 @@ void setup()
   initWiFi();
   dev.start();
   clitask.init();
+
+/*
+  Serial.printf("PK = %s\n", privateKey());
+  const char *key = "abcdefghijklmnop";
+  const char *plainText = "enaLkraP";
+
+  String enc = pencrypt64(plainText, key);
+  String dec = pdecrypt64(enc.c_str(), key);
+  Serial.printf("Got back %s\n", dec.c_str()); 
+  */
 }
 
 unsigned long long startedAt = 0;

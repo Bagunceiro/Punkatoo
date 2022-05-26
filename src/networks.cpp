@@ -5,6 +5,7 @@
 #include "config.h"
 #include "devices.h"
 #include "networks.h"
+#include "crypt.h"
 
 networkList configuredNets;
 networkList scannedNets;
@@ -44,8 +45,8 @@ networkList &scanNetworks()
 
 networkList &networkConfRead()
 {
-
-    File netsFile = LittleFS.open("/networks.json", "r");
+    bool unencrypted = false; // indicates there is an unencrypted psk in the file
+    File netsFile = LittleFS.open("/etc/networks.json", "r");
     if (!netsFile)
     {
         perror("");
@@ -67,13 +68,28 @@ networkList &networkConfRead()
         for (JsonObject net : array)
         {
             const char *ssid = (const char *)net["ssid"];
-            const char *psk = (const char *)net["psk"];
-            // Serial.printf("Configured network: %s/%s\n", ssid, psk);
+            char *psk = (char*)net["psk"].as<const char*>();
+            const char *pske = (const char*)net["pske"];
+
+            if (psk == NULL)
+            {
+                String psks = pdecrypt64(pske);
+                psk = (char*)psks.c_str();
+            }
+            else
+            {
+                unencrypted = true;
+            }
 
             WiFiNetworkDef network(ssid, psk);
             configuredNets.push_back(network);
         }
         netsFile.close();
+        if (unencrypted)
+        { 
+            Serial.println("Rewrite networks file");
+            networkConfWrite(configuredNets);
+        }
     }
     return configuredNets;
 }
@@ -82,8 +98,9 @@ bool networkConfWrite(networkList &networks)
 {
     StaticJsonDocument<1024> doc;
     JsonArray array = doc.to<JsonArray>();
+    Serial.printf("networkConfWrite\n");
 
-    File netsFile = LittleFS.open("/networks.json", "w");
+    File netsFile = LittleFS.open("/etc/networks.json", "w");
     if (!netsFile)
     {
         perror("");
@@ -95,7 +112,8 @@ bool networkConfWrite(networkList &networks)
         {
             JsonObject object = array.createNestedObject();
             object["ssid"] = networks[i].ssid;
-            object["psk"] = networks[i].psk;
+            String psk = networks[i].psk;
+            object["pske"] = pencrypt64(psk.c_str());
         }
         serializeJson(doc, netsFile);
         netsFile.close();
@@ -151,7 +169,8 @@ void connectToWiFi()
         {
             for (unsigned int i = 0; i < numNets; i++)
             {
-                Serial.printf("Connect to %s/%s\n", configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
+                // Serial.printf("Connect to %s/%s\n", configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
+                Serial.printf("Connect to %s\n", configuredNets[i].ssid.c_str());
                 wifimulti.addAP(configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
             }
             delay(500);

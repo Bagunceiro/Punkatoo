@@ -44,7 +44,7 @@ struct Devices
     }
 
     // Build the device block using a configuration file
-    bool build(const char* = "/devices.json");
+    bool build(const char* = "/etc/devices.json");
     // Turn motors off, lights out etc.
     void toSecure();
     void start();
