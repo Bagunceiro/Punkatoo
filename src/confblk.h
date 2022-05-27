@@ -6,12 +6,12 @@
 class ConfBlk: public std::map<String, String>
 {
 public:
-    ConfBlk(const char* fileName = "/etc/config.json");
+    ConfBlk(const char* fileName);
 
     void dump(Stream& s) const;
-    bool writeStream(Stream& s) const;
+    // bool writeStream(Stream& s) const;
     bool writeFile() const;
-    bool readStream(Stream& s);
+    // bool readStream(Stream& s);
     bool readFile();
     void setFileName(const char* n) { _fileName = n; }
     const char* const getFileName() const { return _fileName.c_str(); }

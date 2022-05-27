@@ -50,7 +50,7 @@ networkList &networkConfRead()
     if (!netsFile)
     {
         perror("");
-        serr.println("Config file open for read failed");
+        serr.println("Network file open for read failed");
     }
     else
     {
@@ -103,7 +103,7 @@ bool networkConfWrite(networkList &networks)
     if (!netsFile)
     {
         perror("");
-        serr.println("Config file open for write failed");
+        serr.println("Network file open for write failed");
     }
     else
     {

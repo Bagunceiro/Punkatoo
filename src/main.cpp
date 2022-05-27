@@ -20,6 +20,8 @@
 WiFiSerialClient serr;
 Devices dev;
 CLITask clitask("CLI");
+
+ConfBlk config("/etc/config.json");
 // const char* const telegramBotToken = "1831001601:AAEIn25ouJXhznXa0IQvTHtdgH8FHU4IOi8";
 
 /*
@@ -186,8 +188,12 @@ void setup()
 
   WiFi.mode(WIFI_STA);
 
+config.setFileName("/etc/config.json");
+  config.readFile();
+/*
   if (config.readFile() == false)
     config.writeFile();
+*/
 
   serr.println();
 
