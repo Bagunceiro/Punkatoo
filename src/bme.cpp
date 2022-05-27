@@ -50,3 +50,16 @@ bool BME::start(uint8_t addr, TwoWire *theWire)
   ok = started;
   return ok;
 }
+
+void BME::routine()
+{
+  static unsigned long then = 0;
+  unsigned long now = millis();
+  if ((then == 0) || ((now - then) > 15*60*1000))
+  {
+    String s = mqttGetStatus();
+    // Serial.printf("weather = %s\n",s.c_str());
+    mqttPublish("weather", s, true);
+    then = now;
+  }
+}

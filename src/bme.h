@@ -21,6 +21,7 @@ class BME : public Adafruit_BME280, public MQTTClientDev
   virtual void mqttMsgRecd(const String& topic, const String& msg);
   const bool running() const { return ok; }
   virtual String mqttGetStatus();
+  void routine();
   private:
   bool ok;
 };

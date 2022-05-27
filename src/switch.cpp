@@ -12,7 +12,7 @@ Switch::Switch(const String &i)
 
 PhysSwitch::PhysSwitch(const String &i, const int pin) : Switch(i)
 {
-  Serial.printf("Switch %s(%d)\n", i.c_str(), pin);
+  // Serial.printf("Switch %s(%d)\n", i.c_str(), pin);
   spin = pin;
   pinMode(spin, INPUT_PULLUP);
   delay(50); // input needs settling time after mode setting to charge up capacitance
@@ -25,7 +25,7 @@ PhysSwitch::PhysSwitch(const String &i, const int pin) : Switch(i)
 IRSwitch::IRSwitch(const String &i, const String& c) : Switch(i)
 {
   sscanf(c.c_str(), "%lx", &code);
-  Serial.printf("IR Switch %s(%lx)\n", i.c_str(), code);
+  // Serial.printf("IR Switch %s(%lx)\n", i.c_str(), code);
 }
 
 void Switch::pressed()

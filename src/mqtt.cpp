@@ -21,7 +21,8 @@ bool MQTTController::init()
     bool result = false;
 
     if ((config[mqtthost_n].length() == 0) || (config[mqttport_n].length()) == 0)
-        result = true;
+    {
+    }
     else
     {
         if ((lastAttempt == 0) || ((now - lastAttempt) > MQTT_CONNECT_ATTEMPT_INT))
@@ -68,7 +69,7 @@ MQTTController *MQTTController::thectlr = NULL;
 bool MQTTController::subscribe(MQTTClientDev *dev, const MQTTTopic &topic)
 {
     auto record = subList.find(topic);
-    Serial.printf("Subscribing %s\n", topic.c_str());
+    // Serial.printf("Subscribing %s\n", topic.c_str());
     if (record == subList.end())
     {
         MQTTDevList newVector;

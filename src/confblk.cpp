@@ -6,7 +6,6 @@
 
 #include "crypt.h"
 
-// ConfBlk::ConfBlk(const String& fileName)
 ConfBlk::ConfBlk(const char *fileName)
 {
     Serial.printf("ConfBlk::ConfBlk(%s)\n", fileName);
@@ -39,8 +38,6 @@ bool ConfBlk::writeFile() const
         {
             String k = "e."+ iterator.first;
             String v = pencrypt64(iterator.second.c_str());
-            Serial.printf("write %s=%s\n", k.c_str(),v.c_str());
-            // doc[iterator.first] = iterator.second;
             doc[k] = v;
         }
         serializeJson(doc, configFile);
@@ -53,7 +50,6 @@ bool ConfBlk::writeFile() const
 
 bool ConfBlk::readFile()
 {
-    Serial.printf("Confblk::readFile %s\n", _fileName.c_str());
     bool result = false;
     bool unencoded = false; // indicates that we have an in the clear parameter and need to encode it
 
@@ -65,7 +61,6 @@ bool ConfBlk::readFile()
     else
     {
         StaticJsonDocument<512> doc;
-        Serial.printf("deserializing\n");
 
         DeserializationError error = deserializeJson(doc, configFile);
         if (error)
@@ -80,7 +75,6 @@ bool ConfBlk::readFile()
             {
                 String key(kv.key().c_str());
                 String val = kv.value();
-                // (*this)[kv.key().c_str()] = (const char*)kv.value();
                 if (key.startsWith("e."))
                 {
                     key = key.substring(2);
@@ -90,14 +84,12 @@ bool ConfBlk::readFile()
                 {
                     unencoded = true;
                 }
-                Serial.printf("Conf: %s=%s\n", key.c_str(), val.c_str());
                 (*this)[key.c_str()] = val.c_str();
             }
         }
         configFile.close();
         if (unencoded)
         {
-            Serial.println("Rewriting file");
             writeFile();
         }
         result = true;

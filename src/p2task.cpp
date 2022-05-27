@@ -36,7 +36,7 @@ void P2Task::loop(void *ctlr)
 
 bool P2Task::start(uint8_t priority)
 {
-    serr.println(String("Creating task for ") + name);
+    // serr.println(String("Creating task for ") + name);
     xTaskCreate(
         loop,         // Function to implement the task
         name.c_str(), // Name of the task

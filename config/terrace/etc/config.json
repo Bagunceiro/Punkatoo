@@ -6,6 +6,5 @@
   "mqttpwd": "fatty",
   "mqttroot": "home",
   "mqtttopic": "terrace",
-  "mqttuser": "ctlr",
-  "watchdog": ""
+  "mqttuser": "ctlr"
 }

@@ -48,7 +48,7 @@ void P2WebServer::genData(AsyncWebServerRequest *request)
     doc["mqtthost"] = config[mqtthost_n];
     doc["mqttport"] = config[mqttport_n];
     doc["mqttuser"] = config[mqttuser_n];
-    doc["mqttpwd"] = config[mqttpwd_n];
+    // doc["mqttpwd"] = config[mqttpwd_n];
     doc["mqttroot"] = config[mqttroot_n];
     doc["mqtttopic"] = config[mqtttopic_n];
     doc["selection"] = String("indic_") + config[indicator_n];
@@ -120,8 +120,7 @@ void P2WebServer::init()
                           if (client->lastId())
                           {
                               serr.println("Client reconnected");
-                          }
-                      });
+                          } });
     addHandler(events);
 
     begin();
@@ -149,7 +148,12 @@ void P2WebServer::genDataRecd(AsyncWebServerRequest *req)
         else if (argN == "mqttuser")
             config[mqttuser_n] = value;
         else if (argN == "mqttpwd")
-            config[mqttpwd_n] = value;
+        {
+            if (value.length() > 0)
+            {
+                config[mqttpwd_n] = value;
+            }
+        }
         else if (argN == "mqttroot")
             config[mqttroot_n] = value;
         else if (argN == "mqtttopic")

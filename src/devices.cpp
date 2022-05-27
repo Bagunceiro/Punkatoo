@@ -35,7 +35,7 @@ void Devices::buildIRController(JsonObject obj)
         else
             serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
     }
-    serr.printf("irctlr %s set pin to %d\n", id.c_str(), pin);
+    // serr.printf("irctlr %s set pin to %d\n", id.c_str(), pin);
 
     irctlr = new IRController(id.c_str(), pin);
 }
@@ -56,7 +56,7 @@ void Devices::buildIRLed(JsonArray list)
             else
                 serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        serr.printf("irled %s on pin %d\n", id.c_str(), pin);
+        // serr.printf("irled %s on pin %d\n", id.c_str(), pin);
         IRLed *irled = new IRLed(id, pin);
         irleds.push_back(*irled);
     }
@@ -84,7 +84,7 @@ void Devices::buildIndicator(JsonArray list)
             else
                 serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        serr.printf("indicator %s on pin %d, %d, %d\n", id.c_str(), pinRed, pinGreen, pinBlue);
+        // serr.printf("indicator %s on pin %d, %d, %d\n", id.c_str(), pinRed, pinGreen, pinBlue);
         IndicatorLed *indicator = new IndicatorLed(id, pinRed, pinGreen, pinBlue);
         indicators.push_back(*indicator);
     }
@@ -105,7 +105,7 @@ void Devices::buildLamp(JsonArray list)
             else
                 serr.printf("  %s: %s\n", kvl.key().c_str(), kvl.value().as<String>().c_str());
         }
-        serr.printf("lamp %s on pin %d\n", id.c_str(), pin);
+        // serr.printf("lamp %s on pin %d\n", id.c_str(), pin);
         Lamp *lamp = new Lamp(id.c_str(), pin);
         lamps.push_back(*lamp);
     }
@@ -225,7 +225,7 @@ void Devices::buildFan(JsonArray list)
             else
                 serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        serr.printf("Fan %s on pins %d, %d, %d, %d\n", id.c_str(), pinD1, pinD2, pinS1, pinS2);
+        // serr.printf("Fan %s on pins %d, %d, %d, %d\n", id.c_str(), pinD1, pinD2, pinS1, pinS2);
         Fan *fan = new Fan(id.c_str(), pinD1, pinD2, pinS1, pinS2);
         fans.push_back(*fan);
     }
@@ -247,7 +247,7 @@ void Devices::buildLDR(JsonArray list)
             else
                 serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        serr.printf("LDR %s on pin %d\n", id.c_str(), pin);
+        // serr.printf("LDR %s on pin %d\n", id.c_str(), pin);
         LDR *ldr = new LDR(id, pin);
         ldrs.push_back(*ldr);
     }
@@ -272,7 +272,7 @@ void Devices::buildBME(JsonArray list)
             else
                 serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        serr.printf("BME %s on address %x\n", id.c_str(), addr);
+        // serr.printf("BME %s on address %x\n", id.c_str(), addr);
 
         BME *bme = new BME(id.c_str(), addr);
         bmes.push_back(*bme);
@@ -319,7 +319,7 @@ void Devices::buildPIR(JsonArray list)
             else
                 serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        serr.printf("PIR %s on pin %d\n", id.c_str(), pin);
+        // serr.printf("PIR %s on pin %d\n", id.c_str(), pin);
 
         PIR *pir = new PIR(id.c_str(), pin);
         for (String lid : lampids)
@@ -328,7 +328,7 @@ void Devices::buildPIR(JsonArray list)
             {
                 if (lid == l.getid())
                 {
-                    Serial.printf("PIR %s, Lamp %s\n", pir->getID(), l.getid());
+                    // Serial.printf("PIR %s, Lamp %s\n", pir->getID(), l.getid());
                     pir->addLamp(l);
                 }
             }
@@ -486,5 +486,9 @@ void Devices::poll()
     for (PIR &pir : pirs)
     {
         pir.routine();
+    }
+    for (BME &bme : bmes)
+    {
+        bme.routine();
     }
 }
