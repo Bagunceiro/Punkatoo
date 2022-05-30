@@ -8,3 +8,5 @@ kicad*/*
 !kicad/*.pro
 !kicad/*.sch
 !kicad/*.kicad_pcb
+config
+data/etc
