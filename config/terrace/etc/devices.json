@@ -12,10 +12,12 @@
     }
   ],
   "lamp": [
+    /*
     { "id": "lamp1", "pin": 33 },
     { "id": "lamp2", "pin": 25 },
+    */
     { "id": "lamp3", "pin": 26 },
-    { "id": "lamp4", "pin": 12 },
+    { "id": "lamp4", "pin": 27 },
     { "id": "lamp5", "pin": 13 }
   ],
 
@@ -31,7 +33,7 @@
   ],
 
   "pir": [
-    { "id": "pir", "pin": 35, "timeout": 1800, "kill": [{ "id": "lamp1"}, {"id": "lamp2"}] }
+    { "id": "pir", "pin": 35, "timeout": 1800, "kill": [{ "id": "lamp3"}, {"id": "lamp4"}] }
   ],
   
   "bme": [
