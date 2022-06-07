@@ -26,6 +26,7 @@ struct Devices
     EventLogger     eventlogger;
     P2WebServer     webServer;
     Switches*       switchTask;
+    WeatherStation* weatherStn;
     // Watchdog        watchdog;
 
     vector<Lamp>         lamps;
@@ -41,6 +42,7 @@ struct Devices
     {
         irctlr = NULL;
         switchTask = NULL;
+        weatherStn = NULL;
     }
 
     // Build the device block using a configuration file
@@ -62,7 +64,7 @@ private:
     void buildLDR(JsonArray list);
     void buildBME(JsonArray list);
     void buildPIR(JsonArray list);
-    // void buildWatchdog(JsonObject obj);
+    void buildWeatherStn(JsonObject obj);
 };
 
 extern struct Devices dev;

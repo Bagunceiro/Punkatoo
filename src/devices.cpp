@@ -8,7 +8,12 @@ const char *KEY_ID = "id";
 const char *KEY_PIN = "pin";
 const char *KEY_IR = "ir";
 const char *KEY_PARM = "parm";
+const char *KEY_FAN = "fan";
+const char *KEY_LDR = "ldr";
+const char* KEY_IRRCV = "irrcv";
+const char* KEY_IRLED = "irled";
 const char *KEY_SWITCH = "switch";
+const char *KEY_INDICATOR = "indicator";
 const char *KEY_PIN_R = "pinR";
 const char *KEY_PIN_G = "pinG";
 const char *KEY_PIN_B = "pinB";
@@ -18,9 +23,13 @@ const char *KEY_PIN_S2 = "pinSpd2";
 const char *KEY_PIN_D1 = "pinDir1";
 const char *KEY_PIN_D2 = "pinDir2";
 const char *KEY_ADDR = "addr";
+const char *KEY_INTERVAL = "interval";
 const char *KEY_SWITCHED = "switched";
 const char *KEY_KILL = "kill";
 const char *KEY_TIMEOUT = "timeout";
+const char *KEY_WEATHERSTN = "weatherstn";
+const char *KEY_BME = "bme";
+const char *KEY_LAMP = "lamp";
 
 void Devices::buildIRController(JsonObject obj)
 {
@@ -56,7 +65,6 @@ void Devices::buildIRLed(JsonArray list)
             else
                 serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        // serr.printf("irled %s on pin %d\n", id.c_str(), pin);
         IRLed *irled = new IRLed(id, pin);
         irleds.push_back(*irled);
     }
@@ -84,7 +92,6 @@ void Devices::buildIndicator(JsonArray list)
             else
                 serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        // serr.printf("indicator %s on pin %d, %d, %d\n", id.c_str(), pinRed, pinGreen, pinBlue);
         IndicatorLed *indicator = new IndicatorLed(id, pinRed, pinGreen, pinBlue);
         indicators.push_back(*indicator);
     }
@@ -324,7 +331,7 @@ void Devices::buildPIR(JsonArray list)
         PIR *pir = new PIR(id.c_str(), pin);
         for (String lid : lampids)
         {
-            for (Lamp& l : lamps)
+            for (Lamp &l : lamps)
             {
                 if (lid == l.getid())
                 {
@@ -333,9 +340,30 @@ void Devices::buildPIR(JsonArray list)
                 }
             }
         }
-        pir->setTimeoutSecs(timeout);
+        // pir->setTimeoutSecs(timeout);
+        pir->setTimeoutSecs(10 * 60);
         pirs.push_back(*pir);
     }
+}
+
+void Devices::buildWeatherStn(JsonObject obj)
+{
+    weatherStn = new WeatherStation();
+
+    if (obj[KEY_BME])
+    {
+        const String& bmename = obj[KEY_BME].as<String>();
+        for (BME &bme : bmes)
+        {
+            if (bme.getId() == bmename)
+            {
+                weatherStn->setBme(bme);
+                break;
+            }
+        }
+    }
+    if (obj[KEY_INTERVAL])
+        weatherStn->setInterval(obj[KEY_INTERVAL].as<int>());
 }
 
 bool Devices::build(const char *fileName)
@@ -358,35 +386,35 @@ bool Devices::build(const char *fileName)
 
             for (JsonPair kvroot : root)
             {
-                if (kvroot.key() == "irrcv")
+                if (kvroot.key() == KEY_IRRCV)
                 {
                     buildIRController(kvroot.value().as<JsonObject>());
                 }
-                else if (kvroot.key() == "irled")
+                else if (kvroot.key() == KEY_IRLED)
                 {
                     buildIRLed(kvroot.value().as<JsonArray>());
                 }
-                else if (kvroot.key() == "indicator")
+                else if (kvroot.key() == KEY_INDICATOR)
                 {
                     buildIndicator(kvroot.value().as<JsonArray>());
                 }
-                else if (kvroot.key() == "lamp")
+                else if (kvroot.key() == KEY_LAMP)
                 {
                     buildLamp(kvroot.value().as<JsonArray>());
                 }
-                else if (kvroot.key() == "switch")
+                else if (kvroot.key() == KEY_SWITCH)
                 {
                     buildSwitch(kvroot.value().as<JsonArray>());
                 }
-                else if (kvroot.key() == "fan")
+                else if (kvroot.key() == KEY_FAN)
                 {
                     buildFan(kvroot.value().as<JsonArray>());
                 }
-                else if (kvroot.key() == "ldr")
+                else if (kvroot.key() == KEY_LDR)
                 {
                     buildLDR(kvroot.value().as<JsonArray>());
                 }
-                else if (kvroot.key() == "bme")
+                else if (kvroot.key() == KEY_BME)
                 {
                     buildBME(kvroot.value().as<JsonArray>());
                 }
@@ -394,12 +422,10 @@ bool Devices::build(const char *fileName)
                 {
                     buildPIR(kvroot.value().as<JsonArray>());
                 }
-                /*
-                else if (kvroot.key() == "watchdog")
+                if (kvroot.key() == KEY_WEATHERSTN)
                 {
-                    buildWatchdog(kvroot.value().as<JsonObject>());
+                    buildWeatherStn(kvroot.value().as<JsonObject>());
                 }
-                */
             }
         }
         devfile.close();

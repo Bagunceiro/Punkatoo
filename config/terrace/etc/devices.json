@@ -12,10 +12,8 @@
     }
   ],
   "lamp": [
-    /*
     { "id": "lamp1", "pin": 33 },
     { "id": "lamp2", "pin": 25 },
-    */
     { "id": "lamp3", "pin": 26 },
     { "id": "lamp4", "pin": 27 },
     { "id": "lamp5", "pin": 13 }
@@ -41,5 +39,10 @@
       "id": "bme",
       "addr": "0x76"
     }
-  ]
+  ],
+  "weatherstn": 
+    {
+      "interval": 15,
+      "bme": "bme"
+    }
 }

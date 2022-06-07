@@ -7,27 +7,43 @@
 #include "infrared.h"
 #include "switch.h"
 
-class Lamp: public MQTTClientDev, public SwitchedDev
+class Lamp : public MQTTClientDev, public SwitchedDev
 {
-  public:
-    Lamp(const char* devName, const int relayPin);
+public:
+  Lamp(const char *devName, const int relayPin);
 
-    const int getStatus() const;
-    void sw(int toState);
-    void toggle();
 
-    const int blip(const int t = 500);
-    void blip(const int number, const int length);
+  typedef void (*LampActionFunc)(Lamp *l, const uint8_t toOn, void *data);
 
-    virtual ~Lamp();
-    virtual String mqttGetStatus() override;
-    virtual void mqttMsgRecd(const String &topic, const String &msg) override;
-    
-    virtual void switched(const char* parm) { toggle(); }
+  const int getStatus() const;
+  void sw(int toState);
+  void toggle();
 
-  private:
-    int lpin; // goes to the control relay (active low)
-    virtual void subscribeToMQTT() override;
+  const int blip(const int t = 500);
+  void blip(const int number, const int length);
+
+  virtual ~Lamp();
+  virtual String mqttGetStatus() override;
+  virtual void mqttMsgRecd(const String &topic, const String &msg) override;
+
+  virtual void switched(const char *parm) { toggle(); }
+  void onAction(LampActionFunc func, void * data)
+  {
+    LampAction act;
+    act._cb = func;
+    act._data = data;
+    callBacks.push_back(act);
+  }
+
+private:
+  int lpin; // goes to the control relay (active low)
+  virtual void subscribeToMQTT() override;
+  struct LampAction
+  {
+    LampActionFunc _cb;
+    void *_data;
+  };
+  std::vector<LampAction> callBacks;
 };
 
 #endif

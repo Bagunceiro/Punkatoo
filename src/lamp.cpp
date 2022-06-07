@@ -24,10 +24,18 @@ void Lamp::sw(int toState)
     if (toState == 0)
     {
       digitalWrite(lpin, HIGH);
+      for (LampAction act : callBacks)
+      {
+        act._cb(this, toState, act._data);
+      }
     }
     else
     {
       digitalWrite(lpin, LOW);
+      for (LampAction act : callBacks)
+      {
+        act._cb(this, toState, act._data);
+      }
     }
     mqttSendStatus();
   }

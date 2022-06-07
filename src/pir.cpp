@@ -1,4 +1,5 @@
 #include "pir.h"
+#include "eventlog.h"
 
 PIR::PIR(const char *name, int pin)
 {
@@ -10,32 +11,71 @@ PIR::~PIR()
 {
 }
 
+void PIR::lampActivity(Lamp *l, const uint8_t state)
+{
+    // treat light being switched on as someone being detected (even if done remotely)
+    if (state != 0)
+        trigger();
+}
+
+void PIR::lampActivity(Lamp *l, const uint8_t state, void *pir)
+{
+    ((PIR *)pir)->lampActivity(l, state);
+}
+
 void PIR::routine()
 {
-    static bool alreadySwitchedOff = false;
-    State st = (digitalRead(_pin) == 0 ? UNDETECTED : DETECTED);
-    if (st != _state)
+    State st = (digitalRead(_pin) == 0 ? UNDETECTED : TRIGGERED);
+    if (st != _signalState)
     {
-        _state = st;
-        _lastChange = millis();
-        alreadySwitchedOff = false;
-    }
-    else
-    {
-        if (_timeout > 0)
+        _signalState = st;
+
+/*
+        Event ev1;
+        String sm("PIR ");
+        sm += (st == TRIGGERED ? "1" : "0");
+        ev1.enqueue(sm.c_str());
+*/
+
+        if (st == TRIGGERED)
         {
-            if (!alreadySwitchedOff)
+            unsigned long now = millis();
+            if ((lastDetected != 0) && (now - lastDetected) < (3 * 60 * 1000)) // twice noticed in the last 3 mins
             {
-                if (_state == UNDETECTED)
+                if (_PIRState != TRIGGERED)
                 {
-                    unsigned long undetectedFor = millis() - _lastChange;
-                    if (undetectedFor > (_timeout))
+                    _PIRState = TRIGGERED;
+
+                    Event ev1;
+                    String sm("PIR triggered");
+                    ev1.enqueue(sm.c_str());
+                }
+                trigger();
+            }
+            lastDetected = now;
+        }
+    }
+    else // No change in PIR state
+    {
+        if (st == TRIGGERED)
+        {
+            lastDetected = millis();
+        }
+        else if (_timeout > 0)
+        {
+            unsigned long undetectedFor = millis() - _lastChange;
+            if (undetectedFor > (_timeout))
+            {
+                if (_PIRState == TRIGGERED)
+                {
+                    Event ev1;
+                    String sm("PIR reset");
+                    ev1.enqueue(sm.c_str());
+
+                    _PIRState = UNDETECTED;
+                    for (Lamp *l : _controlledLamps)
                     {
-                        for (Lamp *l : _controlledLamps)
-                        {
-                            l->sw(0);
-                        }
-                        alreadySwitchedOff = true;
+                        l->sw(0);
                     }
                 }
             }
