@@ -6,6 +6,7 @@ BME::BME(const char* name, int addr) : MQTTClientDev(name)
 {
   ok = false;
   _id = name;
+  _addr = addr;
 }
 
 BME::~BME()
@@ -45,9 +46,9 @@ String BME::mqttGetStatus()
   return message;
 }
 
-bool BME::start(uint8_t addr, TwoWire *theWire)
+bool BME::start(TwoWire *theWire)
 {
-  bool started = begin(addr, theWire);
+  bool started = begin(_addr, theWire);
   ok = started;
   return ok;
 }

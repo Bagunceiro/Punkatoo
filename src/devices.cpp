@@ -498,9 +498,9 @@ void Devices::start()
     for (BME &bme : bmes)
     {
         bme.registerMQTT(mqtt);
-        if (!bme.start(0x76, &Wire))
+        if (!bme.start(&Wire))
         {
-            serr.println("Could not find a valid BME280 sensor on dev 0x76");
+            serr.println("Could not find a valid BME280 sensor");
         }
     }
     // configurator.registerIR(irctlr);

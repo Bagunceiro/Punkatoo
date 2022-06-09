@@ -16,7 +16,7 @@ class BME : public Adafruit_BME280, public MQTTClientDev
   public:
   BME(const char* name, int addr);
   ~BME();
-  bool start(uint8_t addr, TwoWire *theWire);
+  bool start(TwoWire *theWire);
   void msgRecd(const String& topic, const String& msg);
   virtual void mqttMsgRecd(const String& topic, const String& msg);
   const bool running() const { return ok; }
@@ -26,6 +26,7 @@ class BME : public Adafruit_BME280, public MQTTClientDev
   private:
   String _id;
   bool ok;
+  int _addr;
 };
 
 class WeatherStation
