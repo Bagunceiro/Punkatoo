@@ -10,8 +10,8 @@ const char *KEY_IR = "ir";
 const char *KEY_PARM = "parm";
 const char *KEY_FAN = "fan";
 const char *KEY_LDR = "ldr";
-const char* KEY_IRRCV = "irrcv";
-const char* KEY_IRLED = "irled";
+const char *KEY_IRRCV = "irrcv";
+const char *KEY_IRLED = "irled";
 const char *KEY_SWITCH = "switch";
 const char *KEY_INDICATOR = "indicator";
 const char *KEY_PIN_R = "pinR";
@@ -260,6 +260,7 @@ void Devices::buildLDR(JsonArray list)
     }
 }
 
+/*
 void Devices::buildBME(JsonArray list)
 {
     for (JsonObject obj : list)
@@ -275,16 +276,15 @@ void Devices::buildBME(JsonArray list)
             {
                 String addrstr = kv.value().as<String>();
                 sscanf(addrstr.c_str(), "%x", &addr);
+                bme.setAddress(addr);
             }
             else
                 serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        // serr.printf("BME %s on address %x\n", id.c_str(), addr);
-
-        BME *bme = new BME(id.c_str(), addr);
-        bmes.push_back(*bme);
     }
+    bme.setValid();
 }
+*/
 
 void Devices::buildPIR(JsonArray list)
 {
@@ -348,22 +348,22 @@ void Devices::buildPIR(JsonArray list)
 
 void Devices::buildWeatherStn(JsonObject obj)
 {
-    weatherStn = new WeatherStation();
-
     if (obj[KEY_BME])
     {
-        const String& bmename = obj[KEY_BME].as<String>();
-        for (BME &bme : bmes)
+        JsonObject bmeObj = obj[KEY_BME].as<JsonObject>();
+        if (bmeObj[KEY_ADDR])
         {
-            if (bme.getId() == bmename)
-            {
-                weatherStn->setBme(bme);
-                break;
-            }
+            int addr = 0;
+            String addrstr = bmeObj[KEY_ADDR].as<String>();
+            sscanf(addrstr.c_str(), "%x", &addr);
+            weatherStn.enableBME(addr);
         }
     }
     if (obj[KEY_INTERVAL])
-        weatherStn->setInterval(obj[KEY_INTERVAL].as<int>());
+    {
+        weatherStn.setInterval(obj[KEY_INTERVAL].as<int>() * 60 * 1000);
+    }
+    weatherStn.setValid();
 }
 
 bool Devices::build(const char *fileName)
@@ -414,10 +414,12 @@ bool Devices::build(const char *fileName)
                 {
                     buildLDR(kvroot.value().as<JsonArray>());
                 }
+                /*
                 else if (kvroot.key() == KEY_BME)
                 {
                     buildBME(kvroot.value().as<JsonArray>());
                 }
+                */
                 else if (kvroot.key() == KEY_PIR)
                 {
                     buildPIR(kvroot.value().as<JsonArray>());
@@ -495,15 +497,8 @@ void Devices::start()
     {
         irled.registerMQTT(mqtt);
     }
-    for (BME &bme : bmes)
-    {
-        bme.registerMQTT(mqtt);
-        if (!bme.start(&Wire))
-        {
-            serr.println("Could not find a valid BME280 sensor");
-        }
-    }
-    // configurator.registerIR(irctlr);
+    weatherStn.registerMQTT(mqtt);
+    weatherStn.start(&Wire);
     webServer.init();
 }
 
@@ -513,8 +508,5 @@ void Devices::poll()
     {
         pir.routine();
     }
-    for (BME &bme : bmes)
-    {
-        bme.routine();
-    }
+    if (weatherStn) weatherStn.poll();
 }

@@ -274,17 +274,24 @@ void P2WebServer::sendEvents()
         }
         doc["lamps"] = dlamps;
 
-        if (!dev.bmes.empty())
+        if (dev.weatherStn)
         {
-            BME &bme = dev.bmes[0];
-            if (bme.running())
+            char buffer[16];
+            double v;
+
+            if (dev.weatherStn.temperature(v))
             {
-                char buffer[16];
-                snprintf(buffer, sizeof(buffer) - 1, "%.1lf°C", round(bme.readTemperature() * 10) / 10);
+                snprintf(buffer, sizeof(buffer) - 1, "%.1lf°C", v);
                 doc["temperature"] = buffer;
-                snprintf(buffer, sizeof(buffer) - 1, "%.1lf%%", round(bme.readHumidity() * 10) / 10);
+            }
+            if (dev.weatherStn.humidity(v))
+            {
+                snprintf(buffer, sizeof(buffer) - 1, "%.1lf%%", v);
                 doc["humidity"] = buffer;
-                snprintf(buffer, sizeof(buffer) - 1, "%.1lf mbar", round(bme.readPressure() * 10) / 1000);
+            }
+            if (dev.weatherStn.pressure(v))
+            {
+                snprintf(buffer, sizeof(buffer) - 1, "%.1lf mbar", v);
                 doc["pressure"] = buffer;
             }
         }

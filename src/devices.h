@@ -10,7 +10,7 @@
 #include "ldr.h"
 #include "infrared.h"
 #include "indicator.h"
-#include "bme.h"
+#include "weather.h"
 #include "pir.h"
 #include "eventlog.h"
 #include "p2webserver.h"
@@ -26,14 +26,13 @@ struct Devices
     EventLogger     eventlogger;
     P2WebServer     webServer;
     Switches*       switchTask;
-    WeatherStation* weatherStn;
+    WeatherStation  weatherStn;
     // Watchdog        watchdog;
 
     vector<Lamp>         lamps;
     vector<Fan>          fans;
     SwitchList_t         switches;
     vector<LDR>          ldrs;
-    vector<BME>          bmes;
     vector<IRLed>        irleds;
     vector<IndicatorLed> indicators;
     vector<PIR>          pirs;
@@ -42,7 +41,6 @@ struct Devices
     {
         irctlr = NULL;
         switchTask = NULL;
-        weatherStn = NULL;
     }
 
     // Build the device block using a configuration file
@@ -62,7 +60,7 @@ private:
     void buildSwitch(JsonArray list);
     void buildFan(JsonArray list);
     void buildLDR(JsonArray list);
-    void buildBME(JsonArray list);
+    // void buildBME(JsonArray list);
     void buildPIR(JsonArray list);
     void buildWeatherStn(JsonObject obj);
 };
