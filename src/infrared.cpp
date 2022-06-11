@@ -16,49 +16,56 @@ unsigned long irDebounce(unsigned long then, unsigned long debounceTime)
     return 0;
 }
 
-IRController::IRController(const char *name, int pin)
-    : IRrecv(pin, kCaptureBufferSize, kTimeout, true),
-      P2Task(name, 2500),
-      MQTTClientDev(name)
+IRController::IRController() : P2Task("irctlr", 2500), MQTTClientDev("irctlr")
 {
-  pinMode(pin, INPUT_PULLUP);
-  enableIRIn();
 }
 
 IRController::~IRController()
 {
+  delete _receiver;
+}
+
+void IRController::setPin(int pin)
+{
+  pinMode(pin, INPUT_PULLUP);
+  if (_receiver != NULL)
+    delete _receiver;
+  _receiver = new IRrecv(pin, kCaptureBufferSize, kTimeout, true);
+  _receiver->enableIRIn();
 }
 
 bool IRController::operator()()
 {
-  decode_results IRDecodeResults;
-  if (decode(&IRDecodeResults))
+  if (_receiver != NULL)
   {
-    static unsigned long then = 0;
-    unsigned long when;
-    uint64_t val = IRDecodeResults.value;
-    if (val != ~0)
+    decode_results IRDecodeResults;
+    if (_receiver->decode(&IRDecodeResults))
     {
-      Event e;
-
-      if ((when = irDebounce(then, IRDEBOUNCE)))
+      static unsigned long then = 0;
+      unsigned long when;
+      uint64_t val = IRDecodeResults.value;
+      if (val != ~0)
       {
-        Serial.printf("IRMsg %s\n", uint64ToString(val, HEX).c_str());
-        // Inform anyone who's interested
-        String payload = R"--({"source":")--" 
-        + config[controllername_n] 
-        + R"--(","code":")--"  + uint64ToString(val, HEX) + R"--("})--";
-        mqttPublish(MQTT_TPC_RECDIRCODE, payload);
         Event e;
-        e.enqueue("IRMsg " + uint64ToString(val, HEX));
-        dev.switchTask.irMessage(val);
-        then = when;
+
+        if ((when = irDebounce(then, IRDEBOUNCE)))
+        {
+          Serial.printf("IRMsg %s\n", uint64ToString(val, HEX).c_str());
+          // Inform anyone who's interested
+          String payload = R"--({"source":")--" + config[controllername_n] + R"--(","code":")--" + uint64ToString(val, HEX) + R"--("})--";
+          mqttPublish(MQTT_TPC_RECDIRCODE, payload);
+          Event e;
+          e.enqueue("IRMsg " + uint64ToString(val, HEX));
+          dev.switchTask.irMessage(val);
+          then = when;
+        }
       }
+      _receiver->resume();
     }
-    resume();
+    delay(20); // should this be yield?
+    return true;
   }
-  delay(20); // should this be yield?
-  return true;
+  return false;
 }
 
 IRLed::IRLed(const String &name, uint8_t pin) : MQTTClientDev(name)
@@ -84,7 +91,6 @@ void IRLed::off()
   digitalWrite(lpin, LOW);
 }
 
-
 void IRLed::subscribeToMQTT()
 {
   pmqttctlr->subscribe(this, MQTT_TPC_SENDIRCODE);
@@ -95,7 +101,7 @@ void IRLed::txCode(String type, long code, int bits)
 {
   Event e;
   char buffer[32];
-  snprintf(buffer, sizeof(buffer)-1, "IR TX: %s, %lx, %d\n", type.c_str(), code, bits);
+  snprintf(buffer, sizeof(buffer) - 1, "IR TX: %s, %lx, %d\n", type.c_str(), code, bits);
 
   e.enqueue(buffer);
   if (type == "NEC")

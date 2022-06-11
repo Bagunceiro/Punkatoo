@@ -21,7 +21,7 @@ struct Devices
 {
     P2System        p2sys;
     MQTTController  mqtt;
-    IRController*   irctlr;
+    IRController    irctlr;
     EventLogger     eventlogger;
     P2WebServer     webServer;
     Switches        switchTask;
@@ -36,7 +36,6 @@ struct Devices
 
     Devices()
     {
-        irctlr = NULL;
     }
 
     // Build the device block using a configuration file

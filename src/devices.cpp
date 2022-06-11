@@ -34,18 +34,18 @@ const char *KEY_LAMP = "lamp";
 void Devices::buildIRController(JsonObject obj)
 {
     String id;
-    int pin = 0;
     for (JsonPair kv : obj)
     {
         if (kv.key() == KEY_ID)
             id = kv.value().as<String>();
         else if (kv.key() == KEY_PIN)
-            pin = kv.value().as<int>();
+        {
+            int pin = kv.value().as<int>();
+            irctlr.setPin(pin);
+        }
         else
             serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
     }
-
-    irctlr = new IRController(id.c_str(), pin);
 }
 
 void Devices::buildIRLed(JsonArray list)
@@ -466,10 +466,10 @@ void Devices::start()
 
     switchTask.start(5);
 
-    if (irctlr != NULL)
+    if (irctlr)
     {
-        irctlr->registerMQTT(mqtt);
-        irctlr->start(4);
+        irctlr.registerMQTT(mqtt);
+        irctlr.start(4);
     }
     else
     {

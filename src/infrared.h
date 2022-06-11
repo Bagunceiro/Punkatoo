@@ -57,15 +57,19 @@ const IRCode IRREMOTE_LIGHT_DOWN  = 0xff38c7;
 const IRCode IRREMOTE_LIGHT_TIMER = 0xffa05f;
 */
 
-class IRController : public IRrecv, public P2Task, public MQTTClientDev
+class IRController :  public P2Task, public MQTTClientDev
 {
 public:
-  IRController(const char *name, int pin);
+  IRController();
   ~IRController();
+  void setPin(int pin);
   virtual bool operator()();
+  operator bool() const { return _receiver != NULL; }
 
 private:
   const String dec(const IRCode c);
+
+  IRrecv* _receiver = NULL;
 };
 
 class IRLed : public MQTTClientDev
@@ -83,4 +87,5 @@ public:
 private:
   uint8_t lpin;
   IRsend* irsend;
+
 };
