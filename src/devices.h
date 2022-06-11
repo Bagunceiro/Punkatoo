@@ -14,7 +14,6 @@
 #include "pir.h"
 #include "eventlog.h"
 #include "p2webserver.h"
-// #include "watchdog.h"
 
 using namespace std;
 
@@ -25,13 +24,11 @@ struct Devices
     IRController*   irctlr;
     EventLogger     eventlogger;
     P2WebServer     webServer;
-    Switches*       switchTask;
+    Switches        switchTask;
     WeatherStation  weatherStn;
-    // Watchdog        watchdog;
 
     vector<Lamp>         lamps;
     vector<Fan>          fans;
-    SwitchList_t         switches;
     vector<LDR>          ldrs;
     vector<IRLed>        irleds;
     vector<IndicatorLed> indicators;
@@ -40,7 +37,6 @@ struct Devices
     Devices()
     {
         irctlr = NULL;
-        switchTask = NULL;
     }
 
     // Build the device block using a configuration file

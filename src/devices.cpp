@@ -203,7 +203,7 @@ void Devices::buildSwitch(JsonArray list)
                 }
             }
         }
-        switches.push_back((std::unique_ptr<Switch>)sw);
+        switchTask.addSwitch(sw);
     }
 }
 
@@ -386,6 +386,7 @@ bool Devices::build(const char *fileName)
 
             for (JsonPair kvroot : root)
             {
+                Serial.printf("Build - %s\n", kvroot.key().c_str());
                 if (kvroot.key() == KEY_IRRCV)
                 {
                     buildIRController(kvroot.value().as<JsonObject>());
@@ -437,7 +438,7 @@ bool Devices::build(const char *fileName)
         perror("");
         serr.println("Device file open for read failed");
     }
-    switchTask = new Switches(&switches);
+    // switchTask = new Switches(&switches);
 
     return result;
 }
@@ -464,7 +465,7 @@ void Devices::start()
 
     Wire.begin();
 
-    switchTask->start(5);
+    switchTask.start(5);
 
     if (irctlr != NULL)
     {

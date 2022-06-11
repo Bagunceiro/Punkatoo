@@ -51,7 +51,7 @@ bool IRController::operator()()
         mqttPublish(MQTT_TPC_RECDIRCODE, payload);
         Event e;
         e.enqueue("IRMsg " + uint64ToString(val, HEX));
-        dev.switchTask->irMessage(val);
+        dev.switchTask.irMessage(val);
         then = when;
       }
     }
