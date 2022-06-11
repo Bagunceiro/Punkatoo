@@ -222,6 +222,47 @@ void CLITask::reportProgressCB(size_t completed, size_t total)
     pThis->reportProgress(completed, total);
 }
 
+int CLITask::fsupdate(stringArray argv)
+{
+    int result = -1;
+    if (argv.size() == 2)
+    {
+        String url = argv[1];
+        if (!url.startsWith("http://"))
+            url = "http://" + url;
+
+        WiFiClient httpclient;
+
+        Update.onProgress(reportProgressCB);
+        serr.println("FS update started");
+
+        t_httpUpdate_return ret = httpUpdate.updateSpiffs(httpclient, url);
+
+        switch (ret)
+        {
+        case HTTP_UPDATE_FAILED:
+            cliClient.printf("FS Update fail error (%d): %s\n",
+                             httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+            break;
+
+        case HTTP_UPDATE_NO_UPDATES:
+            cliClient.println("No FS update file available");
+            break;
+
+        case HTTP_UPDATE_OK:
+            serr.println("FS update available");
+            cliClient.println("FS update available");
+            result = 0;
+            break;
+        }
+    }
+    else
+    {
+        error = "fsupdate URL";
+    }
+    return result;
+}
+
 int CLITask::sysupdate(stringArray argv)
 {
     int result = -1;
@@ -370,6 +411,10 @@ int CLITask::execute(stringArray argv)
         {
             result = sysupdate(argv);
         }
+        else if (argv[0] == "fsupdate")
+        {
+            result = fsupdate(argv);
+        }
         else if (argv[0] == "wget")
         {
             result = wget(argv);
@@ -400,6 +445,7 @@ int CLITask::execute(stringArray argv)
             cliClient.println("rm FILE ...");
             cliClient.println("mkdir DIR ...");
             cliClient.println("sysupdate URL");
+            cliClient.println("fsupdate URL");
             cliClient.println("tree");
             cliClient.println("wget URL [TARGET]");
             cliClient.println("reboot");

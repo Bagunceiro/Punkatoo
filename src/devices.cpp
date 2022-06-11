@@ -44,7 +44,6 @@ void Devices::buildIRController(JsonObject obj)
         else
             serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
     }
-    // serr.printf("irctlr %s set pin to %d\n", id.c_str(), pin);
 
     irctlr = new IRController(id.c_str(), pin);
 }

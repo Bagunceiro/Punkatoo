@@ -30,6 +30,7 @@ private:
     int wget(stringArray argv);
     int cat(stringArray argv);
     int sysupdate(stringArray argv);
+    int fsupdate(stringArray argv);
     int rm(stringArray argv);
     int mkdir(stringArray argv);
     int tree(stringArray argv);
