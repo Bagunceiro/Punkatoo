@@ -3,6 +3,16 @@
 #include <Arduino.h>
 #include <WiFi.h>
 
+class WiFiSerialServer : public WiFiServer
+{
+public:
+    void init(const String &a, const uint16_t port = 1686);
+    void handle();
+
+private:
+    String announcement;
+};
+
 class WiFiSerialClient : public WiFiClient
 {
 public:

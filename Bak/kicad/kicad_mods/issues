@@ -1,8 +1,0 @@
-Issues over V0.1:
-
-1. Indicator jumper.
-  GPI12 must not be held high during flash as this controls the flash voltage.
-  Add jumper J4
-2. IR detector
-3. Capacitor pinout
-4. Reset. 4.7k pullup plus 100nF across the switch.

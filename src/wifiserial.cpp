@@ -1,15 +1,6 @@
 #include "wifiserial.h"
 
-class WiFiSerialServer : public WiFiServer
-{
-public:
-    WiFiSerialServer();
-    void init(const String &a, const uint16_t port = 0);
-    void handle();
 
-private:
-    String announcement;
-};
 
 WiFiSerialServer WSerialServer;
 
@@ -21,10 +12,6 @@ void WiFiSerialClient::loop()
 {
     while (available()) read(); // Need to access the client to enable connectiion status update
     WSerialServer.handle();
-}
-
-WiFiSerialServer::WiFiSerialServer() : WiFiServer(1686)
-{
 }
 
 void WiFiSerialServer::init(const String &a, const uint16_t port)
