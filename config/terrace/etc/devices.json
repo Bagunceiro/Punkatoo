@@ -14,16 +14,16 @@
   "lamp": [
     { "id": "lamp1", "pin": 33 },
     { "id": "lamp2", "pin": 25 },
-    { "id": "lamp3", "pin": 26 },
-    { "id": "lamp4", "pin": 27 },
+    { "id": "area1", "pin": 26 },
+    { "id": "area2", "pin": 27 },
     { "id": "lamp5", "pin": 13 }
   ],
 
   "switch": [
     { "id": "sw23", "pin": 23, "switched": [{ "id": "lamp1" }] },
     { "id": "sw19", "pin": 19, "switched": [{ "id": "lamp2" }] },
-    { "id": "sw18", "pin": 18, "switched": [{ "id": "lamp3" }] },
-    { "id": "sw17", "pin": 17, "switched": [{ "id": "lamp4" }] },
+    { "id": "sw18", "pin": 18, "switched": [{ "id": "area1" }, { "id": "area2"}] },
+    { "id": "sw17", "pin": 17, "switched": [{ "id": "area2" }] },
     { "id": "sw16", "pin": 16, "switched": [{ "id": "lamp5" }] },
     { "id": "sw32", "pin": 32, "switched": [{ "id": "lamp1" }] },
     
@@ -31,7 +31,7 @@
   ],
 
   "pir": [
-    { "id": "pir", "pin": 35, "timeout": 1800, "kill": [{ "id": "lamp3"}, {"id": "lamp4"}] }
+    { "id": "pir", "pin": 35, "timeout": 1800, "kill": [{ "id": "area1"}, {"id": "area2"}] }
   ],
   
   "bme": [

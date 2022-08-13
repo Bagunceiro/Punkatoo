@@ -193,7 +193,7 @@ void Fan::subscribeToMQTT()
   mqttSendStatus();
 }
 
-void Fan::switched(const char* parm)
+int Fan::doSwitch(const char* parm, const bool more, const int extra)
 {
   if (strcmp(parm, "pwr") == 0)
     onoff();
@@ -203,6 +203,7 @@ void Fan::switched(const char* parm)
     faster();
   else if (strcmp(parm,"-") == 0)
     slower();
+  return getSpeed();
 }
 
 /*

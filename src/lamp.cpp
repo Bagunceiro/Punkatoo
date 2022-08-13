@@ -41,10 +41,13 @@ void Lamp::sw(int toState)
   }
 }
 
-void Lamp::toggle()
+int Lamp::toggle()
 {
-  const int isOn = getStatus();
-  sw(isOn == 0 ? 1 : 0);
+  // const int isOn = getStatus();
+  const int newState = (getStatus() == 0 ? 1 : 0);
+  // sw(isOn == 0 ? 1 : 0);
+  sw(newState);
+  return newState;
 }
 
 const int Lamp::getStatus() const
@@ -115,6 +118,19 @@ void Lamp::mqttMsgRecd(const String &topic, const String &msg)
         }
       }
     }
+  }
+}
+
+int Lamp::doSwitch(const char *parm, const bool more, const int extra)
+{
+  if (!more)
+  {
+    return toggle();
+  }
+  else
+  {
+    sw(extra);
+    return extra;
   }
 }
 

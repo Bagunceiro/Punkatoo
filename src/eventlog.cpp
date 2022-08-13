@@ -13,6 +13,12 @@ Event::Event()
     onQueue = false;
 }
 
+Event::Event(const char* message)
+{
+    onQueue = false;
+    enqueue(message);
+}
+
 Event::~Event()
 {
     // onQueue indicates that there is a memory block on the queue using this same

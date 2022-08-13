@@ -21,16 +21,27 @@ PhysSwitch::PhysSwitch(const String &i, const int pin) : Switch(i)
   changeAt = 0;
 }
 
-IRSwitch::IRSwitch(const String &i, const String& c) : Switch(i)
+IRSwitch::IRSwitch(const String &i, const String &c) : Switch(i)
 {
   sscanf(c.c_str(), "%lx", &code);
 }
 
 void Switch::pressed()
 {
+  bool first = true;
+  int newState = 0;
   for (SwitchedDev *d : switched)
   {
-    d->switched(parm.c_str());
+    if (first)
+    {
+      newState = d->doSwitch(parm.c_str());
+      first = false;
+    }
+    else
+    {
+      // This one should switch it to "newState" so that all devices get synched
+      d->doSwitch(parm.c_str(), true, newState);
+    }
   }
 }
 
@@ -66,7 +77,7 @@ void PhysSwitch::poll()
 bool Switches::operator()()
 {
   bool result = true;
-  for (Switch* sw : swlist)
+  for (Switch *sw : swlist)
   {
     sw->poll();
   }

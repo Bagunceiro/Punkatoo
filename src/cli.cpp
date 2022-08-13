@@ -1,7 +1,10 @@
 #include "cli.h"
 #include "config.h"
 #include "url.h"
+#include "devices.h"
 #include <HTTPUpdate.h>
+
+extern Devices dev;
 
 CLITask *CLITask::pThis = NULL;
 
@@ -278,6 +281,8 @@ int CLITask::sysupdate(stringArray argv)
 
         Update.onProgress(reportProgressCB);
         serr.println("System update started");
+        Event ev;
+        ev.enqueue((String) "System update from " + url);
 
         t_httpUpdate_return ret = httpUpdate.update(httpclient, url);
 
@@ -401,6 +406,43 @@ int CLITask::reboot(stringArray argv)
     return 0;
 }
 
+void msToTime(unsigned long v, char *t)
+{
+    int h = v / (1000 * 60 * 60);
+    int m = (v / (1000 * 60)) % 60;
+    int s = (v / 1000) % 60;
+    int ms = v % 1000;
+
+    sprintf(t, "%02d:%02d:%02d.%03d", h, m, s, ms);
+}
+
+int CLITask::pir(stringArray argv)
+{
+    if (dev.pirs.empty())
+    {
+        cliClient.printf("No PIRs configured\n");
+        return 1;
+    }
+    if (argv.size() == 1)
+    {
+        for (const PIR &p : dev.pirs)
+        {
+            cliClient.printf("PIR %x (timeout = %lu, state = %d) \n", &p, p.getTimeout(), p.getState());
+            unsigned long runningSince = p.getLastTrigger();
+            if (runningSince != 0)
+            {
+                unsigned long timeSince = millis() - runningSince;
+                char tgone[16];
+                char tleft[16];
+                msToTime(timeSince, tgone);
+                msToTime(p.getTimeout() - timeSince, tleft);
+                cliClient.printf("  Triggered %s ago (%s left)\n", tgone, tleft);
+            }
+        }
+    }
+    return 0;
+}
+
 int CLITask::execute(stringArray argv)
 {
     int result = -1;
@@ -438,6 +480,10 @@ int CLITask::execute(stringArray argv)
         else if (argv[0] == "reboot")
         {
             result = reboot(argv);
+        }
+        else if (argv[0] == "pir")
+        {
+            result = pir(argv);
         }
         else if (argv[0] == "help")
         {

@@ -12,12 +12,11 @@ class Lamp : public MQTTClientDev, public SwitchedDev
 public:
   Lamp(const char *devName, const int relayPin);
 
-
   typedef void (*LampActionFunc)(Lamp *l, const uint8_t toOn, void *data);
 
   const int getStatus() const;
   void sw(int toState);
-  void toggle();
+  int toggle();
 
   const int blip(const int t = 500);
   void blip(const int number, const int length);
@@ -26,8 +25,8 @@ public:
   virtual String mqttGetStatus() override;
   virtual void mqttMsgRecd(const String &topic, const String &msg) override;
 
-  virtual void switched(const char *parm) { toggle(); }
-  void onAction(LampActionFunc func, void * data)
+  virtual int doSwitch(const char *parm, const bool more, const int extra);
+  void onAction(LampActionFunc func, void *data)
   {
     LampAction act;
     act._cb = func;

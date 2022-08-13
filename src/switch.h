@@ -11,7 +11,7 @@ class SwitchedDev
 public:
   SwitchedDev(const String &i) { id = i; }
   const String getid() { return id; }
-  virtual void switched(const char *parm) = 0;
+  virtual int doSwitch(const char *parm, const bool more = false, const int extra = 0) = 0;
 
 private:
   String id;

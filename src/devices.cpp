@@ -327,21 +327,28 @@ void Devices::buildPIR(JsonArray list)
         }
         // serr.printf("PIR %s on pin %d\n", id.c_str(), pin);
 
-        PIR *pir = new PIR(id.c_str(), pin);
+        PIR newpir(id.c_str(), pin);
+        pirs.push_back(newpir);
+        PIR &pir = pirs.back();
+
         for (String lid : lampids)
         {
             for (Lamp &l : lamps)
             {
                 if (lid == l.getid())
                 {
-                    // Serial.printf("PIR %s, Lamp %s\n", pir->getID(), l.getid());
-                    pir->addLamp(l);
+                    /*
+                    Event e;
+                    char buff[32];
+                    sprintf(buff, "Adding lamp at %lx", &l);
+                    e.enqueue(buff);
+                    */
+                    pir.addLamp(l);
                 }
             }
         }
-        // pir->setTimeoutSecs(timeout);
-        pir->setTimeoutSecs(10 * 60);
-        pirs.push_back(*pir);
+        pir.setTimeoutSecs(timeout);
+        // pir.setTimeoutSecs(60);
     }
 }
 
@@ -414,12 +421,6 @@ bool Devices::build(const char *fileName)
                 {
                     buildLDR(kvroot.value().as<JsonArray>());
                 }
-                /*
-                else if (kvroot.key() == KEY_BME)
-                {
-                    buildBME(kvroot.value().as<JsonArray>());
-                }
-                */
                 else if (kvroot.key() == KEY_PIR)
                 {
                     buildPIR(kvroot.value().as<JsonArray>());
@@ -437,7 +438,6 @@ bool Devices::build(const char *fileName)
         perror("");
         serr.println("Device file open for read failed");
     }
-    // switchTask = new Switches(&switches);
 
     return result;
 }
@@ -508,5 +508,6 @@ void Devices::poll()
     {
         pir.routine();
     }
-    if (weatherStn) weatherStn.poll();
+    if (weatherStn)
+        weatherStn.poll();
 }

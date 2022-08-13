@@ -15,6 +15,7 @@ class Event
 {
 public:
   Event();
+  Event(const char* msg);
   virtual ~Event();
 
   bool validts;

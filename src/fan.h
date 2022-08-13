@@ -53,7 +53,7 @@ class Fan: public MQTTClientDev, public SwitchedDev
     /*
       Deal with incoming MQTT message. Virtual, derived from MQTTClientDev
     */
-    virtual void switched(const char* parm) override;
+    virtual int doSwitch(const char* parm, const bool more, const int extra) override;
     virtual void mqttMsgRecd(const String &topic, const String &msg);
     /*
       Deal with incoming IR message. Virtual, derived from IRClientDev
