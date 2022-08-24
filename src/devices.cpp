@@ -259,32 +259,6 @@ void Devices::buildLDR(JsonArray list)
     }
 }
 
-/*
-void Devices::buildBME(JsonArray list)
-{
-    for (JsonObject obj : list)
-    {
-        String id;
-        int addr = 0;
-
-        for (JsonPair kv : obj)
-        {
-            if (kv.key() == KEY_ID)
-                id = kv.value().as<String>();
-            else if (kv.key() == KEY_ADDR)
-            {
-                String addrstr = kv.value().as<String>();
-                sscanf(addrstr.c_str(), "%x", &addr);
-                bme.setAddress(addr);
-            }
-            else
-                serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
-        }
-    }
-    bme.setValid();
-}
-*/
-
 void Devices::buildPIR(JsonArray list)
 {
     for (JsonObject obj : list)
@@ -325,7 +299,6 @@ void Devices::buildPIR(JsonArray list)
             else
                 serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        // serr.printf("PIR %s on pin %d\n", id.c_str(), pin);
 
         PIR newpir(id.c_str(), pin);
         pirs.push_back(newpir);
@@ -337,12 +310,6 @@ void Devices::buildPIR(JsonArray list)
             {
                 if (lid == l.getid())
                 {
-                    /*
-                    Event e;
-                    char buff[32];
-                    sprintf(buff, "Adding lamp at %lx", &l);
-                    e.enqueue(buff);
-                    */
                     pir.addLamp(l);
                 }
             }
@@ -510,4 +477,13 @@ void Devices::poll()
     }
     if (weatherStn)
         weatherStn.poll();
+}
+
+// A lamp calls this to indicate change of state - used to trigger relevant PIR(s)
+void Devices::lampState(const Lamp *l, const int val)
+{
+    for (PIR &pir : pirs)
+    {
+        pir.lampState(l, val);
+    }
 }

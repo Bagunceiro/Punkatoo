@@ -85,7 +85,7 @@ bool Event::queued()
     return result;
 }
 
-EventLogger::EventLogger(const String name) : P2Task(name, 3000), MQTTClientDev(name)
+EventLogger::EventLogger(const String name) : P2Task(name, 6000), MQTTClientDev(name)
 {
 }
 

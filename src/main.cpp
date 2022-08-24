@@ -220,16 +220,6 @@ config.setFileName("/etc/config.json");
   initWiFi();
   dev.start();
   clitask.init();
-
-/*
-  Serial.printf("PK = %s\n", privateKey());
-  const char *key = "abcdefghijklmnop";
-  const char *plainText = "enaLkraP";
-
-  String enc = pencrypt64(plainText, key);
-  String dec = pdecrypt64(enc.c_str(), key);
-  Serial.printf("Got back %s\n", dec.c_str()); 
-  */
 }
 
 unsigned long long startedAt = 0;

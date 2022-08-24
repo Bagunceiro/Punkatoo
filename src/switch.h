@@ -84,7 +84,7 @@ private:
 class Switches : public P2Task
 {
 public:
-  Switches() : P2Task("switches", 2000) { }
+  Switches() : P2Task("switches", 3000) { }
   void irMessage(const unsigned long code);
   void addSwitch(Switch* sw) { swlist.push_back(sw); }
 

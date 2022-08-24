@@ -30,20 +30,6 @@ void PIR::trigger()
     _lastTriggered = millis();
 }
 
-void PIR::lampActivity(Lamp *l, const uint8_t state)
-{
-    // Event ev;
-    // ev.enqueue((String) "PIR: Lamp activity (to " + state + ")");
-    // treat light being switched on as someone being detected (even if done remotely)
-    if (state != 0)
-        trigger();
-}
-
-void PIR::lampActivity(Lamp *l, const uint8_t state, void *pir)
-{
-    ((PIR *)pir)->lampActivity(l, state);
-}
-
 void PIR::routine()
 {
     static unsigned long lastcalled = 0;
@@ -94,13 +80,6 @@ void PIR::routine()
                     _PIRState = UNDETECTED;
                     for (Lamp *l : _controlledLamps)
                     {
-                        /*
-                        Event e;
-                        char buff[32];
-                        sprintf(buff, "PIR lamp %lx off", l);
-                        e.enqueue(buff);
-                        */
-
                         l->sw(0);
                     }
                     _lastTriggered = 0;

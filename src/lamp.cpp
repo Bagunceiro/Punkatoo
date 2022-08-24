@@ -24,28 +24,19 @@ void Lamp::sw(int toState)
     if (toState == 0)
     {
       digitalWrite(lpin, HIGH);
-      for (LampAction act : callBacks)
-      {
-        act._cb(this, toState, act._data);
-      }
     }
     else
     {
       digitalWrite(lpin, LOW);
-      for (LampAction act : callBacks)
-      {
-        act._cb(this, toState, act._data);
-      }
     }
+    dev.lampState(this, toState);
     mqttSendStatus();
   }
 }
 
 int Lamp::toggle()
 {
-  // const int isOn = getStatus();
   const int newState = (getStatus() == 0 ? 1 : 0);
-  // sw(isOn == 0 ? 1 : 0);
   sw(newState);
   return newState;
 }

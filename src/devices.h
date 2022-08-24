@@ -45,6 +45,8 @@ struct Devices
     void start();
     // Most devices that need polling have their own task. But for those that don't
     void poll();
+    // A lamp calls this to indicate change of state - used to trigger relevant PIR(s)
+    void lampState(const Lamp* l, const int val);
 
 private:
     void parse();
