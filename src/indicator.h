@@ -17,7 +17,6 @@ class IndicatorLed
     const struct Colour getColour() const;
     void setColour(const struct Colour& c, const bool ovr = false);
     void off();
-    // void update() { setColour(colour, override); }
     void poll();
 
     static const Colour RED;
@@ -46,4 +45,29 @@ class IndicatorLed
 
     unsigned long setAt;
     unsigned long timeout;
+};
+
+class StatusIndicator
+{
+public:
+    StatusIndicator();
+    virtual ~StatusIndicator();
+
+    enum State
+    {
+        STATE_0 = 0,
+        STATE_AWAKE,
+        STATE_NETWORK,
+        STATE_MQTT,
+        STATE_WPS,
+        STATE_UPDATE
+    };
+
+    void enterState(enum State s);
+    void revertState() { st = prevst; }
+
+    private:
+    bool resetFlag;
+    State st;
+    State prevst;
 };

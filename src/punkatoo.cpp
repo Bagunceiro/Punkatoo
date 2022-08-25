@@ -27,8 +27,13 @@ WiFiSerialClient serr;
 Devices dev;
 CLITask clitask("CLI");
 ConfBlk config("/etc/config.json");
+StatusIndicator statusInd;
 
-unsigned long long startedAt = 0; // "Uptime" baseline. uptime is counted from first NTP update
+/* @brief "Uptime" baseline. uptime is counted from first NTP update */
+unsigned long long startedAt = 0;
+
+/** @brief Set this to true to have the system reboot in a controlled way */
+bool resetFlag = false;
 
 /*
  * Status colours
@@ -62,18 +67,18 @@ void WiFiEvent(WiFiEvent_t event)
     serr.println("Connected to : " + String(WiFi.SSID()));
     serr.print("Got IP: ");
     serr.println(WiFi.localIP());
-    dev.p2sys.enterState(P2System::STATE_NETWORK);
+    statusInd.enterState(StatusIndicator::STATE_NETWORK);
     break;
   case SYSTEM_EVENT_STA_DISCONNECTED:
     serr.println("Disconnected from station");
-    dev.p2sys.enterState(P2System::STATE_AWAKE);
+    statusInd.enterState(StatusIndicator::STATE_AWAKE);
     WiFi.reconnect();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
     ssid = WiFi.SSID();
     psk = WiFi.psk();
     serr.println("WPS Successful : " + ssid + "/" + psk);
-    dev.p2sys.enterState(P2System::STATE_NETWORK);
+    statusInd.enterState(StatusIndicator::STATE_NETWORK);
     esp_wifi_wps_disable();
     updateWiFiDef(ssid, psk);
     delay(10);
@@ -81,12 +86,12 @@ void WiFiEvent(WiFiEvent_t event)
     break;
   case SYSTEM_EVENT_STA_WPS_ER_FAILED:
     serr.println("WPS Failed");
-    dev.p2sys.enterState(P2System::STATE_AWAKE);
+    statusInd.enterState(StatusIndicator::STATE_AWAKE);
     esp_wifi_wps_disable();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
     serr.println("WPS Timed out");
-    dev.p2sys.enterState(P2System::STATE_AWAKE);
+    statusInd.enterState(StatusIndicator::STATE_AWAKE);
     esp_wifi_wps_disable();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_PIN:
@@ -143,7 +148,7 @@ void wpsInit()
   esp_wifi_wps_enable(&wpsconfig);
   esp_wifi_wps_start(0);
   serr.println("WPS started");
-  dev.p2sys.enterState(P2System::STATE_WPS);
+  statusInd.enterState(StatusIndicator::STATE_WPS);
 }
 
 /**
@@ -211,10 +216,10 @@ void parseCompileDate()
 void ntpUpdated(NTPClient *c)
 {
   serr.println("NTPUpdate");
-  if (startedAt == 0) startedAt = c->getEpochMillis();
+  if (startedAt == 0)
+    startedAt = c->getEpochMillis();
   // c->setUpdateCallback(NULL);
 }
-
 
 /**
  * @brief Arduino style entry point
@@ -247,14 +252,14 @@ void setup()
   sm += gitrevision;
   ev1.enqueue(sm.c_str());
 
-  dev.p2sys.enterState(P2System::STATE_0);
+  statusInd.enterState(StatusIndicator::STATE_0);
 
   pinMode(WPS_PIN, INPUT_PULLUP);
   attachInterrupt(WPS_PIN, startwps, FALLING);
 
   // Ready to go (switch and IR). But network has not been initialised yet
 
-  dev.p2sys.enterState(P2System::STATE_AWAKE);
+  statusInd.enterState(StatusIndicator::STATE_AWAKE);
   Event e2;
   e2.enqueue("Startup complete");
 
@@ -262,7 +267,6 @@ void setup()
   dev.start();
   clitask.init();
 }
-
 
 /**
  * @brief Arduino style main loop
@@ -272,7 +276,12 @@ void loop()
   static bool wifiWasConnected = false;
   static bool ntpstarted = false;
 
-  dev.p2sys.routine();
+  if (resetFlag)
+  {
+    Event{"System restart requested"};
+    delay(1000);
+    ESP.restart();
+  }
 
   if (WiFi.status() == WL_CONNECTED)
   {
@@ -281,7 +290,7 @@ void loop()
       wifiWasConnected = true;
       serr.begin("Punkatoo");
       serr.println("WiFi connected");
-      dev.p2sys.enterState(P2System::STATE_NETWORK);
+      statusInd.enterState(StatusIndicator::STATE_NETWORK);
     }
 
     if (!ntpstarted)

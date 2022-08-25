@@ -392,19 +392,13 @@ void Devices::start()
     eventlogger.registerMQTT(mqtt);
     eventlogger.start(0);
 
-    //    p2sys.registerIR(irctlr);
-    p2sys.registerMQTT(mqtt);
-
     for (Fan &fan : fans)
     {
-        //         fan.registerIR(irctlr);
         fan.registerMQTT(mqtt);
     }
     for (Lamp &lamp : lamps)
     {
-        // lamp.registerIR(irctlr);
         lamp.registerMQTT(mqtt);
-        // lamp.start(5);
     }
     for (IRLed &irled : irleds)
     {

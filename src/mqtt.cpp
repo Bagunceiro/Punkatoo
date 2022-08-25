@@ -2,6 +2,8 @@
 #include "config.h"
 #include "eventlog.h"
 
+extern StatusIndicator statusInd;
+
 MQTTController::MQTTController()
 {
     thectlr = this;
@@ -216,11 +218,11 @@ bool MQTTController::poll()
         }
         if (init())
         {
-            dev.p2sys.enterState(P2System::STATE_MQTT);
+            statusInd.enterState(StatusIndicator::STATE_MQTT);
         }
         else
         {
-            dev.p2sys.enterState(P2System::STATE_NETWORK);
+            statusInd.enterState(StatusIndicator::STATE_NETWORK);
             result = false;
         }
     }

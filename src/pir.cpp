@@ -30,8 +30,16 @@ void PIR::trigger(const bool report)
     _lastTriggered = millis();
     if (report)
     {
-        Event ev;
-        ev.enqueue("PIR Triggered");
+        // Only log if there are lamps to be switched off
+        for (Lamp *l : _controlledLamps)
+        {
+            if (l->getStatus() != 0)
+            {
+                Event ev;
+                ev.enqueue("PIR Triggered");
+                break;
+            }
+        }
     }
 }
 
@@ -48,8 +56,6 @@ void PIR::routine()
 
     if (st != _PIRState) // Change from last reading
     {
-        Event ev;
-
         _PIRState = st;
 
         if (st == TRIGGERED)
@@ -59,16 +65,15 @@ void PIR::routine()
         else
         {
             _PIRState = UNDETECTED;
-            // ev.enqueue("PIR Quiescent");
         }
     }
-
 
     if (_PIRState == TRIGGERED) // still triggered so refresh the timer.
     {
         trigger();
     }
     else
+    {
         // state is quiescent - check if it's time to switch the lights off
         if ((_lastTriggered != 0) && (_timeout > 0)) // ie, is the timer running and is timeout enabled
         {
@@ -76,16 +81,22 @@ void PIR::routine()
 
             if (undetectedFor > (_timeout)) // long enough
             {
-                    Event ev1;
-                    String sm("PIR Reset");
-                    ev1.enqueue(sm.c_str());
+                // Event ev1;
+                // String sm("PIR Reset");
+                // ev1.enqueue(sm.c_str());
 
-                    _PIRState = UNDETECTED;
-                    for (Lamp *l : _controlledLamps)
-                    {
-                        l->sw(0);
-                    }
-                    _lastTriggered = 0;
+                _PIRState = UNDETECTED;
+                for (Lamp *l : _controlledLamps)
+                {
+                    const int buffsize = 32;
+                    char buffer[buffsize];
+                    snprintf(buffer, buffsize-1, "PIR: lamp %s off", l->mqttGetName());
+                    Event {buffer};
+
+                    l->sw(0);
+                }
+                _lastTriggered = 0;
             }
         }
+    }
 }

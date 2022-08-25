@@ -8,6 +8,8 @@ P2WebServer *P2WebServer::pThis;
 
 const String wwwpath = "/";
 
+extern StatusIndicator statusInd;
+
 void serveFile(AsyncWebServerRequest *request)
 {
     String file = request->url();
@@ -128,7 +130,8 @@ void P2WebServer::init()
 
 void P2WebServer::sysReset(AsyncWebServerRequest *req)
 {
-    dev.p2sys.reset();
+    extern bool resetFlag;
+    resetFlag = true;
     serveFile(req);
 }
 

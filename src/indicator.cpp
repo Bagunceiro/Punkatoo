@@ -74,3 +74,46 @@ void IndicatorLed::poll()
         }
     }
 }
+
+StatusIndicator::StatusIndicator()
+{
+    resetFlag = false;
+    prevst = st = STATE_0;
+}
+
+StatusIndicator::~StatusIndicator()
+{
+}
+
+void StatusIndicator::enterState(enum State s)
+{
+    prevst = st;
+    st = s;
+
+    if (dev.indicators.size() > 0)
+    {
+        switch (st)
+        {
+        case STATE_0:
+            dev.indicators[0].setColour(indicate_0);
+            break;
+        case STATE_AWAKE:
+            dev.indicators[0].setColour(indicate_awake);
+            break;
+        case STATE_NETWORK:
+            dev.indicators[0].setColour(indicate_network);
+            break;
+        case STATE_MQTT:
+            dev.indicators[0].setColour(indicate_mqtt);
+            break;
+        case STATE_WPS:
+            dev.indicators[0].setColour(indicate_wps);
+            break;
+        case STATE_UPDATE:
+            dev.indicators[0].setColour(indicate_update);
+            break;
+        default:
+            break;
+        }
+    }
+}
