@@ -4,6 +4,14 @@
 #include "infrared.h"
 #include "mqtt.h"
 
+/**
+ * @brief Represents the entire punkatoo application
+ * 
+ * Holds state info (only for reporting)
+ * Implements MQTT status reporting and commands
+ * 
+ * @todo Unpick it? I think it overcomplicates matters
+ */
 class P2System : public MQTTClientDev
 {
 public:
@@ -17,7 +25,6 @@ public:
     void subscribeToMQTT();
     void mqttMsgRecd(const String &topic, const String &msg);
 
-//    void subscribeToIR() {}
     String mqttGetStatus();
 
     enum State
