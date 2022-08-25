@@ -274,27 +274,6 @@ void P2WebServer::sendEvents()
         }
         doc["lamps"] = dlamps;
 
-        if (dev.weatherStn)
-        {
-            char buffer[16];
-            double v;
-
-            if (dev.weatherStn.temperature(v))
-            {
-                snprintf(buffer, sizeof(buffer) - 1, "%.1lf°C", v);
-                doc["temperature"] = buffer;
-            }
-            if (dev.weatherStn.humidity(v))
-            {
-                snprintf(buffer, sizeof(buffer) - 1, "%.1lf%%", v);
-                doc["humidity"] = buffer;
-            }
-            if (dev.weatherStn.pressure(v))
-            {
-                snprintf(buffer, sizeof(buffer) - 1, "%.1lf mbar", v);
-                doc["pressure"] = buffer;
-            }
-        }
         for (LDR &ldr : dev.ldrs)
         {
             uint32_t lux = ldr.read();

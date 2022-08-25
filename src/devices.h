@@ -10,7 +10,6 @@
 #include "ldr.h"
 #include "infrared.h"
 #include "indicator.h"
-#include "weather.h"
 #include "pir.h"
 #include "eventlog.h"
 #include "p2webserver.h"
@@ -25,7 +24,6 @@ struct Devices
     EventLogger     eventlogger;
     P2WebServer     webServer;
     Switches        switchTask;
-    WeatherStation  weatherStn;
 
     vector<Lamp>         lamps;
     vector<Fan>          fans;
@@ -57,9 +55,7 @@ private:
     void buildSwitch(JsonArray list);
     void buildFan(JsonArray list);
     void buildLDR(JsonArray list);
-    // void buildBME(JsonArray list);
     void buildPIR(JsonArray list);
-    void buildWeatherStn(JsonObject obj);
 };
 
 extern struct Devices dev;

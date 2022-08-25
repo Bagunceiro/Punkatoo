@@ -27,7 +27,6 @@ const char *KEY_INTERVAL = "interval";
 const char *KEY_SWITCHED = "switched";
 const char *KEY_KILL = "kill";
 const char *KEY_TIMEOUT = "timeout";
-const char *KEY_WEATHERSTN = "weatherstn";
 const char *KEY_BME = "bme";
 const char *KEY_LAMP = "lamp";
 
@@ -319,26 +318,6 @@ void Devices::buildPIR(JsonArray list)
     }
 }
 
-void Devices::buildWeatherStn(JsonObject obj)
-{
-    if (obj[KEY_BME])
-    {
-        JsonObject bmeObj = obj[KEY_BME].as<JsonObject>();
-        if (bmeObj[KEY_ADDR])
-        {
-            int addr = 0;
-            String addrstr = bmeObj[KEY_ADDR].as<String>();
-            sscanf(addrstr.c_str(), "%x", &addr);
-            weatherStn.enableBME(addr);
-        }
-    }
-    if (obj[KEY_INTERVAL])
-    {
-        weatherStn.setInterval(obj[KEY_INTERVAL].as<int>() * 60 * 1000);
-    }
-    weatherStn.setValid();
-}
-
 bool Devices::build(const char *fileName)
 {
     bool result = true;
@@ -392,10 +371,6 @@ bool Devices::build(const char *fileName)
                 {
                     buildPIR(kvroot.value().as<JsonArray>());
                 }
-                if (kvroot.key() == KEY_WEATHERSTN)
-                {
-                    buildWeatherStn(kvroot.value().as<JsonObject>());
-                }
             }
         }
         devfile.close();
@@ -428,8 +403,6 @@ void Devices::toSecure()
 void Devices::start()
 {
     toSecure();
-
-    Wire.begin();
 
     switchTask.start(5);
 
@@ -464,8 +437,6 @@ void Devices::start()
     {
         irled.registerMQTT(mqtt);
     }
-    weatherStn.registerMQTT(mqtt);
-    weatherStn.start(&Wire);
     webServer.init();
 }
 
@@ -475,8 +446,6 @@ void Devices::poll()
     {
         pir.routine();
     }
-    if (weatherStn)
-        weatherStn.poll();
 }
 
 // A lamp calls this to indicate change of state - used to trigger relevant PIR(s)
