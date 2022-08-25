@@ -7,7 +7,6 @@
 #include "mqtt.h"
 #include "lamp.h"
 #include "fan.h"
-#include "ldr.h"
 #include "infrared.h"
 #include "indicator.h"
 #include "pir.h"
@@ -27,7 +26,6 @@ struct Devices
 
     vector<Lamp>         lamps;
     vector<Fan>          fans;
-    vector<LDR>          ldrs;
     vector<IRLed>        irleds;
     vector<IndicatorLed> indicators;
     vector<PIR>          pirs;

@@ -274,14 +274,6 @@ void P2WebServer::sendEvents()
         }
         doc["lamps"] = dlamps;
 
-        for (LDR &ldr : dev.ldrs)
-        {
-            uint32_t lux = ldr.read();
-            char buffer[16];
-            snprintf(buffer, sizeof(buffer) - 1, "%dL", lux);
-            doc["lux"] = buffer;
-        }
-
         serializeJson(doc, data);
         events->send(data.c_str(), "heartbeat", eventid++);
     }

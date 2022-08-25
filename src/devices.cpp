@@ -9,7 +9,6 @@ const char *KEY_PIN = "pin";
 const char *KEY_IR = "ir";
 const char *KEY_PARM = "parm";
 const char *KEY_FAN = "fan";
-const char *KEY_LDR = "ldr";
 const char *KEY_IRRCV = "irrcv";
 const char *KEY_IRLED = "irled";
 const char *KEY_SWITCH = "switch";
@@ -236,28 +235,6 @@ void Devices::buildFan(JsonArray list)
     }
 }
 
-void Devices::buildLDR(JsonArray list)
-{
-    for (JsonObject obj : list)
-    {
-        String id;
-        int pin = 0;
-
-        for (JsonPair kv : obj)
-        {
-            if (kv.key() == KEY_ID)
-                id = kv.value().as<String>();
-            else if (kv.key() == KEY_PIN)
-                pin = kv.value().as<int>();
-            else
-                serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
-        }
-        // serr.printf("LDR %s on pin %d\n", id.c_str(), pin);
-        LDR *ldr = new LDR(id, pin);
-        ldrs.push_back(*ldr);
-    }
-}
-
 void Devices::buildPIR(JsonArray list)
 {
     for (JsonObject obj : list)
@@ -362,10 +339,6 @@ bool Devices::build(const char *fileName)
                 else if (kvroot.key() == KEY_FAN)
                 {
                     buildFan(kvroot.value().as<JsonArray>());
-                }
-                else if (kvroot.key() == KEY_LDR)
-                {
-                    buildLDR(kvroot.value().as<JsonArray>());
                 }
                 else if (kvroot.key() == KEY_PIR)
                 {
