@@ -12,9 +12,9 @@ P2Task::~P2Task()
 {
 }
 
-void P2Task::loop(void *ctlr)
+void P2Task::loop(void *tsk)
 {
-    P2Task *pThis = reinterpret_cast<P2Task *>(ctlr);
+    P2Task *pThis = reinterpret_cast<P2Task *>(tsk);
     int hwm = uxTaskGetStackHighWaterMark(pThis->taskHandle);
     while (true)
     {
@@ -36,7 +36,6 @@ void P2Task::loop(void *ctlr)
 
 bool P2Task::start(uint8_t priority)
 {
-    // serr.println(String("Creating task for ") + name);
     xTaskCreate(
         loop,         // Function to implement the task
         name.c_str(), // Name of the task

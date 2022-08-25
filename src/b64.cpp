@@ -1,8 +1,16 @@
 #include <Arduino.h>
 
+/**
+ * @file b64.h Base 64 encoding
+ * 
+ * @author Unknown (plagiarised)
+ */
+
+/* Base 64 characters */
 static const unsigned char base64_table[65] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+/* Magic */
 static const int B64index[256] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 63, 62, 62, 63, 52, 53, 54, 55,
@@ -26,7 +34,6 @@ String b64Encode(String s)
     if (olen < len)
         return String(); /* integer overflow */
 
-    // String outStr;
     char out[olen + 1];
 
     end = src + len;
@@ -63,13 +70,12 @@ String b64Encode(String s)
     return String(out);
 }
 
+
 String b64Decode(const char* data)
 {
     size_t len = strlen(data);
-    // const char* p = data;
     int pad = len > 0 && (len % 4 || data[len - 1] == '=');
     const size_t L = ((len + 3) / 4 - pad) * 4;
-    // std::string str(L / 4 * 3 + pad, '\0');
     int blen = L / 4 * 3 + pad;
     char str[blen];
 

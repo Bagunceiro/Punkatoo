@@ -43,7 +43,6 @@ bool MQTTController::init()
                                 config[mqttuser_n].c_str(),
                                 config[mqttpwd_n].c_str()))
             {
-                // dev.watchdog.send("Server Connected");
                 serr.println("MQTT connected");
                 poll();
                 doSubscriptions();
@@ -66,10 +65,9 @@ bool MQTTController::init()
 
 MQTTController *MQTTController::thectlr = NULL;
 
-bool MQTTController::subscribe(MQTTClientDev *dev, const MQTTTopic &topic)
+void MQTTController::subscribe(MQTTClientDev *dev, const MQTTTopic &topic)
 {
     auto record = subList.find(topic);
-    // Serial.printf("Subscribing %s\n", topic.c_str());
     if (record == subList.end())
     {
         MQTTDevList newVector;
@@ -80,7 +78,6 @@ bool MQTTController::subscribe(MQTTClientDev *dev, const MQTTTopic &topic)
     {
         record->second.push_back(dev);
     }
-    return true;
 }
 
 String MQTTController::stdPrefix()
@@ -107,7 +104,7 @@ void MQTTController::publish(const char *topic, const char *msg, const bool reta
 
 void MQTTController::doSubscriptions()
 {
-    // Iterate the subscription list and subscribe to all topics
+
     MQTTSubscriptionList::iterator it;
 
     for (it = subList.begin(); it != subList.end(); it++)
@@ -216,7 +213,6 @@ bool MQTTController::poll()
         if (connFlag)
         {
             serr.println("Lost MQTT Connection");
-            // dev.watchdog.send("Server Failure");
         }
         if (init())
         {
@@ -232,13 +228,12 @@ bool MQTTController::poll()
     return result;
 }
 
-/*
+/**
  * Are we connected to the MQTT broker, or at least were we when last we looked.
  * PubSubClient::connected does not appear to be thread safe so avoiding making the call here
  */
 bool MQTTController::connected()
 {
-    // return (client->state() == MQTT_CONNECTED);
     return connFlag;
 }
 

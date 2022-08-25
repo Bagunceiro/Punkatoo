@@ -24,10 +24,15 @@ PIR &PIR::operator=(const PIR &rhs)
     return *this;
 }
 
-void PIR::trigger()
+void PIR::trigger(const bool report)
 {
     _PIRState = TRIGGERED;
     _lastTriggered = millis();
+    if (report)
+    {
+        Event ev;
+        ev.enqueue("PIR Triggered");
+    }
 }
 
 void PIR::routine()
@@ -40,7 +45,6 @@ void PIR::routine()
     lastcalled = now;
 
     State st = (digitalRead(_pin) == 0 ? UNDETECTED : TRIGGERED);
-    // State st = UNDETECTED;
 
     if (st != _PIRState) // Change from last reading
     {
@@ -51,12 +55,11 @@ void PIR::routine()
         if (st == TRIGGERED)
         {
             trigger();
-            ev.enqueue("PIR Triggered");
         }
         else
         {
             _PIRState = UNDETECTED;
-            ev.enqueue("PIR Quiescent");
+            // ev.enqueue("PIR Quiescent");
         }
     }
 

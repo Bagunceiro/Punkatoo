@@ -38,6 +38,9 @@ bool CLITask::operator()()
     return true;
 }
 
+/**
+ * Reads the command line and returns a string
+ */
 String CLITask::getCommand()
 {
     String result;
@@ -110,23 +113,6 @@ int CLITask::parse(const char *line, stringArray &argv)
         argv.push_back(arg);
 
     return 0;
-}
-
-void CLITask::progress(size_t completed, size_t total)
-{
-    static unsigned long then = 0;
-    unsigned long now = millis();
-    if ((now - then) > 100)
-    {
-        then = now;
-        cliClient.printf("%lu %u%% (%u/%u)\n", now, (100 * completed) / total, completed, total);
-    }
-}
-
-void CLITask::progcb(size_t completed, size_t total, void *ptr)
-{
-    CLITask *thecli = reinterpret_cast<CLITask *>(ptr);
-    thecli->progress(completed, total);
 }
 
 int CLITask::wget(stringArray argv)

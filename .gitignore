@@ -10,3 +10,5 @@ kicad*/*
 !kicad/*.kicad_pcb
 config
 data/etc
+docs/latex
+docs/html

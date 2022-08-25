@@ -2,7 +2,6 @@
 #include "config.h"
 #include "switch.h"
 
-const int MAXDEBOUNCE = 5;
 const int MIN_MILLIS = 10; // was 100
 
 Switch::Switch(const String &i)

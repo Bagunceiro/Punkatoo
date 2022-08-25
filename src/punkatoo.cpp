@@ -1,5 +1,10 @@
+/**
+ * @file punkatoo.cpp
+ * @brief Lighting and fan controller
+ *
+ * @author Paul Abraham
+ */
 #include <Arduino.h>
-// #include <freertos/FreeRTOS.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <Wire.h>
@@ -16,13 +21,14 @@
 #include "networks.h"
 #include "cli.h"
 #include "crypt.h"
+#include "b64.h"
 
 WiFiSerialClient serr;
 Devices dev;
 CLITask clitask("CLI");
-
 ConfBlk config("/etc/config.json");
-// const char* const telegramBotToken = "1831001601:AAEIn25ouJXhznXa0IQvTHtdgH8FHU4IOi8";
+
+unsigned long long startedAt = 0; // "Uptime" baseline. uptime is counted from first NTP update
 
 /*
  * Status colours
@@ -31,7 +37,6 @@ const IndicatorLed::Colour indicate_0 = IndicatorLed::BLACK;
 const IndicatorLed::Colour indicate_awake = IndicatorLed::RED;
 const IndicatorLed::Colour indicate_network = IndicatorLed::BLUE;
 const IndicatorLed::Colour indicate_mqtt = IndicatorLed::GREEN;
-
 const IndicatorLed::Colour indicate_update = IndicatorLed::CYAN;
 const IndicatorLed::Colour indicate_configurator = IndicatorLed::YELLOW;
 const IndicatorLed::Colour indicate_wps = IndicatorLed::MAGENTA;
@@ -39,7 +44,11 @@ const IndicatorLed::Colour indicate_wps = IndicatorLed::MAGENTA;
 extern void wpsInit();
 extern void updateWiFiDef(String &ssid, String &psk);
 
-void WiFiEvent(WiFiEvent_t event) // , system_event_info_t info)
+/**
+ * @brief Callback for reporting of wifi events
+ * @param event The event in question
+ */
+void WiFiEvent(WiFiEvent_t event)
 {
   String ssid;
   String psk;
@@ -87,6 +96,9 @@ void WiFiEvent(WiFiEvent_t event) // , system_event_info_t info)
   }
 }
 
+/**
+ * @brief Initialise the WiFi
+ */
 void initWiFi()
 {
   WiFi.onEvent(WiFiEvent);
@@ -95,23 +107,50 @@ void initWiFi()
   MDNS.addService("http", "tcp", 80);
 }
 
+/**
+ * WPS (WiFi Protected Setup)
+ *
+ * This can be used to configure the Wifi network if the router is capable.
+ * Punkatoo allows this to be switched on by pressing the "flash" button (on GPIO0)
+ */
+
+/**
+ * main loop polls this to decide whether to start WPS.
+ * Avoid the start code being in the interrupt handler
+ */
+bool startWPS = false;
+/**
+ * @brief Interrupt handler - sets a flag for the main loop to pick up
+ *        telling it to start up WPS
+ */
+void IRAM_ATTR startwps()
+{
+  startWPS = true;
+}
+
+/**
+ * @brief Start up WPS
+ */
 void wpsInit()
 {
   esp_wps_config_t wpsconfig;
 
-  // wpsconfig.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
   wpsconfig.wps_type = WPS_TYPE_PBC;
   strcpy(wpsconfig.factory_info.manufacturer, "PA");
   strcpy(wpsconfig.factory_info.model_number, "1");
   strcpy(wpsconfig.factory_info.model_name, "Punkatoo");
   strcpy(wpsconfig.factory_info.device_name, config[controllername_n].c_str());
-  // strcpy(wpsconfig.factory_info.device_name, config[controllername_n]);
   esp_wifi_wps_enable(&wpsconfig);
   esp_wifi_wps_start(0);
   serr.println("WPS started");
   dev.p2sys.enterState(P2System::STATE_WPS);
 }
 
+/**
+ * @brief Scan the I2C bus and print out a map of addresses that respond
+ *
+ * This is a utility function - normally not required in a running system
+ */
 void i2cscan()
 {
   for (byte address = 0; address <= 127; address++)
@@ -140,15 +179,10 @@ void i2cscan()
   serr.println();
 }
 
-bool startWPS = false;
-
-void IRAM_ATTR startwps()
-{
-  startWPS = true;
-}
-
-char compDateTime[32] = "";
-
+char compDateTime[32] = ""; // somewhere to hold the compiled date (see parseCompileDate())
+/**
+ * @brief Convert the C++ preprocessor compile date (MON DD YYYY HH:MM:SS) to a better form for logging (HH:MM:SS DD/MM/YY)
+ */
 void parseCompileDate()
 {
   const char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
@@ -171,14 +205,25 @@ void parseCompileDate()
   strftime(compDateTime, sizeof(compDateTime) - 1, "%H:%M:%S %d/%m/%y", &tmstr);
 }
 
-#include "b64.h"
+/**
+ * @brief Callback for the TimeClient to report connection to NTP and set an "uptime" baseline
+ */
+void ntpUpdated(NTPClient *c)
+{
+  serr.println("NTPUpdate");
+  if (startedAt == 0) startedAt = c->getEpochMillis();
+  // c->setUpdateCallback(NULL);
+}
 
+
+/**
+ * @brief Arduino style entry point
+ */
 void setup()
 {
   Serial.begin(115200);
-  // delay(500);
 
-  extern const char* privateKey();
+  extern const char *privateKey();
 
   LittleFS.begin();
 
@@ -188,12 +233,8 @@ void setup()
 
   WiFi.mode(WIFI_STA);
 
-config.setFileName("/etc/config.json");
+  config.setFileName("/etc/config.json");
   config.readFile();
-/*
-  if (config.readFile() == false)
-    config.writeFile();
-*/
 
   serr.println();
 
@@ -222,15 +263,10 @@ config.setFileName("/etc/config.json");
   clitask.init();
 }
 
-unsigned long long startedAt = 0;
 
-void ntpUpdated(NTPClient *c)
-{
-  serr.println("NTPUpdate");
-  startedAt = c->getEpochMillis();
-  c->setUpdateCallback(NULL);
-}
-
+/**
+ * @brief Arduino style main loop
+ */
 void loop()
 {
   static bool wifiWasConnected = false;
