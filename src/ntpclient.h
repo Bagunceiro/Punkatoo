@@ -1,3 +1,8 @@
+/**
+ * @file ntpclient.h
+ * @note plagiarised - see ntpclient.cpp for details
+ */
+
 #pragma once
 
 #include "Arduino.h"

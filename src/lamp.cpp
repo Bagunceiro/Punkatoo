@@ -112,17 +112,30 @@ void Lamp::mqttMsgRecd(const String &topic, const String &msg)
   }
 }
 
-int Lamp::doSwitch(const char *parm, const bool more, const int extra)
+int Lamp::doSwitch(const char *parm)
 {
-  if (!more)
+  int result = 0;
+
+  if ((parm == NULL) || (strlen(parm) == 0) || (strcmp(parm, "toggle") == 0))
+    result = toggle();
+  else if (strcmp(parm, "on") == 0)
   {
-    return toggle();
+    sw(1);
+    result = 1;
+  }
+  else if (strcmp(parm, "off") == 0)
+  {
+    sw(0);
+    result = 0;
   }
   else
   {
-    sw(extra);
-    return extra;
+    const int bufflen = 32;
+    char buffer[bufflen];
+    snprintf(buffer, bufflen - 1, "Lamp doSwitch(%s)", parm);
+    Event{buffer};
   }
+  return result;
 }
 
 void Lamp::subscribeToMQTT()

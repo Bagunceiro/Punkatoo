@@ -61,17 +61,13 @@ public:
    */
   virtual void mqttMsgRecd(const String &topic, const String &msg) override;
 
+protected:
   /**
    * @brief Handle a signal from a switch.
    *
-   * Toggles the Lamp unless there is an "extra" parameter. In that case extra
-   * becomes the new state
-   *
-   * @param parm Not used by Lamp
-   * @param more Is there an "extra" parameter (true == yes)
-   * @param extra
+   * @param parm One of "on", "off" or toggle. Defaults to toggle if NULL or zero length string passed
    */
-  virtual int doSwitch(const char *parm, const bool more, const int extra);
+  virtual int doSwitch(const char *parm);
 
 private:
   /** @brief GPIO for the controlling relay (active low) */

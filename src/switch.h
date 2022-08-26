@@ -11,11 +11,22 @@
 class SwitchedDev
 {
 public:
+  /**
+   * @param i ID for reporting purposes
+   * @todo Would prefer the String to be a const char*
+   */
   SwitchedDev(const String &i) { id = i; }
   const String getid() { return id; }
-  virtual int doSwitch(const char *parm, const bool more = false, const int extra = 0) = 0;
+  /**
+   * @brief Actuate the switch to realise the requirements held in parm and extra
+   *
+   * @param parm What this switch does
+   */
+
+  virtual int doSwitch(const char *parm) = 0;
 
 private:
+  /** @brief An ID for reporting purposes */
   String id;
 };
 
@@ -29,18 +40,44 @@ private:
 class Switch
 {
 public:
+  /**
+   * @param i ID for reporting purposes
+   * @todo Would prefer the String to be a const char*
+   */
   Switch(const String &i);
+  /**
+   * @brief Add a device to the control of this Switch
+   * @param d The device to add
+   */
   void addDevice(SwitchedDev &d) { switched.push_back(&d); }
+  /**
+   * @brief poll the switch for activity
+   */
   virtual void poll(){};
+  /**
+   * @brief Actuate based on a received infrared code
+   * @param irc Infrared code
+   * @todo Well... this is a bit odd
+   */
   virtual void poll(const unsigned long irc) {}
-  void pressed();
+  /**
+   * @brief Set the switch's parameter - ie what does it do
+   * @param p The parameter
+   */
   void addParm(const char *p) { parm = p; }
 
 protected:
+  /**
+   * @brief Actuate (and synchronise state of all controlled devices)
+   */
+  void pressed();
+  /** @brief name for reporting purposes */
   String id;
 
 private:
+  /** @brief parameter idicating to the controlled device what this switch does */
   String parm;
+  /** @brief list of controlled devices */
   std::vector<SwitchedDev *> switched;
 };
 

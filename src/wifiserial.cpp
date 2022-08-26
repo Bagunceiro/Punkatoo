@@ -1,7 +1,5 @@
 #include "wifiserial.h"
 
-
-
 WiFiSerialServer WSerialServer;
 
 void WiFiSerialClient::begin(const String &a)

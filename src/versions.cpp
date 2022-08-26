@@ -1,3 +1,10 @@
+/**
+ * @file versions.cpp
+ * @brief Compilation information
+ * 
+ * This file should always be recompiled. It creates version number
+ * and time stamps
+ */
 #ifndef GIT_REV
 #define GIT_REV ""
 #endif

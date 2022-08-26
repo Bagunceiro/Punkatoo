@@ -57,6 +57,10 @@ const IRCode IRREMOTE_LIGHT_DOWN  = 0xff38c7;
 const IRCode IRREMOTE_LIGHT_TIMER = 0xffa05f;
 */
 
+/**
+ * @brief Task accepting messages from the infra-red remote and routing them.
+ *        Also forwards them to MQTT.
+ */
 class IRController :  public P2Task, public MQTTClientDev
 {
 public:
@@ -72,6 +76,10 @@ private:
   IRrecv* _receiver = NULL;
 };
 
+/**
+ * @brief An infra-red LED to use as a remote control
+ * @todo Unpick this? It hasn't been found to be useful.
+ */
 class IRLed : public MQTTClientDev
 {
 public:
@@ -87,5 +95,4 @@ public:
 private:
   uint8_t lpin;
   IRsend* irsend;
-
 };

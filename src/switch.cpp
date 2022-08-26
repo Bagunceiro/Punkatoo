@@ -27,20 +27,9 @@ IRSwitch::IRSwitch(const String &i, const String &c) : Switch(i)
 
 void Switch::pressed()
 {
-  bool first = true;
-  int newState = 0;
   for (SwitchedDev *d : switched)
   {
-    if (first)
-    {
-      newState = d->doSwitch(parm.c_str());
-      first = false;
-    }
-    else
-    {
-      // This one should switch it to "newState" so that all devices get synched
-      d->doSwitch(parm.c_str(), true, newState);
-    }
+    d->doSwitch(parm.c_str());
   }
 }
 
