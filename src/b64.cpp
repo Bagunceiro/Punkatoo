@@ -20,7 +20,7 @@ static const int B64index[256] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                   41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
 
 
-String b64Encode(String s)
+String b64Encode(const String s)
 {
     char *pos;
     const unsigned char *end, *in;

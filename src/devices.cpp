@@ -149,12 +149,10 @@ void Devices::buildSwitch(JsonArray list)
                         if (kvs.key() == KEY_ID)
                         {
                             iirm.dev = kvs.value().as<String>();
-                            // swdevs.push_back(kvs.value().as<String>());
                         }
                         else if (kvs.key() == KEY_PARM)
                         {
                             iirm.parm = kvs.value().as<String>();
-                            // swdevs.push_back(kvs.value().as<String>());
                         }
                         else
                             serr.printf("  Unk %s: %s\n", kvs.key().c_str(), kvs.value().as<String>().c_str());
@@ -168,11 +166,11 @@ void Devices::buildSwitch(JsonArray list)
         Switch *sw;
         if (pin >= 0)
         {
-            sw = new PhysSwitch(id, pin);
+            sw = new PhysSwitch(id.c_str(), pin);
         }
         else if (ircode.length() > 0)
         {
-            sw = new IRSwitch(id, ircode);
+            sw = new IRSwitch(id.c_str(), ircode.c_str());
         }
         else
         {
@@ -183,7 +181,7 @@ void Devices::buildSwitch(JsonArray list)
         {
             for (Lamp &l : lamps)
             {
-                if (l.getid() == s.dev)
+                if ((String)l.getid() == s.dev)
                 {
                     sw->addDevice(l);
                     sw->addParm(s.parm.c_str());
@@ -192,7 +190,7 @@ void Devices::buildSwitch(JsonArray list)
             }
             for (Fan &f : fans)
             {
-                if (f.getid() == s.dev)
+                if ((String)f.getid() == s.dev)
                 {
                     sw->addDevice(f);
                     sw->addParm(s.parm.c_str());

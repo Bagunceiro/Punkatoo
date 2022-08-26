@@ -13,10 +13,9 @@ class SwitchedDev
 public:
   /**
    * @param i ID for reporting purposes
-   * @todo Would prefer the String to be a const char*
    */
-  SwitchedDev(const String &i) { id = i; }
-  const String getid() { return id; }
+  SwitchedDev(const char *i) { id = i; }
+  const char* getid() { return id.c_str(); }
   /**
    * @brief Actuate the switch to realise the requirements held in parm and extra
    *
@@ -42,9 +41,8 @@ class Switch
 public:
   /**
    * @param i ID for reporting purposes
-   * @todo Would prefer the String to be a const char*
    */
-  Switch(const String &i);
+  Switch(const char* i);
   /**
    * @brief Add a device to the control of this Switch
    * @param d The device to add
@@ -102,7 +100,7 @@ public:
    * @param i Identity for the switch for reporting purposes
    * @param pin GPIO where the switch is connected
    */
-  PhysSwitch(const String &i, const int pin);
+  PhysSwitch(const char* i, const int pin);
   virtual void poll() override;
 
 private:
@@ -131,7 +129,7 @@ class IRSwitch : public Switch
    * @param ircode The code as received from the IR remote control
    */
 public:
-  IRSwitch(const String &i, const String &ircode);
+  IRSwitch(const char* i, const char* ircode);
   /**
    * @param irc the code received
    *

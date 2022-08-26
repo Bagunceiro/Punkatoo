@@ -2,27 +2,27 @@
 #include "config.h"
 #include "switch.h"
 
-const int MIN_MILLIS = 10; // was 100
+const int MIN_MILLIS = 10;
 
-Switch::Switch(const String &i)
+Switch::Switch(const char* i)
 {
   id = i;
 }
 
-PhysSwitch::PhysSwitch(const String &i, const int pin) : Switch(i)
+PhysSwitch::PhysSwitch(const char* i, const int pin) : Switch(i)
 {
   spin = pin;
   pinMode(spin, INPUT_PULLUP);
-  delay(50); // input needs settling time after mode setting to charge up capacitance?
+  delay(50); // input seems to needs settling time after mode setting - to charge up capacitance?
 
   switchState = digitalRead(spin);
   debounce = 0;
   changeAt = 0;
 }
 
-IRSwitch::IRSwitch(const String &i, const String &c) : Switch(i)
+IRSwitch::IRSwitch(const char* i, const char* c) : Switch(i)
 {
-  sscanf(c.c_str(), "%lx", &code);
+  sscanf(c, "%lx", &code);
 }
 
 void Switch::pressed()

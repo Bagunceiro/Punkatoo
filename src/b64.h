@@ -8,7 +8,7 @@
  * @param s The String to encode
  * @return The encoded String
  */
-String b64Encode(String src);
+String b64Encode(const String src);
 /**
  * @brief decode a string previously encoded in base64
  * 
