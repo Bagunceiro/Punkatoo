@@ -5,7 +5,7 @@
  *
  * The relays are driven active low by the GPIO pins.
  *
- * @todo A parameter to disable both polls on.
+ * @todo A parameter to disallow both poles on.
  */
 class SPDT
 {

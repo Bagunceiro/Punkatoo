@@ -2,8 +2,6 @@
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 
-#include <wifiserial.h>
-
 #include "crypt.h"
 
 ConfBlk::ConfBlk(const char *fileName)
@@ -28,7 +26,7 @@ bool ConfBlk::writeFile() const
     if (!configFile)
     {
         perror("");
-        serr.println("Config file open for write failed");
+        Serial.println("Config file open for write failed");
         result = false;
     }
     else
@@ -56,7 +54,7 @@ bool ConfBlk::readFile()
     File configFile = LittleFS.open(_fileName, "r");
     if (!configFile)
     {
-        serr.println("Config file open for read failed");
+        Serial.println("Config file open for read failed");
     }
     else
     {
@@ -65,7 +63,7 @@ bool ConfBlk::readFile()
         DeserializationError error = deserializeJson(doc, configFile);
         if (error)
         {
-            serr.printf("Config deserialization error (%d)\n", error.code());
+            Serial.printf("Config deserialization error (%d)\n", error.code());
             result = false;
         }
         else

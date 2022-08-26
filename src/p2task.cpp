@@ -24,7 +24,7 @@ void P2Task::loop(void *tsk)
         if (hwmnow < hwm) // log maximum stack depth
         {
             hwm = hwmnow;
-            serr.printf("Task %s HWM=%d\n", pThis->name.c_str(), hwm);
+            Serial.printf("Task %s HWM=%d\n", pThis->name.c_str(), hwm);
             if (hwm < 500) // Arbitrary warning limit
             {
                 Event e;

@@ -83,7 +83,7 @@ void Lamp::mqttMsgRecd(const String &topic, const String &msg)
     DeserializationError error = deserializeJson(doc, msg);
     if (error)
     {
-      serr.printf("Lamp cannot decode switch (%d)\n", error.code());
+      Serial.printf("Lamp cannot decode switch (%d)\n", error.code());
     }
     else
     {
@@ -93,7 +93,7 @@ void Lamp::mqttMsgRecd(const String &topic, const String &msg)
         if (kv.key() == "tostate")
         {
           const char *val = (const char *)kv.value();
-          serr.printf("lamp.switchto %s\n", val);
+          Serial.printf("lamp.switchto %s\n", val);
           if (strcmp(val, "on") == 0)
           {
             sw(1);

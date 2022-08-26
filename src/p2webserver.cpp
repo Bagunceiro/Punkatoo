@@ -121,7 +121,7 @@ void P2WebServer::init()
                       {
                           if (client->lastId())
                           {
-                              serr.println("Client reconnected");
+                              Serial.println("Client reconnected");
                           } });
     addHandler(events);
 
@@ -183,7 +183,7 @@ void P2WebServer::wifiDataRecd(AsyncWebServerRequest *req)
     {
         Serial.printf("In wifiDataRecd with wrong method (%d)\n", req->method());
     }
-    serr.println("Network Update");
+    Serial.println("Network Update");
     networkList newlist;
 
     bool usenext = false;
@@ -233,7 +233,7 @@ void P2WebServer::netEditRecd(AsyncWebServerRequest *req)
             net.openNet = false;
         }
     }
-    serr.printf("Edited network %s\n", net.ssid.c_str());
+    Serial.printf("Edited network %s\n", net.ssid.c_str());
     updateWiFiDef(net);
     serveFile(req);
 }

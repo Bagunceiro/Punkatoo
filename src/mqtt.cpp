@@ -29,10 +29,10 @@ bool MQTTController::init()
     {
         if ((lastAttempt == 0) || ((now - lastAttempt) > MQTT_CONNECT_ATTEMPT_INT))
         {
-            serr.print("Connecting to MQTT ");
-            serr.print(config[mqtthost_n]);
-            serr.print(" port ");
-            serr.println(config[mqttport_n]);
+            Serial.print("Connecting to MQTT ");
+            Serial.print(config[mqtthost_n]);
+            Serial.print(" port ");
+            Serial.println(config[mqttport_n]);
 
             lastAttempt = now;
 
@@ -45,7 +45,7 @@ bool MQTTController::init()
                                 config[mqttuser_n].c_str(),
                                 config[mqttpwd_n].c_str()))
             {
-                serr.println("MQTT connected");
+                Serial.println("MQTT connected");
                 poll();
                 doSubscriptions();
                 for (MQTTClientDev *dev : devList)
@@ -57,8 +57,8 @@ bool MQTTController::init()
             }
             else
             {
-                serr.print("MQTT Connect Failure: ");
-                serr.println(client->state());
+                Serial.print("MQTT Connect Failure: ");
+                Serial.println(client->state());
             }
         }
     }
@@ -97,7 +97,7 @@ void MQTTController::publish(const char *topic, const char *msg, const bool reta
         delay(5); // Needs further investigation. This delay or the debug output seems to stop
                   // things tripping over each other and causing loss of connection to the
                   // server. The debug line takes >100ms.
-        // serr.printf("publishing %s, %s, %d\n", t.c_str(), msg.c_str(), retained);
+        // Serial.printf("publishing %s, %s, %d\n", t.c_str(), msg.c_str(), retained);
         xSemaphoreTake(pubMutex, portMAX_DELAY);
         client->publish(t.c_str(), msg, retained);
         xSemaphoreGive(pubMutex);
@@ -170,7 +170,7 @@ MQTTClientDev::~MQTTClientDev()
 
 void MQTTClientDev::mqttSendStatus()
 {
-    // serr.printf("sendStatus for %s\n", name.c_str());
+    // Serial.printf("sendStatus for %s\n", name.c_str());
     String stat = mqttGetStatus();
     if (stat != "")
     {
@@ -182,9 +182,9 @@ void MQTTClientDev::mqttPublish(const String topic, const String message, bool r
 {
     if (pmqttctlr != NULL)
     {
-        // serr.println("Publishing:");
-        // serr.println(name + "/" + topic);
-        // serr.println(message);
+        // Serial.println("Publishing:");
+        // Serial.println(name + "/" + topic);
+        // Serial.println(message);
         pmqttctlr->publish((name + "/" + topic).c_str(), message.c_str(), retain);
     }
 }
@@ -214,7 +214,7 @@ bool MQTTController::poll()
     {
         if (connFlag)
         {
-            serr.println("Lost MQTT Connection");
+            Serial.println("Lost MQTT Connection");
         }
         if (init())
         {

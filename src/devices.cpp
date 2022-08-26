@@ -42,7 +42,7 @@ void Devices::buildIRController(JsonObject obj)
             irctlr.setPin(pin);
         }
         else
-            serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
+            Serial.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
     }
 }
 
@@ -60,7 +60,7 @@ void Devices::buildIRLed(JsonArray list)
             else if (kv.key() == KEY_PIN)
                 pin = kv.value().as<int>();
             else
-                serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
+                Serial.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
         IRLed *irled = new IRLed(id, pin);
         irleds.push_back(*irled);
@@ -87,7 +87,7 @@ void Devices::buildIndicator(JsonArray list)
             else if (kv.key() == KEY_PIN_B)
                 pinBlue = kv.value().as<int>();
             else
-                serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
+                Serial.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
         IndicatorLed *indicator = new IndicatorLed(id, pinRed, pinGreen, pinBlue);
         indicators.push_back(*indicator);
@@ -107,9 +107,9 @@ void Devices::buildLamp(JsonArray list)
             else if (kvl.key() == KEY_PIN)
                 pin = kvl.value().as<int>();
             else
-                serr.printf("  %s: %s\n", kvl.key().c_str(), kvl.value().as<String>().c_str());
+                Serial.printf("  %s: %s\n", kvl.key().c_str(), kvl.value().as<String>().c_str());
         }
-        // serr.printf("lamp %s on pin %d\n", id.c_str(), pin);
+        // Serial.printf("lamp %s on pin %d\n", id.c_str(), pin);
         Lamp *lamp = new Lamp(id.c_str(), pin);
         lamps.push_back(*lamp);
     }
@@ -155,13 +155,13 @@ void Devices::buildSwitch(JsonArray list)
                             iirm.parm = kvs.value().as<String>();
                         }
                         else
-                            serr.printf("  Unk %s: %s\n", kvs.key().c_str(), kvs.value().as<String>().c_str());
+                            Serial.printf("  Unk %s: %s\n", kvs.key().c_str(), kvs.value().as<String>().c_str());
                     }
                     swdevs.push_back(iirm);
                 }
             }
             else
-                serr.printf("  %s: %s", kv.key().c_str(), kv.value().as<String>().c_str());
+                Serial.printf("  %s: %s", kv.key().c_str(), kv.value().as<String>().c_str());
         }
         Switch *sw;
         if (pin >= 0)
@@ -174,7 +174,7 @@ void Devices::buildSwitch(JsonArray list)
         }
         else
         {
-            serr.println("Unknown switch type");
+            Serial.println("Unknown switch type");
             continue;
         }
         for (internalIRMsg &s : swdevs)
@@ -225,9 +225,9 @@ void Devices::buildFan(JsonArray list)
             else if (kv.key() == KEY_PIN_D2)
                 pinD2 = kv.value().as<int>();
             else
-                serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
+                Serial.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
-        // serr.printf("Fan %s on pins %d, %d, %d, %d\n", id.c_str(), pinD1, pinD2, pinS1, pinS2);
+        // Serial.printf("Fan %s on pins %d, %d, %d, %d\n", id.c_str(), pinD1, pinD2, pinS1, pinS2);
         Fan *fan = new Fan(id.c_str(), pinD1, pinD2, pinS1, pinS2);
         fans.push_back(*fan);
     }
@@ -266,12 +266,12 @@ void Devices::buildPIR(JsonArray list)
                             lampids.push_back(lid);
                         }
                         else
-                            serr.printf("  Unk %s: %s\n", kvs.key().c_str(), kvs.value().as<String>().c_str());
+                            Serial.printf("  Unk %s: %s\n", kvs.key().c_str(), kvs.value().as<String>().c_str());
                     }
                 }
             }
             else
-                serr.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
+                Serial.printf("  %s: %s\n", kv.key().c_str(), kv.value().as<String>().c_str());
         }
 
         PIR newpir(id.c_str(), pin);
@@ -305,7 +305,7 @@ bool Devices::build(const char *fileName)
         DeserializationError error = deserializeJson(doc, devfile);
         if (error)
         {
-            serr.printf("Device file deserialization error (%d)\n", error.code());
+            Serial.printf("Device file deserialization error (%d)\n", error.code());
         }
         else
         {
@@ -349,7 +349,7 @@ bool Devices::build(const char *fileName)
     else
     {
         perror("");
-        serr.println("Device file open for read failed");
+        Serial.println("Device file open for read failed");
     }
 
     return result;
@@ -384,7 +384,7 @@ void Devices::start()
     }
     else
     {
-        serr.println("No IR Controller");
+        Serial.println("No IR Controller");
     }
 
     eventlogger.registerMQTT(mqtt);

@@ -3,7 +3,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
 
-#include "wifiserial.h"
 #include "confblk.h"
 #include "ntpclient.h"
 #include "devices.h"
@@ -52,7 +51,6 @@ extern const char *indicator_n;
 extern const char *watchdog_n;
 
 extern ConfBlk config;
-extern WiFiSerialClient serr;
 
 extern unsigned long long startedAt;
 

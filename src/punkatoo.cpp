@@ -14,7 +14,6 @@
 #include <TimeLib.h>
 #include <LittleFS.h>
 
-#include "wifiserial.h"
 #include "config.h"
 #include "devices.h"
 #include "spdt.h"
@@ -23,7 +22,6 @@
 #include "crypt.h"
 #include "b64.h"
 
-WiFiSerialClient serr;
 Devices dev;
 CLITask clitask("CLI");
 ConfBlk config("/etc/config.json");
@@ -61,23 +59,23 @@ void WiFiEvent(WiFiEvent_t event)
   switch (event)
   {
   case SYSTEM_EVENT_STA_START:
-    serr.println("Station Mode Started");
+    Serial.println("Station Mode Started");
     break;
   case SYSTEM_EVENT_STA_GOT_IP:
-    serr.println("Connected to : " + String(WiFi.SSID()));
-    serr.print("Got IP: ");
-    serr.println(WiFi.localIP());
+    Serial.println("Connected to : " + String(WiFi.SSID()));
+    Serial.print("Got IP: ");
+    Serial.println(WiFi.localIP());
     statusInd.enterState(StatusIndicator::STATE_NETWORK);
     break;
   case SYSTEM_EVENT_STA_DISCONNECTED:
-    serr.println("Disconnected from station");
+    Serial.println("Disconnected from station");
     statusInd.enterState(StatusIndicator::STATE_AWAKE);
     WiFi.reconnect();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
     ssid = WiFi.SSID();
     psk = WiFi.psk();
-    serr.println("WPS Successful : " + ssid + "/" + psk);
+    Serial.println("WPS Successful : " + ssid + "/" + psk);
     statusInd.enterState(StatusIndicator::STATE_NETWORK);
     esp_wifi_wps_disable();
     updateWiFiDef(ssid, psk);
@@ -85,12 +83,12 @@ void WiFiEvent(WiFiEvent_t event)
     WiFi.begin();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_FAILED:
-    serr.println("WPS Failed");
+    Serial.println("WPS Failed");
     statusInd.enterState(StatusIndicator::STATE_AWAKE);
     esp_wifi_wps_disable();
     break;
   case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
-    serr.println("WPS Timed out");
+    Serial.println("WPS Timed out");
     statusInd.enterState(StatusIndicator::STATE_AWAKE);
     esp_wifi_wps_disable();
     break;
@@ -147,7 +145,7 @@ void wpsInit()
   strcpy(wpsconfig.factory_info.device_name, config[controllername_n].c_str());
   esp_wifi_wps_enable(&wpsconfig);
   esp_wifi_wps_start(0);
-  serr.println("WPS started");
+  Serial.println("WPS started");
   statusInd.enterState(StatusIndicator::STATE_WPS);
 }
 
@@ -165,23 +163,23 @@ void i2cscan()
 
     if (address == 0)
     {
-      serr.print("\n    0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F");
+      Serial.print("\n    0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F");
     }
     if (address % 16 == 0)
     {
-      serr.println("");
+      Serial.println("");
     }
-    serr.print(" ");
+    Serial.print(" ");
     if (error == 2)
-      serr.print("  ");
+      Serial.print("  ");
     else
     {
       if (error < 0x10)
-        serr.print("0");
-      serr.print(error, HEX);
+        Serial.print("0");
+      Serial.print(error, HEX);
     }
   }
-  serr.println();
+  Serial.println();
 }
 
 char compDateTime[32] = ""; // somewhere to hold the compiled date (see parseCompileDate())
@@ -215,7 +213,7 @@ void parseCompileDate()
  */
 void ntpUpdated(NTPClient *c)
 {
-  serr.println("NTPUpdate");
+  Serial.println("NTPUpdate");
   if (startedAt == 0)
     startedAt = c->getEpochMillis();
   // c->setUpdateCallback(NULL);
@@ -241,10 +239,10 @@ void setup()
   config.setFileName("/etc/config.json");
   config.readFile();
 
-  serr.println();
+  Serial.println();
 
-  serr.println(gitrevision);
-  serr.printf("Compiled at: %s\n", compDateTime);
+  Serial.println(gitrevision);
+  Serial.printf("Compiled at: %s\n", compDateTime);
 
   Event ev1;
   String sm("Starting ");
@@ -288,8 +286,7 @@ void loop()
     if (!wifiWasConnected)
     {
       wifiWasConnected = true;
-      serr.begin("Punkatoo");
-      serr.println("WiFi connected");
+      Serial.println("WiFi connected");
       statusInd.enterState(StatusIndicator::STATE_NETWORK);
     }
 
@@ -303,18 +300,16 @@ void loop()
     }
     // in NTPClient_Generic false return is not (necessarily) a failure - it just means
     // not updated, which happens most spins of the loop because no attempt is made.
-    // if (!timeClient.update()) serr.println("NTP failure");
+
     timeClient.update();
 
     dev.mqtt.poll();
-
-    serr.loop();
   }
   else
   {
     if (wifiWasConnected)
     {
-      serr.println("WiFi connection lost");
+      Serial.println("WiFi connection lost");
       wifiWasConnected = false;
     }
     connectToWiFi();

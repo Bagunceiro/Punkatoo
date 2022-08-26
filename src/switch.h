@@ -57,7 +57,7 @@ public:
    * @param irc Infrared code
    * @todo Well... this is a bit odd
    */
-  virtual void poll(const unsigned long irc) {}
+  virtual void irMessage(const unsigned long irc) {}
   /**
    * @brief Set the switch's parameter - ie what does it do
    * @param p The parameter
@@ -133,9 +133,9 @@ public:
   /**
    * @param irc the code received
    *
-   * @todo rename. This isn't really a poll - it gets called when a code is received
+   * @todo Awkward this being at this parent level
    */
-  virtual void poll(const unsigned long irc) override;
+  virtual void irMessage(const unsigned long irc) override;
 
 private:
   /** @brief The IR code to match against incoming codes */

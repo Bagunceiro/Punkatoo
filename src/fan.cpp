@@ -18,7 +18,7 @@ void Fan::setSpeed(const int s)
     Event e;
     String txt = "Fan to " + String(s);
     e.enqueue(txt.c_str());
-    // serr.printf("Fan to %d\n", s);
+    // Serial.printf("Fan to %d\n", s);
     if (s == 0) // turn it off
     {
       dir.pos(0);

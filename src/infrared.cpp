@@ -125,7 +125,7 @@ void IRLed::mqttMsgRecd(const String &topic, const String &msg)
 
     if (error)
     {
-      serr.printf("Config deserialization error (%d)\n", error.code());
+      Serial.printf("Config deserialization error (%d)\n", error.code());
     }
     else
     {

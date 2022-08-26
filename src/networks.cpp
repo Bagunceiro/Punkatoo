@@ -16,7 +16,7 @@ networkList &scanNetworks()
 {
     scannedNets.clear();
     int n = WiFi.scanNetworks();
-    serr.printf("%d networks found\n", n);
+    Serial.printf("%d networks found\n", n);
     scannedNets.clear();
     for (int i = 0; i < n; ++i)
     {
@@ -28,13 +28,13 @@ networkList &scanNetworks()
         scannedNets.push_back(network);
 
         /*
-            serr.print(i + 1);
-            serr.print(": ");
-            serr.print(WiFi.SSID(i));
-            serr.print(" (");
-            serr.print(WiFi.RSSI(i));
-            serr.print(")");
-            serr.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
+            Serial.print(i + 1);
+            Serial.print(": ");
+            Serial.print(WiFi.SSID(i));
+            Serial.print(" (");
+            Serial.print(WiFi.RSSI(i));
+            Serial.print(")");
+            Serial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
         */
     }
     std::sort(scannedNets.begin(), scannedNets.end(),
@@ -50,7 +50,7 @@ networkList &networkConfRead()
     if (!netsFile)
     {
         perror("");
-        serr.println("Network file open for read failed");
+        Serial.println("Network file open for read failed");
     }
     else
     {
@@ -59,7 +59,7 @@ networkList &networkConfRead()
         DeserializationError error = deserializeJson(doc, netsFile);
         if (error)
         {
-            serr.println(F("Failed to read network file"));
+            Serial.println(F("Failed to read network file"));
         }
         else
         {
@@ -103,7 +103,7 @@ bool networkConfWrite(networkList &networks)
     if (!netsFile)
     {
         perror("");
-        serr.println("Network file open for write failed");
+        Serial.println("Network file open for write failed");
     }
     else
     {

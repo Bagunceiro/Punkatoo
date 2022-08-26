@@ -77,11 +77,11 @@ void Switches::irMessage(const unsigned long code)
 {
   for (auto sw : swlist)
   {
-    sw->poll(code);
+    sw->irMessage(code);
   }
 }
 
-void IRSwitch::poll(const unsigned long irc)
+void IRSwitch::irMessage(const unsigned long irc)
 {
   if (irc == code)
   {

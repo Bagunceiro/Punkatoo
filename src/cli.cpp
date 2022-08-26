@@ -170,7 +170,7 @@ int CLITask::wget(stringArray argv)
                     f.close();
                     if (LittleFS.rename("/upload.tmp", target))
                     {
-                        serr.println("Complete");
+                        Serial.println("Complete");
                         cliClient.println("Complete");
                         result = 0;
                     }
@@ -200,7 +200,7 @@ void CLITask::reportProgress(size_t completed, size_t total, int interval)
 
     if (phase != oldPhase)
     {
-        serr.printf("%3d%% (%d/%d)\n", progress, completed, total);
+        Serial.printf("%3d%% (%d/%d)\n", progress, completed, total);
         cliClient.printf("%3d%% (%d/%d)\n", progress, completed, total);
         oldPhase = phase;
     }
@@ -223,7 +223,7 @@ int CLITask::fsupdate(stringArray argv)
         WiFiClient httpclient;
 
         Update.onProgress(reportProgressCB);
-        serr.println("FS update started");
+        Serial.println("FS update started");
 
         t_httpUpdate_return ret = httpUpdate.updateSpiffs(httpclient, url);
 
@@ -239,7 +239,7 @@ int CLITask::fsupdate(stringArray argv)
             break;
 
         case HTTP_UPDATE_OK:
-            serr.println("FS update available");
+            Serial.println("FS update available");
             cliClient.println("FS update available");
             result = 0;
             break;
@@ -266,7 +266,7 @@ int CLITask::sysupdate(stringArray argv)
         httpUpdate.rebootOnUpdate(false);
 
         Update.onProgress(reportProgressCB);
-        serr.println("System update started");
+        Serial.println("System update started");
         Event ev;
         ev.enqueue((String) "System update from " + url);
 
@@ -284,7 +284,7 @@ int CLITask::sysupdate(stringArray argv)
             break;
 
         case HTTP_UPDATE_OK:
-            serr.println("System update available - reseting");
+            Serial.println("System update available - reseting");
             cliClient.println("System update available - reseting");
             cliClient.stop();
             delay(1000);

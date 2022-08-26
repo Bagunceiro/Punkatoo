@@ -2,7 +2,6 @@
 #include <ArduinoJson.h>
 #include <WiFiUdp.h>
 
-#include "wifiserial.h"
 #include "config.h"
 
 WiFiUDP udp;
