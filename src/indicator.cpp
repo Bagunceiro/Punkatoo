@@ -1,5 +1,6 @@
 #include "indicator.h"
 #include "config.h"
+#include "devices.h"
 
 const IndicatorLed::Colour IndicatorLed::RED = {256, 0, 0};
 const IndicatorLed::Colour IndicatorLed::ORANGE = {255, 165, 0};

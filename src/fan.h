@@ -1,8 +1,8 @@
 #pragma once
 
 #include "mqtt.h"
-#include "infrared.h"
 #include "spdt.h"
+#include "switch.h"
 
 /**
  * @brief Ceiling fan with three speed control (three wire capacitor)

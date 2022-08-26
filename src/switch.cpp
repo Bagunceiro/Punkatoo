@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "config.h"
 #include "switch.h"
+#include "eventlog.h"
 
 const int MIN_MILLIS = 10;
 

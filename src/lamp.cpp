@@ -3,6 +3,7 @@
 #include "lamp.h"
 #include "indicator.h"
 #include "eventlog.h"
+#include "devices.h"
 
 Lamp::Lamp(const char *devName, const int relayPin) : MQTTClientDev(devName), SwitchedDev(devName)
 {

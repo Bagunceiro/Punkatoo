@@ -4,6 +4,7 @@
 #include "config.h"
 #include "infrared.h"
 #include "eventlog.h"
+#include "devices.h"
 
 const int IRDEBOUNCE = 200; // Number of milliseconds to leave fallow between IR messages
 

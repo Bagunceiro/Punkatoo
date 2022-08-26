@@ -5,22 +5,19 @@
  * @author Paul Abraham
  */
 #include <Arduino.h>
-#include <WiFi.h>
 #include <ESPmDNS.h>
 #include <Wire.h>
-#include <PubSubClient.h>
 #include <time.h>
 #include <esp_wps.h>
-#include <TimeLib.h>
+// #include <TimeLib.h>
 #include <LittleFS.h>
 
 #include "config.h"
-#include "devices.h"
-#include "spdt.h"
 #include "networks.h"
 #include "cli.h"
 #include "crypt.h"
 #include "b64.h"
+#include "devices.h"
 
 Devices dev;
 CLITask clitask("CLI");

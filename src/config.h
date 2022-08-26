@@ -5,7 +5,8 @@
 
 #include "confblk.h"
 #include "ntpclient.h"
-#include "devices.h"
+#include "indicator.h"
+// #include "devices.h"
 
 extern const IndicatorLed::Colour indicate_0;
 extern const IndicatorLed::Colour indicate_awake;

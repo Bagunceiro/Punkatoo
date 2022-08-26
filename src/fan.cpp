@@ -1,6 +1,7 @@
 #include "config.h"
 #include "fan.h"
 #include "eventlog.h"
+#include "devices.h"
 
 Fan::Fan(const char* devName, const int d1, const int d2, const int s1, const int s2) : MQTTClientDev(devName), SwitchedDev(devName)
 {

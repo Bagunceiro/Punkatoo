@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "mqtt.h"
-// #include "infrared.h"
 #include "switch.h"
 
 /**
