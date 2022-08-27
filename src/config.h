@@ -6,7 +6,6 @@
 #include "confblk.h"
 #include "ntpclient.h"
 #include "indicator.h"
-// #include "devices.h"
 
 extern const IndicatorLed::Colour indicate_0;
 extern const IndicatorLed::Colour indicate_awake;
@@ -31,13 +30,6 @@ extern const char *gitrevision;
 
 extern char compDateTime[];
 
-// GPIO pin definitions
-
-extern const int WPS_PIN;
-
-extern const unsigned int MQTT_CONNECT_ATTEMPT_INT; // Delay between attempts to reconnect MQTT (ms)
-extern const unsigned int WIFI_CONNECT_ATTEMPT_INT;
-
 const int TZ = -3;
 extern NTPClient timeClient;
 
@@ -54,8 +46,6 @@ extern const char *watchdog_n;
 extern ConfBlk config;
 
 extern unsigned long long startedAt;
-
-void startup();
 
 unsigned long long upFor();
 const char* timeAndDate(char buff[], const int maxSize, const time_t when);

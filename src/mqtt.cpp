@@ -4,6 +4,9 @@
 
 extern StatusIndicator statusInd;
 
+/** @brief Interval between attempts to reconnect MQTT (ms) */
+const unsigned int MQTT_CONNECT_ATTEMPT_INT = (10 * 1000);
+
 MQTTController::MQTTController()
 {
     thectlr = this;

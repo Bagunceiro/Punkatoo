@@ -38,9 +38,6 @@ bool CLITask::operator()()
     return true;
 }
 
-/**
- * Reads the command line and returns a string
- */
 String CLITask::getCommand()
 {
     String result;

@@ -9,20 +9,24 @@
 #include <Wire.h>
 #include <time.h>
 #include <esp_wps.h>
-// #include <TimeLib.h>
 #include <LittleFS.h>
 
 #include "config.h"
 #include "networks.h"
 #include "cli.h"
 #include "crypt.h"
-#include "b64.h"
 #include "devices.h"
+
+/**
+ * @brief GPIO pin for the WPS enable button. It actually dual purposes the "Flash" button
+ */
+const int WPS_PIN = 0;
 
 Devices dev;
 CLITask clitask("CLI");
 ConfBlk config("/etc/config.json");
 StatusIndicator statusInd;
+
 
 /* @brief "Uptime" baseline. uptime is counted from first NTP update */
 unsigned long long startedAt = 0;
@@ -233,7 +237,7 @@ void setup()
 
   WiFi.mode(WIFI_STA);
 
-  config.setFileName("/etc/config.json");
+  // config.setFileName("/etc/config.json");
   config.readFile();
 
   Serial.println();

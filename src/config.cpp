@@ -27,15 +27,6 @@ const String MQTT_TPC_SENDIRCODE = "ir/sendcode";
 const String MQTT_TPC_RECDIRCODE = "recdcode";
 const String MQTT_TPC_SYSTEM = "system";
 
-// GPIO pins
-
-const int WPS_PIN = 0;
-
-const unsigned int MQTT_CONNECT_ATTEMPT_INT = (10 * 1000);     // Interval between attempts to reconnect MQTT (ms)
-const unsigned int WIFI_CONNECT_ATTEMPT_INT = (5 * 60 * 1000); // Interval between attempts to reconnect WiFi (ms)
-
-// ConfBlk config("/etc/config.json");
-
 const char *timeAndDate(char buff[], const int maxSize, const time_t when)
 {
   struct tm tmstr;

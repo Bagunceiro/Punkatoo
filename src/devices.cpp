@@ -115,14 +115,13 @@ void Devices::buildLamp(JsonArray list)
     }
 }
 
-struct internalIRMsg
-{
-    String dev;
-    String parm;
-};
-
 void Devices::buildSwitch(JsonArray list)
 {
+    struct internalIRMsg
+    {
+        String dev;
+        String parm;
+    };
     for (JsonObject obj : list)
     {
         String id;

@@ -1,3 +1,6 @@
+/**
+ * @file networks.cpp WiFi and network configuration Handling
+ */
 #include <WiFiMulti.h>
 #include <LittleFS.h>
 
@@ -7,35 +10,30 @@
 #include "networks.h"
 #include "crypt.h"
 
+/** @brief List of known networks */
 networkList configuredNets;
-networkList scannedNets;
 
-WiFiMulti wifimulti;
+WiFiMulti wifimulti; 
+
+/** @brief Interval between attempts to reconnect WiFi (in ms) */
+const unsigned int WIFI_CONNECT_ATTEMPT_INT = (5 * 60 * 1000);
 
 networkList &scanNetworks()
 {
+    /** @todo Deal with this static storage */
+    static networkList scannedNets;  //  List of discovered networks - static because we're going to return a reference to it, not a copy.
     scannedNets.clear();
     int n = WiFi.scanNetworks();
     Serial.printf("%d networks found\n", n);
     scannedNets.clear();
     for (int i = 0; i < n; ++i)
     {
-        // Print SSID and RSSI for each network found
+        // Store SSID and RSSI for each network found
         const String &netname = WiFi.SSID(i);
         WiFiNetworkDef network(netname);
         network.openNet = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
         network.rssi = WiFi.RSSI(i);
         scannedNets.push_back(network);
-
-        /*
-            Serial.print(i + 1);
-            Serial.print(": ");
-            Serial.print(WiFi.SSID(i));
-            Serial.print(" (");
-            Serial.print(WiFi.RSSI(i));
-            Serial.print(")");
-            Serial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
-        */
     }
     std::sort(scannedNets.begin(), scannedNets.end(),
               [](WiFiNetworkDef i, WiFiNetworkDef j)
@@ -168,7 +166,6 @@ void connectToWiFi()
         {
             for (unsigned int i = 0; i < numNets; i++)
             {
-                // Serial.printf("Connect to %s/%s\n", configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
                 Serial.printf("Connect to %s\n", configuredNets[i].ssid.c_str());
                 wifimulti.addAP(configuredNets[i].ssid.c_str(), configuredNets[i].psk.c_str());
             }

@@ -1,370 +1,371 @@
 /**
  * @file ntpclient.h
  * @note plagiarised - see ntpclient.cpp for details
+ * @todo Remove some crud!
  */
 
 #pragma once
 
 #include "Arduino.h"
 
-#include <TimeLib.h>    // https://github.com/PaulStoffregen/Time
+#include <TimeLib.h>
 
 #include <Udp.h>
 
-#define SECS_IN_DAY               (86400L)
-#define SECS_IN_HR                (3600L)
-#define SECS_IN_MIN               (60L)
+#define SECS_IN_DAY (86400L)
+#define SECS_IN_HR (3600L)
+#define SECS_IN_MIN (60L)
 
-#define SEVENTYYEARS              (2208988800UL)
-#define FRACTIONSPERMILLI         (4294967UL)
-#define NTP_PACKET_SIZE           48
-#define NTP_DEFAULT_LOCAL_PORT    1337
+#define SEVENTYYEARS (2208988800UL)
+#define FRACTIONSPERMILLI (4294967UL)
+#define NTP_PACKET_SIZE 48
+#define NTP_DEFAULT_LOCAL_PORT 1337
 
-#define NTP_SEVER_PORT            123
+#define NTP_SEVER_PORT 123
 
 class NTPClient;
 
-typedef void (*NTPUpdateCallbackFunction)(NTPClient* c);
+typedef void (*NTPUpdateCallbackFunction)(NTPClient *c);
 
-class NTPClient 
+/**
+ * @brief Network Time Protocol client
+ * @todo The default update interval is much too short
+ */
+class NTPClient
 {
-  private:
-    UDP*          _udp;
-    bool          _udpSetup       = false;
+private:
+  UDP *_udp;
+  bool _udpSetup = false;
 
-    const char*   _poolServerName = "pool.ntp.org";                 // Default time server
-    IPAddress     _poolServerIP   = IPAddress(162,159,200,123);     // Default time server IP of "pool.ntp.org"
-    int           _port           = NTP_DEFAULT_LOCAL_PORT;
-    
-    // Time ofset in seconds
-    long          _timeOffset     = 0;
+  const char *_poolServerName = "pool.ntp.org";            // Default time server as DNS
+  IPAddress _poolServerIP = IPAddress(162, 159, 200, 123); // Default time server IP of "pool.ntp.org"
+  int _port = NTP_DEFAULT_LOCAL_PORT;
 
-    unsigned int  _retryInterval  = 1000;   // In ms
-    unsigned long _updateInterval = 60000;  // In ms
+  // Time ofset in seconds
+  long _timeOffset = 0;
 
-    unsigned long _currentEpoc    = 0;      // In s
-    unsigned long _currentFraction = 0;     // In 1/(2^32) s
-    unsigned long _lastUpdate     = 0;      // In ms
-    unsigned long _lastRequest    = 0;      // IN ms
+  unsigned int _retryInterval = 1000;    // In ms
+  unsigned long _updateInterval = 60000; // In ms
 
-    byte          _packetBuffer[NTP_PACKET_SIZE];
+  unsigned long _currentEpoc = 0;     // In s
+  unsigned long _currentFraction = 0; // In 1/(2^32) s
+  unsigned long _lastUpdate = 0;      // In ms
+  unsigned long _lastRequest = 0;     // IN ms
 
-    NTPUpdateCallbackFunction _updateCallback = NULL;
+  byte _packetBuffer[NTP_PACKET_SIZE];
 
-    void          sendNTPPacket();
-    bool          checkResponse();
+  NTPUpdateCallbackFunction _updateCallback = NULL;
 
-  public:
-    NTPClient(UDP& udp, long timeOffset = 0);
-    NTPClient(UDP& udp, const char* poolServerName, long timeOffset = 0, unsigned long updateInterval = 60000);
-    NTPClient(UDP& udp, IPAddress poolServerIP, long timeOffset = 0, unsigned long updateInterval = 60000);
+  void sendNTPPacket();
+  bool checkResponse();
 
-    /**
-       Set time server name
+public:
+  NTPClient(UDP &udp, long timeOffset = 0);
+  NTPClient(UDP &udp, const char *poolServerName, long timeOffset = 0, unsigned long updateInterval = 60000);
+  NTPClient(UDP &udp, IPAddress poolServerIP, long timeOffset = 0, unsigned long updateInterval = 60000);
 
-       @param poolServerName
-    */
-    void setPoolServerName(const char* poolServerName) 
-    {
-      this->_poolServerName = poolServerName;
-    }
-   
-    /**
-       Get time server name
+  /**
+   * @brief Set time server name
+   * @param poolServerName
+   */
+  void setPoolServerName(const char *poolServerName)
+  {
+    this->_poolServerName = poolServerName;
+  }
 
-       @param poolServerName
-    */
-    String getPoolServerName(void)
-    {
-      return String(this->_poolServerName);
-    }
-    
-    ///////////////////////////////
-    
-    /**
-       Set time server IP
+  /**
+     Get time server name
 
-       @param poolServerIP
-    */
-    void setPoolServerIP(const IPAddress poolServerIP)
-    {
-      this->_poolServerIP = poolServerIP;
-    }
-    
-    /**
-       Get time server IP. Use only after setPoolServerIP()
+     @return poolServerName
+  */
+  String getPoolServerName(void)
+  {
+    return String(this->_poolServerName);
+  }
 
-       @param poolServerIP
-    */
-    IPAddress getPoolServerIP(void)
-    {
-      return (this->_poolServerIP);
-    }
+  ///////////////////////////////
 
-    /**
-       Starts the underlying UDP client with the specified local port
-    */
-    void begin(int port = NTP_DEFAULT_LOCAL_PORT);
+  /**
+     Set time server IP
 
-    /**
-       This should be called in the main loop of your application. By default an update from the NTP Server is only
-       made every 60 seconds. This can be configured in the NTPClient constructor.
+     @param poolServerIP
+  */
+  void setPoolServerIP(const IPAddress poolServerIP)
+  {
+    this->_poolServerIP = poolServerIP;
+  }
 
-       @return true on success, false on failure
-    */
-    bool update();
+  /**
+     Get time server IP. Use only after setPoolServerIP()
 
-    /**
-       Has the time ever been sucessfully updated
+     @param poolServerIP
+  */
+  IPAddress getPoolServerIP(void)
+  {
+    return (this->_poolServerIP);
+  }
 
-    */
-    bool updated() 
-    {
-      return (this->_currentEpoc != 0);
-    }
+  /**
+     Starts the underlying UDP client with the specified local port
+  */
+  void begin(int port = NTP_DEFAULT_LOCAL_PORT);
 
-    /**
-       Register a callback function for when the time gets updated
+  /**
+     This should be called in the main loop of your application. By default an update from the NTP Server is only
+     made every 60 seconds. This can be configured in the NTPClient constructor.
 
-    */
-    void setUpdateCallback(NTPUpdateCallbackFunction f) 
-    {
-      _updateCallback = f;
-    }
+     @return true on success, false on failure
+  */
+  bool update();
 
-    /**
-       This will force the update from the NTP Server.
-       This can block for a full second
-       @return true on success, false on failure
-    */
-    bool forceUpdate();
-    
-    int getUTCYear() const 
-    {
-      return ( year(this->getUTCEpochTime()) );      // Year, 20xy
-    }
+  /**
+     Has the time ever been sucessfully updated
 
-    String getUTCMonthStr() const 
-    {
-      return ( monthShortStr(month(this->getUTCEpochTime())) );      // Month, 1-12
-    }
+  */
+  bool updated()
+  {
+    return (this->_currentEpoc != 0);
+  }
 
-    int getUTCMonth() const 
-    {
-      return ( month(this->getUTCEpochTime()) );      // Month, 1-12
-    }
+  /**
+     Register a callback function for when the time gets updated
 
-    String getUTCDoW() const 
-    {
-      return ( dayShortStr(weekday(this->getUTCEpochTime())) );        // Day of Week, Sun-Mon-..-Sat
-    }
+  */
+  void setUpdateCallback(NTPUpdateCallbackFunction f)
+  {
+    _updateCallback = f;
+  }
 
-    int getUTCDay() const 
-    {
-      return ( day(this->getUTCEpochTime()) );        // Day of Month, 1-31
-    }
+  /**
+     This will force the update from the NTP Server.
+     This can block for a full second
+     @return true on success, false on failure
+  */
+  bool forceUpdate();
 
-    int getUTCHours() const 
-    {
-      return ( hour(this->getUTCEpochTime()) );       // Hour, 0-23
-    }
+  int getUTCYear() const
+  {
+    return (year(this->getUTCEpochTime())); // Year, 20xy
+  }
 
-    int getUTCMinutes() const 
-    {
-      return ( minute(this->getUTCEpochTime()) );     // Min, 0-59
-    }
+  String getUTCMonthStr() const
+  {
+    return (monthShortStr(month(this->getUTCEpochTime()))); // Month, 1-12
+  }
 
-    int getUTCSeconds() const 
-    {
-      return ( second(this->getUTCEpochTime()) );     // Sec, 0-59
-    }
+  int getUTCMonth() const
+  {
+    return (month(this->getUTCEpochTime())); // Month, 1-12
+  }
 
-    // With leading 0
-    String getUTCStrHours() const 
-    {
-      unsigned long tempo = this->getUTCHours();
+  String getUTCDoW() const
+  {
+    return (dayShortStr(weekday(this->getUTCEpochTime()))); // Day of Week, Sun-Mon-..-Sat
+  }
 
-      return ( tempo < 10 ? "0" + String(tempo) : String(tempo) );       // Hour, 00-23
-    }
+  int getUTCDay() const
+  {
+    return (day(this->getUTCEpochTime())); // Day of Month, 1-31
+  }
 
-    // With leading 0
-    String getUTCStrMinutes() const 
-    {
-      unsigned long tempo = this->getUTCMinutes();
-      
-      return ( tempo < 10 ? "0" + String(tempo) : String(tempo) );      // Min, 00-59
-    }
+  int getUTCHours() const
+  {
+    return (hour(this->getUTCEpochTime())); // Hour, 0-23
+  }
 
-    // With leading 0
-    String getUTCStrSeconds() const 
-    {
-      unsigned long tempo = this->getUTCSeconds();
-      
-      return ( tempo < 10 ? "0" + String(tempo) : String(tempo) );      // Sec, 0-59
-    }
+  int getUTCMinutes() const
+  {
+    return (minute(this->getUTCEpochTime())); // Min, 0-59
+  }
 
+  int getUTCSeconds() const
+  {
+    return (second(this->getUTCEpochTime())); // Sec, 0-59
+  }
 
-//////////////////////////////////////////
+  // With leading 0
+  String getUTCStrHours() const
+  {
+    unsigned long tempo = this->getUTCHours();
 
-    int getYear() const 
-    {
-      return ( year(this->getEpochTime()) );      // Year, 20xy
-    }
+    return (tempo < 10 ? "0" + String(tempo) : String(tempo)); // Hour, 00-23
+  }
 
-    String getMonthStr() const 
-    {
-      return ( monthShortStr(month(this->getEpochTime())) );      // Month, 1-12
-    }
+  // With leading 0
+  String getUTCStrMinutes() const
+  {
+    unsigned long tempo = this->getUTCMinutes();
 
-    int getMonth() const 
-    {
-      return ( month(this->getEpochTime()) );      // Month, 1-12
-    }
+    return (tempo < 10 ? "0" + String(tempo) : String(tempo)); // Min, 00-59
+  }
 
-    String getDoW() const 
-    {
-      return ( dayShortStr(weekday(this->getEpochTime())) );        // Day of Week, Sun-Mon-..-Sat
-    }
+  // With leading 0
+  String getUTCStrSeconds() const
+  {
+    unsigned long tempo = this->getUTCSeconds();
 
-    int getDay() const 
-    {
-      return ( day(this->getEpochTime()) );        // Day of Month, 1-31
-    }
+    return (tempo < 10 ? "0" + String(tempo) : String(tempo)); // Sec, 0-59
+  }
 
-    int getHours() const 
-    {
-      return ( hour(this->getEpochTime()) );       // Hour, 0-23
-    }
+  //////////////////////////////////////////
 
-    int getMinutes() const 
-    {
-      return ( minute(this->getEpochTime()) );     // Min, 0-59
-    }
+  int getYear() const
+  {
+    return (year(this->getEpochTime())); // Year, 20xy
+  }
 
-    int getSeconds() const 
-    {
-      return ( second(this->getEpochTime()) );     // Sec, 0-59
-    }
+  String getMonthStr() const
+  {
+    return (monthShortStr(month(this->getEpochTime()))); // Month, 1-12
+  }
 
-    // With leading 0
-    String getStrHours() const 
-    {
-      unsigned long tempo = this->getHours();
+  int getMonth() const
+  {
+    return (month(this->getEpochTime())); // Month, 1-12
+  }
 
-      return ( tempo < 10 ? "0" + String(tempo) : String(tempo) );       // Hour, 00-23
-    }
+  String getDoW() const
+  {
+    return (dayShortStr(weekday(this->getEpochTime()))); // Day of Week, Sun-Mon-..-Sat
+  }
 
-    // With leading 0
-    String getStrMinutes() const 
-    {
-      unsigned long tempo = this->getMinutes();
-      
-      return ( tempo < 10 ? "0" + String(tempo) : String(tempo) );      // Min, 00-59
-    }
+  int getDay() const
+  {
+    return (day(this->getEpochTime())); // Day of Month, 1-31
+  }
 
-    // With leading 0
-    String getStrSeconds() const 
-    {
-      unsigned long tempo = this->getSeconds();
-      
-      return ( tempo < 10 ? "0" + String(tempo) : String(tempo) );      // Sec, 0-59
-    }
-    
-    /**
-       Changes the time offset. Useful for changing timezones dynamically
-    */
-    void setTimeOffset(int timeOffset) 
-    {
-      this->_timeOffset     = timeOffset;
-    }
+  int getHours() const
+  {
+    return (hour(this->getEpochTime())); // Hour, 0-23
+  }
 
-    /**
-       Set the update interval to another frequency. E.g. useful when the
-       timeOffset should not be set in the constructor
-    */
-    void setUpdateInterval(unsigned long updateInterval) 
-    {
-      this->_updateInterval = updateInterval;
-    }
+  int getMinutes() const
+  {
+    return (minute(this->getEpochTime())); // Min, 0-59
+  }
 
-    /**
-       Set the retry interval to another frequency in ms
-    */
-    void setRetryInterval(int retryInterval) 
-    {
-      _retryInterval = retryInterval;
-    }
-    
-    /**
-       @return time formatted like `hh:mm:ss` from rawTime input
-    */
-    String createFormattedTime(unsigned long rawTime) const;
+  int getSeconds() const
+  {
+    return (second(this->getEpochTime())); // Sec, 0-59
+  }
 
-    /**
-       @return time formatted like `hh:mm:ss`
-    */
-    String getFormattedTime() const;
-    
-    /**
-       @return UTC time formatted like `hh:mm:ss`
-    */
-    String getFormattedUTCTime() const;
-    
-    /**
-       @return date-time formatted like `10:38:21 Sun 18 Oct 2020`
-    */
-    String getFormattedDateTime() const;
-    
-    /**
-       @return UTC date-time formatted like `10:38:21 Sun 18 Oct 2020`
-    */
-    String getFormattedUTCDateTime() const;
+  // With leading 0
+  String getStrHours() const
+  {
+    unsigned long tempo = this->getHours();
 
-    /**
-       @return UTC time in seconds since Jan. 1, 1970
-    */   
-    unsigned long getUTCEpochTime() const 
-    {
-      return this->_currentEpoc +     // Epoc returned by the NTP server
-             ((millis() - this->_lastUpdate + (_currentFraction / FRACTIONSPERMILLI)) / 1000); // Time since last update
-    }
-   
-    unsigned long long mygetEpochMillis() const 
-    {
-      unsigned long long currentEpochMillis = (unsigned long long)this->_currentEpoc * 1000;
-            Serial.printf("currentEpoc = %ld\n", _currentEpoc);
-      Serial.printf("currentEpochMillis = %lld\n", currentEpochMillis);
-      return (currentEpochMillis+     // Epoc returned by the NTP server
-             millis() 
-             - this->_lastUpdate 
-             + (_currentFraction / FRACTIONSPERMILLI));
-    }
+    return (tempo < 10 ? "0" + String(tempo) : String(tempo)); // Hour, 00-23
+  }
 
-    /**
-       @return time in seconds since Jan. 1, 1970
-    */
-    unsigned long getEpochTime() const 
-    {
-      return (this->_timeOffset + this->getUTCEpochTime());
-    }
-    
-    /**
-       @return UTC time in milliseconds since Jan. 1, 1970
-    */
-    unsigned long long getUTCEpochMillis();
+  // With leading 0
+  String getStrMinutes() const
+  {
+    unsigned long tempo = this->getMinutes();
 
-    /**
-       @return time in milliseconds since Jan. 1, 1970
-    */
-    unsigned long long getEpochMillis();
+    return (tempo < 10 ? "0" + String(tempo) : String(tempo)); // Min, 00-59
+  }
 
-    /**
-       Stops the underlying UDP client
-    */
-    void end() 
-    {
-      this->_udp->stop();
+  // With leading 0
+  String getStrSeconds() const
+  {
+    unsigned long tempo = this->getSeconds();
 
-      this->_udpSetup = false;
-    }
+    return (tempo < 10 ? "0" + String(tempo) : String(tempo)); // Sec, 0-59
+  }
+
+  /**
+     Changes the time offset. Useful for changing timezones dynamically
+  */
+  void setTimeOffset(int timeOffset)
+  {
+    this->_timeOffset = timeOffset;
+  }
+
+  /**
+     Set the update interval to another frequency. E.g. useful when the
+     timeOffset should not be set in the constructor
+  */
+  void setUpdateInterval(unsigned long updateInterval)
+  {
+    this->_updateInterval = updateInterval;
+  }
+
+  /**
+     Set the retry interval to another frequency in ms
+  */
+  void setRetryInterval(int retryInterval)
+  {
+    _retryInterval = retryInterval;
+  }
+
+  /**
+     @return time formatted like `hh:mm:ss` from rawTime input
+  */
+  String createFormattedTime(unsigned long rawTime) const;
+
+  /**
+     @return time formatted like `hh:mm:ss`
+  */
+  String getFormattedTime() const;
+
+  /**
+     @return UTC time formatted like `hh:mm:ss`
+  */
+  String getFormattedUTCTime() const;
+
+  /**
+     @return date-time formatted like `10:38:21 Sun 18 Oct 2020`
+  */
+  String getFormattedDateTime() const;
+
+  /**
+     @return UTC date-time formatted like `10:38:21 Sun 18 Oct 2020`
+  */
+  String getFormattedUTCDateTime() const;
+
+  /**
+     @return UTC time in seconds since Jan. 1, 1970
+  */
+  unsigned long getUTCEpochTime() const
+  {
+    return this->_currentEpoc +                                                              // Epoc returned by the NTP server
+           ((millis() - this->_lastUpdate + (_currentFraction / FRACTIONSPERMILLI)) / 1000); // Time since last update
+  }
+
+  unsigned long long mygetEpochMillis() const
+  {
+    unsigned long long currentEpochMillis = (unsigned long long)this->_currentEpoc * 1000;
+    Serial.printf("currentEpoc = %ld\n", _currentEpoc);
+    Serial.printf("currentEpochMillis = %lld\n", currentEpochMillis);
+    return (currentEpochMillis + // Epoc returned by the NTP server
+            millis() - this->_lastUpdate + (_currentFraction / FRACTIONSPERMILLI));
+  }
+
+  /**
+     @return time in seconds since Jan. 1, 1970
+  */
+  unsigned long getEpochTime() const
+  {
+    return (this->_timeOffset + this->getUTCEpochTime());
+  }
+
+  /**
+     @return UTC time in milliseconds since Jan. 1, 1970
+  */
+  unsigned long long getUTCEpochMillis();
+
+  /**
+     @return time in milliseconds since Jan. 1, 1970
+  */
+  unsigned long long getEpochMillis();
+
+  /**
+     Stops the underlying UDP client
+  */
+  void end()
+  {
+    this->_udp->stop();
+
+    this->_udpSetup = false;
+  }
 };
